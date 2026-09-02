@@ -1,0 +1,47 @@
+package com.dentcare.inventory.repository;
+
+import com.dentcare.inventory.entity.InventoryItem;
+import jakarta.persistence.LockModeType;
+import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Lock;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
+import org.springframework.stereotype.Repository;
+
+import java.util.List;
+import java.util.Optional;
+
+/**
+ * Spring Data JPA repository for {@link InventoryItem} entity.
+ */
+@Repository
+public interface InventoryItemRepository extends JpaRepository<InventoryItem, Long> {
+
+    /**
+     * Finds an inventory item by its unique business code.
+     */
+    Optional<InventoryItem> findByItemCode(String itemCode);
+
+    /**
+     * Checks if an inventory item exists with the specified item code.
+     */
+    boolean existsByItemCode(String itemCode);
+
+    /**
+     * Retrieves all active inventory items.
+     */
+    List<InventoryItem> findByActiveTrue();
+
+    /**
+     * Retrieves inventory items by active flag.
+     */
+    List<InventoryItem> findByActive(boolean active);
+
+    /**
+     * Retrieves an inventory item by ID acquiring a pessimistic write lock
+     * for safe concurrent stock movement balance updates.
+     */
+    @Lock(LockModeType.PESSIMISTIC_WRITE)
+    @Query("SELECT i FROM InventoryItem i WHERE i.id = :id")
+    Optional<InventoryItem> findByIdForUpdate(@Param("id") Long id);
+}
