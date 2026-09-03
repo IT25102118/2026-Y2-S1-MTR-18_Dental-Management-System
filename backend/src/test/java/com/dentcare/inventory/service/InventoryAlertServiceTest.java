@@ -1,7 +1,10 @@
 package com.dentcare.inventory.service;
 
+import com.dentcare.inventory.dto.ExpiryAlertResponse;
 import com.dentcare.inventory.dto.LowStockAlertResponse;
+import com.dentcare.inventory.entity.InventoryBatch;
 import com.dentcare.inventory.entity.InventoryItem;
+import com.dentcare.inventory.repository.InventoryBatchRepository;
 import com.dentcare.inventory.repository.InventoryItemRepository;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -14,9 +17,12 @@ import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 
+import java.time.LocalDate;
 import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -26,6 +32,9 @@ class InventoryAlertServiceTest {
 
     @Mock
     private InventoryItemRepository inventoryItemRepository;
+
+    @Mock
+    private InventoryBatchRepository inventoryBatchRepository;
 
     @InjectMocks
     private InventoryAlertServiceImpl inventoryAlertService;
@@ -91,5 +100,50 @@ class InventoryAlertServiceTest {
 
         assertThat(result).isNotNull();
         verify(inventoryItemRepository).findLowStockItems("restorative", pageable);
+    }
+
+    @Test
+    @DisplayName("AC-27 & AC-29: getExpiryAlerts correctly classifies EXPIRED and EXPIRING batches")
+    void testGetExpiryAlertsMappingAndClassification() {
+        LocalDate today = LocalDate.now();
+        InventoryItem item = new InventoryItem("ITM-01", "Composite A2", "Restorative", "syringe", 5, 20, "DentalCorp");
+
+        InventoryBatch expiredBatch = new InventoryBatch(item, "LOT-PAST", today.minusDays(3), 5, null, null);
+        InventoryBatch todayBatch = new InventoryBatch(item, "LOT-TODAY", today, 8, null, null);
+        InventoryBatch expiringBatch = new InventoryBatch(item, "LOT-SOON", today.plusDays(15), 10, null, null);
+
+        Pageable pageable = PageRequest.of(0, 20);
+        when(inventoryBatchRepository.findExpiringOrExpiredBatches(eq(today.plusDays(30)), any(Pageable.class)))
+                .thenReturn(new PageImpl<>(List.of(expiredBatch, todayBatch, expiringBatch), pageable, 3));
+
+        Page<ExpiryAlertResponse> result = inventoryAlertService.getExpiryAlerts(today.plusDays(30), pageable);
+
+        assertThat(result.getTotalElements()).isEqualTo(3);
+
+        ExpiryAlertResponse r1 = result.getContent().get(0);
+        assertThat(r1.batchNumber()).isEqualTo("LOT-PAST");
+        assertThat(r1.status()).isEqualTo("EXPIRED");
+        assertThat(r1.daysRemaining()).isEqualTo(-3L);
+
+        ExpiryAlertResponse r2 = result.getContent().get(1);
+        assertThat(r2.batchNumber()).isEqualTo("LOT-TODAY");
+        assertThat(r2.status()).isEqualTo("EXPIRING");
+        assertThat(r2.daysRemaining()).isEqualTo(0L);
+
+        ExpiryAlertResponse r3 = result.getContent().get(2);
+        assertThat(r3.batchNumber()).isEqualTo("LOT-SOON");
+        assertThat(r3.status()).isEqualTo("EXPIRING");
+        assertThat(r3.daysRemaining()).isEqualTo(15L);
+    }
+
+    @Test
+    @DisplayName("AC-31: getExpiryAlerts with through date in the past throws IllegalArgumentException")
+    void testGetExpiryAlertsPastDateThrows() {
+        LocalDate past = LocalDate.now().minusDays(1);
+        Pageable pageable = PageRequest.of(0, 20);
+
+        assertThatThrownBy(() -> inventoryAlertService.getExpiryAlerts(past, pageable))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessageContaining("through date must not be in the past");
     }
 }

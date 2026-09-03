@@ -35,6 +35,10 @@ public class StockMovement {
     @JoinColumn(name = "inventory_item_id", nullable = false)
     private InventoryItem inventoryItem;
 
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "inventory_batch_id")
+    private InventoryBatch inventoryBatch;
+
     @NotNull(message = "Movement type is required")
     @Enumerated(EnumType.STRING)
     @Column(name = "movement_type", nullable = false, length = 20)
@@ -106,6 +110,16 @@ public class StockMovement {
         this.batchNumber = batchNumber;
         this.expiryDate = expiryDate;
     }
+
+    public StockMovement(InventoryItem inventoryItem, InventoryBatch inventoryBatch,
+                         StockMovementType movementType, AdjustmentDirection adjustmentDirection,
+                         Integer quantity, LocalDateTime occurredAt, String reason,
+                         Long responsibleUserId, Long reversalOfMovementId,
+                         Long treatmentProcedureId, String batchNumber, LocalDate expiryDate) {
+        this(inventoryItem, movementType, adjustmentDirection, quantity, occurredAt, reason, responsibleUserId, reversalOfMovementId, treatmentProcedureId, batchNumber, expiryDate);
+        this.inventoryBatch = inventoryBatch;
+    }
+
 
     /**
      * Computes signed quantity delta (+ or -) that this movement applies to the inventory item balance.
@@ -221,4 +235,13 @@ public class StockMovement {
     public void setExpiryDate(LocalDate expiryDate) {
         this.expiryDate = expiryDate;
     }
+
+    public InventoryBatch getInventoryBatch() {
+        return inventoryBatch;
+    }
+
+    public void setInventoryBatch(InventoryBatch inventoryBatch) {
+        this.inventoryBatch = inventoryBatch;
+    }
 }
+

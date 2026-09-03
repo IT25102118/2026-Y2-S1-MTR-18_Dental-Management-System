@@ -26,8 +26,32 @@ public record StockMovementResponse(
         Long reversalOfMovementId,
         Long treatmentProcedureId,
         String batchNumber,
-        LocalDate expiryDate
+        LocalDate expiryDate,
+        Long inventoryBatchId
 ) {
+    public StockMovementResponse(
+            Long id,
+            Long inventoryItemId,
+            String itemCode,
+            String itemName,
+            StockMovementType movementType,
+            AdjustmentDirection adjustmentDirection,
+            Integer quantity,
+            Integer quantityDelta,
+            Integer resultingQuantity,
+            LocalDateTime occurredAt,
+            String reason,
+            Long responsibleUserId,
+            Long reversalOfMovementId,
+            Long treatmentProcedureId,
+            String batchNumber,
+            LocalDate expiryDate
+    ) {
+        this(id, inventoryItemId, itemCode, itemName, movementType, adjustmentDirection, quantity, quantityDelta,
+                resultingQuantity, occurredAt, reason, responsibleUserId, reversalOfMovementId, treatmentProcedureId,
+                batchNumber, expiryDate, null);
+    }
+
     public static StockMovementResponse fromEntity(StockMovement movement, Integer resultingQuantity) {
         if (movement == null) {
             return null;
@@ -40,6 +64,7 @@ public record StockMovementResponse(
             itemCode = movement.getInventoryItem().getItemCode();
             itemName = movement.getInventoryItem().getName();
         }
+        Long batchId = movement.getInventoryBatch() != null ? movement.getInventoryBatch().getId() : null;
         return new StockMovementResponse(
                 movement.getId(),
                 itemId,
@@ -56,7 +81,8 @@ public record StockMovementResponse(
                 movement.getReversalOfMovementId(),
                 movement.getTreatmentProcedureId(),
                 movement.getBatchNumber(),
-                movement.getExpiryDate()
+                movement.getExpiryDate(),
+                batchId
         );
     }
 }

@@ -121,4 +121,15 @@ public class InventoryExceptionHandler {
         );
         return ResponseEntity.status(HttpStatus.CONFLICT).body(response);
     }
+
+    @ExceptionHandler(InventoryBatchNotFoundException.class)
+    public ResponseEntity<InventoryErrorResponse> handleBatchNotFound(InventoryBatchNotFoundException ex) {
+        InventoryErrorResponse response = InventoryErrorResponse.of(
+                HttpStatus.NOT_FOUND.value(),
+                "Not Found",
+                ex.getMessage()
+        );
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
+    }
 }
+

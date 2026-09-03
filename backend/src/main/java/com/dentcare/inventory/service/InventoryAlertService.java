@@ -17,4 +17,14 @@ public interface InventoryAlertService {
      * @return page of low-stock alert responses
      */
     Page<LowStockAlertResponse> getLowStockAlerts(String category, Pageable pageable);
+
+    /**
+     * Retrieves paginated expiry alerts for active items' batches with positive stock and expiryDate <= through date.
+     *
+     * @param through  end cutoff date (must not be in the past)
+     * @param pageable pagination parameters
+     * @return page of expiry alert responses
+     */
+    Page<com.dentcare.inventory.dto.ExpiryAlertResponse> getExpiryAlerts(java.time.LocalDate through, Pageable pageable);
 }
+

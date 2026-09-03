@@ -35,6 +35,13 @@ public class RecordStockMovementRequest {
 
     private Long treatmentProcedureId;
 
+    private Long batchId;
+
+    private LocalDate receivedDate;
+
+    @Size(max = 150, message = "Supplier reference must not exceed 150 characters")
+    private String supplierReference;
+
     public RecordStockMovementRequest() {
     }
 
@@ -45,6 +52,13 @@ public class RecordStockMovementRequest {
     public RecordStockMovementRequest(StockMovementType movementType, AdjustmentDirection adjustmentDirection,
                                       Integer quantity, String reason, Long responsibleUserId,
                                       String batchNumber, LocalDate expiryDate, Long treatmentProcedureId) {
+        this(movementType, adjustmentDirection, quantity, reason, responsibleUserId, batchNumber, expiryDate, treatmentProcedureId, null, null, null);
+    }
+
+    public RecordStockMovementRequest(StockMovementType movementType, AdjustmentDirection adjustmentDirection,
+                                      Integer quantity, String reason, Long responsibleUserId,
+                                      String batchNumber, LocalDate expiryDate, Long treatmentProcedureId,
+                                      Long batchId, LocalDate receivedDate, String supplierReference) {
         this.movementType = movementType;
         this.adjustmentDirection = adjustmentDirection;
         this.quantity = quantity;
@@ -53,7 +67,11 @@ public class RecordStockMovementRequest {
         this.batchNumber = batchNumber;
         this.expiryDate = expiryDate;
         this.treatmentProcedureId = treatmentProcedureId;
+        this.batchId = batchId;
+        this.receivedDate = receivedDate;
+        this.supplierReference = supplierReference;
     }
+
 
     public StockMovementType getMovementType() {
         return movementType;
@@ -118,4 +136,29 @@ public class RecordStockMovementRequest {
     public void setTreatmentProcedureId(Long treatmentProcedureId) {
         this.treatmentProcedureId = treatmentProcedureId;
     }
+
+    public Long getBatchId() {
+        return batchId;
+    }
+
+    public void setBatchId(Long batchId) {
+        this.batchId = batchId;
+    }
+
+    public LocalDate getReceivedDate() {
+        return receivedDate;
+    }
+
+    public void setReceivedDate(LocalDate receivedDate) {
+        this.receivedDate = receivedDate;
+    }
+
+    public String getSupplierReference() {
+        return supplierReference;
+    }
+
+    public void setSupplierReference(String supplierReference) {
+        this.supplierReference = supplierReference;
+    }
 }
+

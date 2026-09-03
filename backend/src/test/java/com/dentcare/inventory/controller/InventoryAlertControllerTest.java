@@ -1,5 +1,6 @@
 package com.dentcare.inventory.controller;
 
+import com.dentcare.inventory.dto.ExpiryAlertResponse;
 import com.dentcare.inventory.dto.LowStockAlertResponse;
 import com.dentcare.inventory.exception.InventoryExceptionHandler;
 import com.dentcare.inventory.service.InventoryAlertService;
@@ -14,6 +15,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 
+import java.time.LocalDate;
 import java.util.List;
 
 import static org.hamcrest.Matchers.is;
@@ -63,5 +65,53 @@ class InventoryAlertControllerTest {
                 .andExpect(jsonPath("$.content[0].deficit", is(8)))
                 .andExpect(jsonPath("$.content[0].outOfStock", is(false)))
                 .andExpect(jsonPath("$.totalElements", is(1)));
+    }
+
+    @Test
+    @DisplayName("AC-27, AC-29 & AC-34: GET /api/inventory/alerts/expiry returns 200 OK with paginated expiry alerts")
+    void testGetExpiryAlerts() throws Exception {
+        LocalDate expDate = LocalDate.now().plusDays(10);
+        ExpiryAlertResponse alert = new ExpiryAlertResponse(
+                5L,
+                1L,
+                "ITM-001",
+                "Dental Mirror",
+                "Diagnostic",
+                "piece",
+                "LOT-EXP-1",
+                12,
+                expDate,
+                "EXPIRING",
+                10L,
+                "MirrorDirect"
+        );
+
+        when(inventoryAlertService.getExpiryAlerts(any(LocalDate.class), any(Pageable.class)))
+                .thenReturn(new PageImpl<>(List.of(alert), PageRequest.of(0, 20), 1));
+
+        mockMvc.perform(get("/api/inventory/alerts/expiry")
+                        .param("through", expDate.toString())
+                        .param("page", "0")
+                        .param("size", "20"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.content[0].batchId", is(5)))
+                .andExpect(jsonPath("$.content[0].batchNumber", is("LOT-EXP-1")))
+                .andExpect(jsonPath("$.content[0].quantityOnHand", is(12)))
+                .andExpect(jsonPath("$.content[0].status", is("EXPIRING")))
+                .andExpect(jsonPath("$.totalElements", is(1)));
+    }
+
+    @Test
+    @DisplayName("AC-31: GET /api/inventory/alerts/expiry with past through date returns 400 Bad Request")
+    void testGetExpiryAlertsPastDateReturns400() throws Exception {
+        LocalDate pastDate = LocalDate.now().minusDays(1);
+        when(inventoryAlertService.getExpiryAlerts(eq(pastDate), any(Pageable.class)))
+                .thenThrow(new IllegalArgumentException("through date must not be in the past: " + pastDate));
+
+        mockMvc.perform(get("/api/inventory/alerts/expiry")
+                        .param("through", pastDate.toString()))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.status", is(400)))
+                .andExpect(jsonPath("$.message", is("through date must not be in the past: " + pastDate)));
     }
 }
