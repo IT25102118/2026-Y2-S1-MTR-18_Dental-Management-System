@@ -40,7 +40,8 @@ CREATE TABLE IF NOT EXISTS stock_movements (
     CONSTRAINT fk_stock_movements_item FOREIGN KEY (inventory_item_id) REFERENCES inventory_items (id),
     CONSTRAINT chk_stock_movements_qty CHECK (quantity > 0),
     CONSTRAINT chk_stock_movements_type CHECK (movement_type IN ('RECEIVED', 'USED', 'DAMAGED', 'ADJUSTED', 'EXPIRED')),
-    CONSTRAINT chk_stock_movements_adj_dir CHECK (adjustment_direction IS NULL OR adjustment_direction IN ('INCREASE', 'DECREASE'))
+    CONSTRAINT chk_stock_movements_adj_dir CHECK (adjustment_direction IS NULL OR adjustment_direction IN ('INCREASE', 'DECREASE')),
+    CONSTRAINT uk_stock_movements_reversal UNIQUE (reversal_of_movement_id)
 );
 
 CREATE INDEX IF NOT EXISTS idx_stock_movements_item_time ON stock_movements (inventory_item_id, occurred_at DESC);

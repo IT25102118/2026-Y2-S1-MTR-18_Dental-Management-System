@@ -2,6 +2,8 @@ package com.dentcare.inventory.repository;
 
 import com.dentcare.inventory.entity.InventoryItem;
 import jakarta.persistence.LockModeType;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import org.springframework.data.jpa.repository.Lock;
@@ -45,4 +47,12 @@ public interface InventoryItemRepository extends JpaRepository<InventoryItem, Lo
     @Lock(LockModeType.PESSIMISTIC_WRITE)
     @Query("SELECT i FROM InventoryItem i WHERE i.id = :id")
     Optional<InventoryItem> findByIdForUpdate(@Param("id") Long id);
+
+    /**
+     * Retrieves paginated active inventory items whose current quantity is at or below their reorder level,
+     * with optional case-insensitive category filtering.
+     */
+    @Query("SELECT i FROM InventoryItem i WHERE i.active = true AND i.currentQuantity <= i.reorderLevel " +
+           "AND (:category IS NULL OR LOWER(i.category) = LOWER(:category))")
+    Page<InventoryItem> findLowStockItems(@Param("category") String category, Pageable pageable);
 }

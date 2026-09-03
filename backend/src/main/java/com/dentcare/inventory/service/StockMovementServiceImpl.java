@@ -114,6 +114,84 @@ public class StockMovementServiceImpl implements StockMovementService {
     }
 
     @Override
+    @Transactional
+    public StockMovementResponse reverseMovement(Long itemId, Long movementId, com.dentcare.inventory.dto.ReverseStockMovementRequest request) {
+        // 1. Acquire pessimistic write lock on the inventory item (corrections permitted on inactive items)
+        InventoryItem item = inventoryItemRepository.findByIdForUpdate(itemId)
+                .orElseThrow(() -> new InventoryItemNotFoundException(itemId));
+
+        // 2. Retrieve original stock movement
+        StockMovement original = stockMovementRepository.findById(movementId)
+                .orElseThrow(() -> new com.dentcare.inventory.exception.StockMovementNotFoundException(movementId));
+
+        // 3. Verify original movement belongs to the specified item
+        if (original.getInventoryItem() == null || !original.getInventoryItem().getId().equals(itemId)) {
+            throw new com.dentcare.inventory.exception.StockMovementNotFoundException(movementId);
+        }
+
+        // 4. Verify original movement is not itself a reversal
+        if (original.getReversalOfMovementId() != null) {
+            throw new InvalidMovementException("Cannot reverse a movement that is already a reversal");
+        }
+
+        // 5. Check if original movement has already been reversed
+        if (stockMovementRepository.existsByReversalOfMovementId(movementId)) {
+            throw new com.dentcare.inventory.exception.DuplicateReversalException(movementId);
+        }
+
+        // 6. Validate reversal parameters
+        if (request.getReason() == null || request.getReason().trim().isEmpty()) {
+            throw new InvalidMovementException("Reversal reason is required");
+        }
+
+        // 7. Calculate opposite direction and quantity effect
+        int originalDelta = original.getQuantityDelta();
+        AdjustmentDirection reversalDirection = (originalDelta > 0)
+                ? AdjustmentDirection.DECREASE
+                : AdjustmentDirection.INCREASE;
+        int quantity = original.getQuantity();
+
+        // 8. Prevent negative stock on DECREASE reversals
+        if (reversalDirection == AdjustmentDirection.DECREASE) {
+            int currentStock = item.getCurrentQuantity() != null ? item.getCurrentQuantity() : 0;
+            if (quantity > currentStock) {
+                throw new InsufficientStockException(itemId, quantity, currentStock);
+            }
+            item.decreaseQuantity(quantity);
+        } else {
+            item.increaseQuantity(quantity);
+        }
+
+        // 9. Persist reversal movement referencing original
+        StockMovement reversal = new StockMovement(
+                item,
+                StockMovementType.ADJUSTED,
+                reversalDirection,
+                quantity,
+                LocalDateTime.now(),
+                request.getReason().trim(),
+                request.getResponsibleUserId(),
+                original.getId(),
+                original.getTreatmentProcedureId(),
+                original.getBatchNumber(),
+                original.getExpiryDate()
+        );
+
+        StockMovement savedMovement;
+        try {
+            savedMovement = stockMovementRepository.saveAndFlush(reversal);
+            inventoryItemRepository.save(item);
+        } catch (org.springframework.dao.DataIntegrityViolationException ex) {
+            if (stockMovementRepository.existsByReversalOfMovementId(movementId)) {
+                throw new com.dentcare.inventory.exception.DuplicateReversalException(movementId);
+            }
+            throw ex;
+        }
+
+        return StockMovementResponse.fromEntity(savedMovement, item.getCurrentQuantity());
+    }
+
+    @Override
     public Page<StockMovementResponse> getItemMovementHistory(Long itemId, StockMovementType movementType, Pageable pageable) {
         if (!inventoryItemRepository.existsById(itemId)) {
             throw new InventoryItemNotFoundException(itemId);

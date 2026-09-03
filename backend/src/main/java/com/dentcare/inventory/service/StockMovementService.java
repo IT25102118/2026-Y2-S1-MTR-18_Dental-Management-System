@@ -21,6 +21,16 @@ public interface StockMovementService {
     StockMovementResponse recordMovement(Long itemId, RecordStockMovementRequest request);
 
     /**
+     * Atomically reverses an existing stock movement, applying opposite balance mutations and preserving audit links.
+     *
+     * @param itemId     ID of the inventory item
+     * @param movementId ID of the original stock movement to reverse
+     * @param request    reversal reason and responsible user
+     * @return response representing the recorded reversal movement and resulting balance
+     */
+    StockMovementResponse reverseMovement(Long itemId, Long movementId, com.dentcare.inventory.dto.ReverseStockMovementRequest request);
+
+    /**
      * Retrieves paginated stock movement history for an inventory item in reverse chronological order.
      *
      * @param itemId       ID of the inventory item

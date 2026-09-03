@@ -101,4 +101,24 @@ public class InventoryExceptionHandler {
         );
         return ResponseEntity.status(HttpStatus.CONFLICT).body(response);
     }
+
+    @ExceptionHandler(StockMovementNotFoundException.class)
+    public ResponseEntity<InventoryErrorResponse> handleStockMovementNotFound(StockMovementNotFoundException ex) {
+        InventoryErrorResponse response = InventoryErrorResponse.of(
+                HttpStatus.NOT_FOUND.value(),
+                "Not Found",
+                ex.getMessage()
+        );
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
+    }
+
+    @ExceptionHandler(DuplicateReversalException.class)
+    public ResponseEntity<InventoryErrorResponse> handleDuplicateReversal(DuplicateReversalException ex) {
+        InventoryErrorResponse response = InventoryErrorResponse.of(
+                HttpStatus.CONFLICT.value(),
+                "Conflict",
+                ex.getMessage()
+        );
+        return ResponseEntity.status(HttpStatus.CONFLICT).body(response);
+    }
 }

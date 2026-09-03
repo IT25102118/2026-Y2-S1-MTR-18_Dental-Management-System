@@ -43,6 +43,17 @@ public class StockMovementController {
         return ResponseEntity.created(location).body(response);
     }
 
+    @PostMapping("/{movementId}/reverse")
+    public ResponseEntity<StockMovementResponse> reverseMovement(
+            @PathVariable Long itemId,
+            @PathVariable Long movementId,
+            @Valid @RequestBody com.dentcare.inventory.dto.ReverseStockMovementRequest request
+    ) {
+        StockMovementResponse response = stockMovementService.reverseMovement(itemId, movementId, request);
+        URI location = URI.create(String.format("/api/inventory/items/%d/movements/%d", itemId, response.id()));
+        return ResponseEntity.created(location).body(response);
+    }
+
     @GetMapping
     public ResponseEntity<Page<StockMovementResponse>> getMovementHistory(
             @PathVariable Long itemId,

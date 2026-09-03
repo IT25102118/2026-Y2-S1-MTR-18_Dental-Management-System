@@ -39,4 +39,9 @@ public interface StockMovementRepository extends JpaRepository<StockMovement, Lo
      * Checks if a reversal movement already exists for a specified original movement ID.
      */
     boolean existsByReversalOfMovementId(Long reversalOfMovementId);
+
+    /**
+     * Finds the reversal movement referencing a specified original movement ID.
+     */
+    java.util.Optional<StockMovement> findByReversalOfMovementId(Long reversalOfMovementId);
 }

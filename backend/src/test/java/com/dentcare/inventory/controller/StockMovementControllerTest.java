@@ -238,4 +238,88 @@ class StockMovementControllerTest {
                 .andExpect(jsonPath("$.content[0].movementType", is("RECEIVED")))
                 .andExpect(jsonPath("$.totalElements", is(1)));
     }
+
+    @Test
+    @DisplayName("AC-19: POST /api/inventory/items/{itemId}/movements/{movementId}/reverse returns 201 Created")
+    void testReverseMovementSuccess() throws Exception {
+        com.dentcare.inventory.dto.ReverseStockMovementRequest request =
+                new com.dentcare.inventory.dto.ReverseStockMovementRequest("Defective goods returned", 201L);
+
+        StockMovementResponse reversalResponse = new StockMovementResponse(
+                99L,
+                1L,
+                "ITM-001",
+                "Dental Mirror #4",
+                StockMovementType.ADJUSTED,
+                com.dentcare.inventory.entity.AdjustmentDirection.DECREASE,
+                10,
+                -10,
+                20,
+                java.time.LocalDateTime.now(),
+                "Defective goods returned",
+                201L,
+                10L,
+                null,
+                "LOT-A",
+                null
+        );
+
+        when(stockMovementService.reverseMovement(eq(1L), eq(10L), any(com.dentcare.inventory.dto.ReverseStockMovementRequest.class)))
+                .thenReturn(reversalResponse);
+
+        mockMvc.perform(post("/api/inventory/items/1/movements/10/reverse")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(request)))
+                .andExpect(status().isCreated())
+                .andExpect(header().string("Location", containsString("/api/inventory/items/1/movements/99")))
+                .andExpect(jsonPath("$.id", is(99)))
+                .andExpect(jsonPath("$.movementType", is("ADJUSTED")))
+                .andExpect(jsonPath("$.reversalOfMovementId", is(10)));
+    }
+
+    @Test
+    @DisplayName("AC-19: POST reverse with duplicate reversal returns 409 Conflict")
+    void testReverseMovementDuplicate() throws Exception {
+        com.dentcare.inventory.dto.ReverseStockMovementRequest request =
+                new com.dentcare.inventory.dto.ReverseStockMovementRequest("Duplicate attempt", 201L);
+
+        when(stockMovementService.reverseMovement(eq(1L), eq(10L), any(com.dentcare.inventory.dto.ReverseStockMovementRequest.class)))
+                .thenThrow(new com.dentcare.inventory.exception.DuplicateReversalException(10L));
+
+        mockMvc.perform(post("/api/inventory/items/1/movements/10/reverse")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(request)))
+                .andExpect(status().isConflict())
+                .andExpect(jsonPath("$.status", is(409)))
+                .andExpect(jsonPath("$.message", containsString("already been reversed")));
+    }
+
+    @Test
+    @DisplayName("AC-19: POST reverse with missing movement returns 404 Not Found")
+    void testReverseMovementNotFound() throws Exception {
+        com.dentcare.inventory.dto.ReverseStockMovementRequest request =
+                new com.dentcare.inventory.dto.ReverseStockMovementRequest("Missing movement", 201L);
+
+        when(stockMovementService.reverseMovement(eq(1L), eq(999L), any(com.dentcare.inventory.dto.ReverseStockMovementRequest.class)))
+                .thenThrow(new com.dentcare.inventory.exception.StockMovementNotFoundException(999L));
+
+        mockMvc.perform(post("/api/inventory/items/1/movements/999/reverse")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(request)))
+                .andExpect(status().isNotFound())
+                .andExpect(jsonPath("$.status", is(404)));
+    }
+
+    @Test
+    @DisplayName("AC-19: POST reverse with blank reason returns 400 Bad Request")
+    void testReverseMovementBlankReason() throws Exception {
+        com.dentcare.inventory.dto.ReverseStockMovementRequest request =
+                new com.dentcare.inventory.dto.ReverseStockMovementRequest("   ", 201L);
+
+        mockMvc.perform(post("/api/inventory/items/1/movements/10/reverse")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(request)))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.status", is(400)));
+    }
 }
