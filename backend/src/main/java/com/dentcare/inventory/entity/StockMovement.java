@@ -40,6 +40,10 @@ public class StockMovement {
     @Column(name = "movement_type", nullable = false, length = 20)
     private StockMovementType movementType;
 
+    @Enumerated(EnumType.STRING)
+    @Column(name = "adjustment_direction", length = 10)
+    private AdjustmentDirection adjustmentDirection;
+
     @NotNull(message = "Quantity is required")
     @Min(value = 1, message = "Quantity must be strictly greater than zero")
     @Column(nullable = false)
@@ -75,15 +79,24 @@ public class StockMovement {
 
     public StockMovement(InventoryItem inventoryItem, StockMovementType movementType,
                          Integer quantity, Long responsibleUserId) {
-        this(inventoryItem, movementType, quantity, LocalDateTime.now(), null, responsibleUserId, null, null, null, null);
+        this(inventoryItem, movementType, null, quantity, LocalDateTime.now(), null, responsibleUserId, null, null, null, null);
     }
 
     public StockMovement(InventoryItem inventoryItem, StockMovementType movementType,
                          Integer quantity, LocalDateTime occurredAt, String reason,
                          Long responsibleUserId, Long reversalOfMovementId,
                          Long treatmentProcedureId, String batchNumber, LocalDate expiryDate) {
+        this(inventoryItem, movementType, null, quantity, occurredAt, reason, responsibleUserId, reversalOfMovementId, treatmentProcedureId, batchNumber, expiryDate);
+    }
+
+    public StockMovement(InventoryItem inventoryItem, StockMovementType movementType,
+                         AdjustmentDirection adjustmentDirection, Integer quantity,
+                         LocalDateTime occurredAt, String reason,
+                         Long responsibleUserId, Long reversalOfMovementId,
+                         Long treatmentProcedureId, String batchNumber, LocalDate expiryDate) {
         this.inventoryItem = inventoryItem;
         this.movementType = movementType;
+        this.adjustmentDirection = adjustmentDirection;
         this.quantity = quantity;
         this.occurredAt = occurredAt != null ? occurredAt : LocalDateTime.now();
         this.reason = reason;
@@ -92,6 +105,20 @@ public class StockMovement {
         this.treatmentProcedureId = treatmentProcedureId;
         this.batchNumber = batchNumber;
         this.expiryDate = expiryDate;
+    }
+
+    /**
+     * Computes signed quantity delta (+ or -) that this movement applies to the inventory item balance.
+     */
+    public int getQuantityDelta() {
+        if (movementType == null || quantity == null) {
+            return 0;
+        }
+        return switch (movementType) {
+            case RECEIVED -> quantity;
+            case USED, DAMAGED, EXPIRED -> -quantity;
+            case ADJUSTED -> (adjustmentDirection == AdjustmentDirection.INCREASE) ? quantity : -quantity;
+        };
     }
 
     @PrePersist
@@ -121,6 +148,14 @@ public class StockMovement {
 
     public void setMovementType(StockMovementType movementType) {
         this.movementType = movementType;
+    }
+
+    public AdjustmentDirection getAdjustmentDirection() {
+        return adjustmentDirection;
+    }
+
+    public void setAdjustmentDirection(AdjustmentDirection adjustmentDirection) {
+        this.adjustmentDirection = adjustmentDirection;
     }
 
     public Integer getQuantity() {

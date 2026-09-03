@@ -28,6 +28,7 @@ CREATE TABLE IF NOT EXISTS stock_movements (
     id BIGINT AUTO_INCREMENT PRIMARY KEY,
     inventory_item_id BIGINT NOT NULL,
     movement_type VARCHAR(20) NOT NULL,
+    adjustment_direction VARCHAR(10),
     quantity INT NOT NULL,
     occurred_at TIMESTAMP NOT NULL,
     reason VARCHAR(255),
@@ -38,7 +39,8 @@ CREATE TABLE IF NOT EXISTS stock_movements (
     expiry_date DATE,
     CONSTRAINT fk_stock_movements_item FOREIGN KEY (inventory_item_id) REFERENCES inventory_items (id),
     CONSTRAINT chk_stock_movements_qty CHECK (quantity > 0),
-    CONSTRAINT chk_stock_movements_type CHECK (movement_type IN ('RECEIVED', 'USED', 'DAMAGED', 'ADJUSTED', 'EXPIRED'))
+    CONSTRAINT chk_stock_movements_type CHECK (movement_type IN ('RECEIVED', 'USED', 'DAMAGED', 'ADJUSTED', 'EXPIRED')),
+    CONSTRAINT chk_stock_movements_adj_dir CHECK (adjustment_direction IS NULL OR adjustment_direction IN ('INCREASE', 'DECREASE'))
 );
 
 CREATE INDEX IF NOT EXISTS idx_stock_movements_item_time ON stock_movements (inventory_item_id, occurred_at DESC);

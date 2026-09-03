@@ -119,6 +119,36 @@ public class InventoryItem {
     // --- Quantity Management (Internal / Controlled Mutation) ---
 
     /**
+     * Increases current stock quantity by a strictly positive amount.
+     *
+     * @param amount quantity to add (> 0)
+     */
+    public void increaseQuantity(int amount) {
+        if (amount <= 0) {
+            throw new IllegalArgumentException("Increase amount must be strictly greater than zero");
+        }
+        int current = (this.currentQuantity != null) ? this.currentQuantity : 0;
+        this.currentQuantity = current + amount;
+    }
+
+    /**
+     * Decreases current stock quantity by a strictly positive amount.
+     * Enforces the negative-stock invariant at the entity domain level.
+     *
+     * @param amount quantity to deduct (> 0)
+     */
+    public void decreaseQuantity(int amount) {
+        if (amount <= 0) {
+            throw new IllegalArgumentException("Decrease amount must be strictly greater than zero");
+        }
+        int current = (this.currentQuantity != null) ? this.currentQuantity : 0;
+        if (amount > current) {
+            throw new IllegalStateException("Cannot decrease quantity below zero. Available: " + current + ", requested: " + amount);
+        }
+        this.currentQuantity = current - amount;
+    }
+
+    /**
      * Internal mutation method for controlled stock movements.
      * Prevents arbitrary external modification without stock movement records.
      */

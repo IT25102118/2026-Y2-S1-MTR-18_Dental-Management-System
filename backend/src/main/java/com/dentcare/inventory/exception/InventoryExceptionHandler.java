@@ -61,4 +61,44 @@ public class InventoryExceptionHandler {
         );
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
     }
+
+    @ExceptionHandler(InsufficientStockException.class)
+    public ResponseEntity<InventoryErrorResponse> handleInsufficientStock(InsufficientStockException ex) {
+        InventoryErrorResponse response = InventoryErrorResponse.of(
+                HttpStatus.CONFLICT.value(),
+                "Conflict",
+                ex.getMessage()
+        );
+        return ResponseEntity.status(HttpStatus.CONFLICT).body(response);
+    }
+
+    @ExceptionHandler(InactiveInventoryItemException.class)
+    public ResponseEntity<InventoryErrorResponse> handleInactiveItem(InactiveInventoryItemException ex) {
+        InventoryErrorResponse response = InventoryErrorResponse.of(
+                HttpStatus.CONFLICT.value(),
+                "Conflict",
+                ex.getMessage()
+        );
+        return ResponseEntity.status(HttpStatus.CONFLICT).body(response);
+    }
+
+    @ExceptionHandler(InvalidMovementException.class)
+    public ResponseEntity<InventoryErrorResponse> handleInvalidMovement(InvalidMovementException ex) {
+        InventoryErrorResponse response = InventoryErrorResponse.of(
+                HttpStatus.BAD_REQUEST.value(),
+                "Bad Request",
+                ex.getMessage()
+        );
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
+    }
+
+    @ExceptionHandler(IllegalStateException.class)
+    public ResponseEntity<InventoryErrorResponse> handleIllegalState(IllegalStateException ex) {
+        InventoryErrorResponse response = InventoryErrorResponse.of(
+                HttpStatus.CONFLICT.value(),
+                "Conflict",
+                ex.getMessage()
+        );
+        return ResponseEntity.status(HttpStatus.CONFLICT).body(response);
+    }
 }
