@@ -3,6 +3,7 @@ package com.dentcare.inventory.repository;
 import com.dentcare.inventory.entity.InventoryItem;
 import jakarta.persistence.LockModeType;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import org.springframework.data.jpa.repository.Lock;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -15,7 +16,7 @@ import java.util.Optional;
  * Spring Data JPA repository for {@link InventoryItem} entity.
  */
 @Repository
-public interface InventoryItemRepository extends JpaRepository<InventoryItem, Long> {
+public interface InventoryItemRepository extends JpaRepository<InventoryItem, Long>, JpaSpecificationExecutor<InventoryItem> {
 
     /**
      * Finds an inventory item by its unique business code.
