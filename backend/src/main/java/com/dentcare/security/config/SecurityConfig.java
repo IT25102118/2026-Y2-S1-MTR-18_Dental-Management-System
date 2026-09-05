@@ -1,8 +1,7 @@
 package com.dentcare.security.config;
 
-import org.springframework.boot.autoconfigure.AutoConfiguration;
-import org.springframework.boot.autoconfigure.security.servlet.SecurityAutoConfiguration;
 import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
@@ -17,7 +16,7 @@ import org.springframework.security.web.SecurityFilterChain;
  * security filter chain so existing module endpoints (such as MF-06 Inventory)
  * remain fully accessible until authentication endpoints and role-based guards are introduced.
  */
-@AutoConfiguration(before = SecurityAutoConfiguration.class)
+@Configuration
 @EnableWebSecurity
 public class SecurityConfig {
 
