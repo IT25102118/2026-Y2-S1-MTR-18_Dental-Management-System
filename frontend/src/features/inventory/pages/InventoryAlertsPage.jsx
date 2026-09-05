@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import LowStockAlertsTable from '../components/LowStockAlertsTable';
 import ExpiryAlertsTable from '../components/ExpiryAlertsTable';
+import InventoryNav from '../components/InventoryNav';
 import '../inventory.css';
 
 export default function InventoryAlertsPage() {
@@ -29,6 +30,8 @@ export default function InventoryAlertsPage() {
           </Link>
         </div>
       </div>
+
+      <InventoryNav />
 
       <div className="detail-card tabs-card">
         <div className="tab-navigation" role="tablist" aria-label="Inventory alert tabs">

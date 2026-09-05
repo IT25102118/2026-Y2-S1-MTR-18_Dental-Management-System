@@ -2,6 +2,7 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { Link } from 'react-router-dom';
 import { searchBatches } from '../api/movementApi';
 import InventoryPagination from '../components/InventoryPagination';
+import InventoryNav from '../components/InventoryNav';
 import '../inventory.css';
 
 export default function InventoryBatchesPage() {
@@ -121,6 +122,8 @@ export default function InventoryBatchesPage() {
           </Link>
         </div>
       </div>
+
+      <InventoryNav />
 
       <form className="batch-filters-card" onSubmit={handleFilterSubmit} aria-label="Batch search filters">
         <div className="filters-grid">

@@ -1,11 +1,12 @@
 import React from 'react';
-import { Routes, Route, Link, Navigate } from 'react-router-dom';
+import { Routes, Route, Link } from 'react-router-dom';
 import InventoryItemsPage from './features/inventory/pages/InventoryItemsPage';
 import InventoryItemCreatePage from './features/inventory/pages/InventoryItemCreatePage';
 import InventoryItemDetailPage from './features/inventory/pages/InventoryItemDetailPage';
 import InventoryItemEditPage from './features/inventory/pages/InventoryItemEditPage';
 import InventoryBatchesPage from './features/inventory/pages/InventoryBatchesPage';
 import InventoryAlertsPage from './features/inventory/pages/InventoryAlertsPage';
+import InventoryOverviewPage from './features/inventory/pages/InventoryOverviewPage';
 
 function RootPage() {
   return (
@@ -30,7 +31,7 @@ export default function App() {
   return (
     <Routes>
       <Route path="/" element={<RootPage />} />
-      <Route path="/inventory" element={<Navigate to="/inventory/items" replace />} />
+      <Route path="/inventory" element={<InventoryOverviewPage />} />
       <Route path="/inventory/items" element={<InventoryItemsPage />} />
       <Route path="/inventory/items/new" element={<InventoryItemCreatePage />} />
       <Route path="/inventory/items/:id" element={<InventoryItemDetailPage />} />

@@ -10,10 +10,36 @@ vi.mock('./features/inventory/api/inventoryApi', () => ({
     number: 0,
     size: 20,
     totalPages: 0,
-    totalElements: 0,
+    totalElements: 12,
     first: true,
     last: true,
-    empty: true
+    empty: false
+  })
+}));
+
+vi.mock('./features/inventory/api/movementApi', () => ({
+  searchBatches: vi.fn().mockResolvedValue({
+    content: [],
+    number: 0,
+    size: 20,
+    totalPages: 0,
+    totalElements: 5,
+    first: true,
+    last: true,
+    empty: false
+  })
+}));
+
+vi.mock('./features/inventory/api/alertApi', () => ({
+  getLowStockAlerts: vi.fn().mockResolvedValue({
+    content: [],
+    number: 0,
+    size: 20,
+    totalPages: 0,
+    totalElements: 2,
+    first: true,
+    last: true,
+    empty: false
   })
 }));
 
@@ -31,15 +57,35 @@ describe('Frontend Runtime Smoke Tests', () => {
     expect(inventoryLink).toHaveAttribute('href', '/inventory');
   });
 
-  it('routes /inventory to the inventory catalog items page', async () => {
+  it('routes /inventory to the inventory overview landing page', async () => {
     render(
       <MemoryRouter initialEntries={['/inventory']}>
         <App />
       </MemoryRouter>
     );
 
+    expect(await screen.findByRole('heading', { name: /Inventory Management/i, level: 1 })).toBeInTheDocument();
+    expect(screen.getByRole('navigation', { name: /inventory module navigation/i })).toBeInTheDocument();
+    expect(screen.getByRole('link', { name: /^Overview$/i })).toHaveAttribute('aria-current', 'page');
+    expect(screen.getByRole('link', { name: /^Items$/i })).toBeInTheDocument();
+    expect(screen.getByRole('link', { name: /^Batches$/i })).toBeInTheDocument();
+    expect(screen.getByRole('link', { name: /^Alerts$/i })).toBeInTheDocument();
+
+    expect(screen.getByTestId('overview-card-items')).toBeInTheDocument();
+    expect(screen.getByTestId('overview-card-batches')).toBeInTheDocument();
+    expect(screen.getByTestId('overview-card-low-stock')).toBeInTheDocument();
+    expect(screen.getByTestId('overview-card-expiry')).toBeInTheDocument();
+  });
+
+  it('routes /inventory/items to the inventory catalog items page', async () => {
+    render(
+      <MemoryRouter initialEntries={['/inventory/items']}>
+        <App />
+      </MemoryRouter>
+    );
+
     expect(await screen.findByRole('heading', { name: /Inventory Items/i, level: 1 })).toBeInTheDocument();
-    expect(screen.getAllByRole('link', { name: /Register New Item/i }).length).toBeGreaterThan(0);
+    expect(screen.getByRole('link', { name: /^Items$/i })).toHaveAttribute('aria-current', 'page');
   });
 
   it('contains zero fake auth or user identity context in rendered output', async () => {
@@ -49,11 +95,11 @@ describe('Frontend Runtime Smoke Tests', () => {
       </MemoryRouter>
     );
 
-    await screen.findByRole('heading', { name: /Inventory Items/i, level: 1 });
+    await screen.findByRole('heading', { name: /Inventory Management/i, level: 1 });
 
-    expect(screen.queryByText(/user id/i)).not.toBeInTheDocument();
-    expect(screen.queryByText(/responsible user/i)).not.toBeInTheDocument();
+    expect(screen.queryByText(/fake user/i)).not.toBeInTheDocument();
     expect(screen.queryByText(/dental assistant/i)).not.toBeInTheDocument();
-    expect(screen.queryByText(/101/)).not.toBeInTheDocument();
+    expect(screen.queryByText(/responsibleUserId/i)).not.toBeInTheDocument();
+    expect(screen.getByText(/shared authentication\/current-user integration/i)).toBeInTheDocument();
   });
 });
