@@ -113,6 +113,9 @@ export default function InventoryBatchesPage() {
           <Link to="/inventory/items" className="btn btn-secondary">
             View Items
           </Link>
+          <Link to="/inventory/alerts" className="btn btn-secondary">
+            View Alerts
+          </Link>
           <Link to="/inventory/items/new" className="btn btn-primary">
             Register New Item
           </Link>

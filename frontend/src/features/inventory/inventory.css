@@ -547,3 +547,87 @@
 .item-link:hover {
   text-decoration: underline;
 }
+
+/* ==========================================================================
+   Alerts Toolbar, Tables & Badges
+   ========================================================================== */
+.alerts-table-container {
+  display: flex;
+  flex-direction: column;
+}
+
+.alerts-toolbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 1rem;
+  margin-bottom: 1rem;
+}
+
+.alerts-filter-form {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.stock-alert-badge {
+  display: inline-block;
+  padding: 0.25rem 0.625rem;
+  border-radius: 9999px;
+  font-size: 0.75rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.badge-out-of-stock {
+  background-color: #fee2e2;
+  color: #991b1b;
+  border: 1px solid #fca5a5;
+}
+
+.badge-low-stock {
+  background-color: #fef3c7;
+  color: #92400e;
+  border: 1px solid #fcd34d;
+}
+
+.expiry-alert-badge {
+  display: inline-block;
+  padding: 0.25rem 0.625rem;
+  border-radius: 4px;
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.03em;
+}
+
+.badge-expired-status {
+  background-color: #fef2f2;
+  color: #b91c1c;
+  border: 1px solid #f87171;
+}
+
+.badge-expiring-status {
+  background-color: #fffbeb;
+  color: #b45309;
+  border: 1px solid #fbbf24;
+}
+
+.deficit-indicator {
+  font-weight: 600;
+  color: #b91c1c;
+  font-size: 0.875rem;
+}
+
+.days-expired {
+  color: #dc2626;
+  font-weight: 600;
+}
+
+.days-expiring {
+  color: #d97706;
+  font-weight: 600;
+}
+
