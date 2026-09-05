@@ -32,7 +32,6 @@ DentCare consists of six major functional modules:
 - Java 21
 - Spring Boot
 - Spring Data JPA / Hibernate
-- Spring Security
 - REST API
 
 ### Database
@@ -59,7 +58,6 @@ DentCare consists of six major functional modules:
 - Inventory item management
 - Stock movement tracking
 - Low-stock and expiry alerts
-- Role-based access control
 - Input validation
 - Audit and activity history
 - Search, filtering and reporting
@@ -98,7 +96,6 @@ MySQL Database
 │       ├── service/
 │       ├── repository/
 │       ├── entity/
-│       ├── security/
 │       ├── exception/
 │       └── config/
 │
