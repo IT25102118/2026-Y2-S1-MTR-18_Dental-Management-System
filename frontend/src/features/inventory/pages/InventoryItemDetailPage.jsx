@@ -2,6 +2,8 @@ import React, { useState, useEffect } from 'react';
 import { Link, useParams } from 'react-router-dom';
 import { getItemById, updateItemStatus, InventoryApiError } from '../api/inventoryApi';
 import { StockStatusBadge, ActiveStatusBadge } from '../components/InventoryStatusBadge';
+import StockMovementHistoryTable from '../components/StockMovementHistoryTable';
+import ItemBatchesTable from '../components/ItemBatchesTable';
 import '../inventory.css';
 
 /**
@@ -37,6 +39,7 @@ export default function InventoryItemDetailPage() {
   const [showDeactivateConfirm, setShowDeactivateConfirm] = useState(false);
   const [statusSubmitting, setStatusSubmitting] = useState(false);
   const [actionError, setActionError] = useState(null);
+  const [activeTab, setActiveTab] = useState('movements');
 
   useEffect(() => {
     let isMounted = true;
@@ -261,6 +264,51 @@ export default function InventoryItemDetailPage() {
             </div>
           </div>
         )}
+      </div>
+
+      <div className="detail-card tabs-card">
+        <div className="tab-navigation" role="tablist" aria-label="Item activity tabs">
+          <button
+            type="button"
+            role="tab"
+            id="tab-movements"
+            aria-controls="panel-movements"
+            aria-selected={activeTab === 'movements'}
+            className={`tab-btn ${activeTab === 'movements' ? 'active' : ''}`}
+            onClick={() => setActiveTab('movements')}
+          >
+            Movement History
+          </button>
+          <button
+            type="button"
+            role="tab"
+            id="tab-batches"
+            aria-controls="panel-batches"
+            aria-selected={activeTab === 'batches'}
+            className={`tab-btn ${activeTab === 'batches' ? 'active' : ''}`}
+            onClick={() => setActiveTab('batches')}
+          >
+            Active Batches
+          </button>
+        </div>
+
+        <div
+          id="panel-movements"
+          role="tabpanel"
+          aria-labelledby="tab-movements"
+          hidden={activeTab !== 'movements'}
+        >
+          {activeTab === 'movements' && <StockMovementHistoryTable itemId={item.id} />}
+        </div>
+
+        <div
+          id="panel-batches"
+          role="tabpanel"
+          aria-labelledby="tab-batches"
+          hidden={activeTab !== 'batches'}
+        >
+          {activeTab === 'batches' && <ItemBatchesTable itemId={item.id} />}
+        </div>
       </div>
     </div>
   );

@@ -4,6 +4,7 @@ import InventoryItemsPage from './features/inventory/pages/InventoryItemsPage';
 import InventoryItemCreatePage from './features/inventory/pages/InventoryItemCreatePage';
 import InventoryItemDetailPage from './features/inventory/pages/InventoryItemDetailPage';
 import InventoryItemEditPage from './features/inventory/pages/InventoryItemEditPage';
+import InventoryBatchesPage from './features/inventory/pages/InventoryBatchesPage';
 
 function RootPage() {
   return (
@@ -33,6 +34,7 @@ export default function App() {
       <Route path="/inventory/items/new" element={<InventoryItemCreatePage />} />
       <Route path="/inventory/items/:id" element={<InventoryItemDetailPage />} />
       <Route path="/inventory/items/:id/edit" element={<InventoryItemEditPage />} />
+      <Route path="/inventory/batches" element={<InventoryBatchesPage />} />
     </Routes>
   );
 }

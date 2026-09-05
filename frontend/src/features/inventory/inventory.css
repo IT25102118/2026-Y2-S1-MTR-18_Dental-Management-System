@@ -386,3 +386,164 @@
   display: flex;
   gap: 0.5rem;
 }
+
+/* ==========================================================================
+   Tabs Navigation & Content
+   ========================================================================== */
+.tabs-card {
+  margin-top: 1.5rem;
+  padding: 1.5rem;
+}
+
+.tab-navigation {
+  display: flex;
+  gap: 0.5rem;
+  border-bottom: 2px solid #e2e8f0;
+  margin-bottom: 1.5rem;
+}
+
+.tab-btn {
+  background: none;
+  border: none;
+  padding: 0.75rem 1.25rem;
+  font-size: 0.9375rem;
+  font-weight: 600;
+  color: #64748b;
+  cursor: pointer;
+  border-bottom: 2px solid transparent;
+  margin-bottom: -2px;
+  transition: all 0.15s ease-in-out;
+}
+
+.tab-btn:hover {
+  color: #0f172a;
+}
+
+.tab-btn.active {
+  color: #0284c7;
+  border-bottom-color: #0284c7;
+}
+
+/* ==========================================================================
+   History Toolbar & Badges
+   ========================================================================== */
+.history-toolbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 1rem;
+  margin-bottom: 1rem;
+}
+
+.history-filter-group {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.filter-label {
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: #475569;
+}
+
+.movement-badge {
+  display: inline-block;
+  padding: 0.25rem 0.625rem;
+  border-radius: 9999px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.badge-received {
+  background-color: #dcfce7;
+  color: #15803d;
+}
+
+.badge-used {
+  background-color: #e0f2fe;
+  color: #0369a1;
+}
+
+.badge-damaged {
+  background-color: #fef3c7;
+  color: #b45309;
+}
+
+.badge-adjusted {
+  background-color: #f3e8ff;
+  color: #7e22ce;
+}
+
+.badge-expired {
+  background-color: #fee2e2;
+  color: #b91c1c;
+}
+
+.delta-positive {
+  color: #16a34a;
+}
+
+.delta-negative {
+  color: #dc2626;
+}
+
+.resulting-qty {
+  font-size: 0.8125rem;
+  font-weight: normal;
+  color: #64748b;
+}
+
+.unbatched-badge {
+  display: inline-block;
+  padding: 0.15rem 0.5rem;
+  border-radius: 4px;
+  font-size: 0.8125rem;
+  font-weight: 500;
+  background-color: #f1f5f9;
+  color: #475569;
+  font-style: italic;
+}
+
+.reversal-ref {
+  font-size: 0.75rem;
+  color: #7c3aed;
+  font-weight: 500;
+}
+
+.subtext {
+  font-size: 0.75rem;
+  color: #64748b;
+}
+
+.checkbox-label {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.875rem;
+  color: #334155;
+  cursor: pointer;
+  user-select: none;
+}
+
+.batch-filters-card {
+  background-color: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  padding: 1.25rem;
+  margin-bottom: 1.5rem;
+  box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.05);
+}
+
+.item-link {
+  color: #0284c7;
+  font-weight: 600;
+  text-decoration: none;
+}
+
+.item-link:hover {
+  text-decoration: underline;
+}

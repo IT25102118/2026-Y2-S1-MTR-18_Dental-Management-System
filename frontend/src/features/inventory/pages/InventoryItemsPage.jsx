@@ -93,9 +93,14 @@ export default function InventoryItemsPage() {
 
       <div className="inventory-header">
         <h1>Inventory Items</h1>
-        <Link to="/inventory/items/new" className="btn btn-primary">
-          Register New Item
-        </Link>
+        <div style={{ display: 'flex', gap: '0.5rem' }}>
+          <Link to="/inventory/batches" className="btn btn-secondary">
+            View Batches
+          </Link>
+          <Link to="/inventory/items/new" className="btn btn-primary">
+            Register New Item
+          </Link>
+        </div>
       </div>
 
       <InventoryFilters
