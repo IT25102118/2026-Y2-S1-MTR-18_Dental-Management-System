@@ -55,6 +55,22 @@ describe('Frontend Runtime Smoke Tests', () => {
     const inventoryLink = screen.getByRole('link', { name: /Inventory Management/i });
     expect(inventoryLink).toBeInTheDocument();
     expect(inventoryLink).toHaveAttribute('href', '/inventory');
+
+    const registerLink = screen.getByRole('link', { name: /Patient Registration/i });
+    expect(registerLink).toBeInTheDocument();
+    expect(registerLink).toHaveAttribute('href', '/register');
+  });
+
+  it('routes /register to the patient registration page', async () => {
+    render(
+      <MemoryRouter initialEntries={['/register']}>
+        <App />
+      </MemoryRouter>
+    );
+
+    expect(await screen.findByRole('heading', { name: /patient registration/i, level: 1 })).toBeInTheDocument();
+    expect(screen.getByLabelText(/first name/i)).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /register patient account/i })).toBeInTheDocument();
   });
 
   it('routes /inventory to the inventory overview landing page', async () => {
