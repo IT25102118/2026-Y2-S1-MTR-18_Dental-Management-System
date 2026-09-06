@@ -12,6 +12,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.EnumSource;
+import org.junit.jupiter.params.provider.NullSource;
 import org.junit.jupiter.params.provider.ValueSource;
 import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
@@ -220,15 +221,15 @@ class StaffProvisioningServiceTest {
 
     @ParameterizedTest
     @ValueSource(strings = {
+            "uk_users_email",
             "UK_USERS_EMAIL",
             "public.uk_users_email",
-            "PUBLIC.UK_USERS_EMAIL",
             "\"uk_users_email\"",
             "`uk_users_email`",
             "PUBLIC.UK_USERS_EMAIL_INDEX_4",
             "uk_users_email_index_1"
     })
-    @DisplayName("Detects uk_users_email constraint across case, quotes, schema qualification, and index suffix")
+    @DisplayName("Detects uk_users_email constraint across exact, case, quotes, schema qualification, and H2 index suffix")
     void provisionStaff_constraintVariants_throwsDuplicateEmailException(String constraintVariant) {
         StaffProvisioningRequest request = new StaffProvisioningRequest(
                 "Jane",
@@ -259,45 +260,24 @@ class StaffProvisioningServiceTest {
         verify(userRepository, times(1)).existsByEmailIgnoreCase("variant.admin@example.com");
     }
 
-    @Test
-    @DisplayName("Rethrows DataIntegrityViolationException when caused by a different named constraint")
-    void provisionStaff_differentConstraint_rethrowsOriginalException() {
+    @ParameterizedTest
+    @NullSource
+    @ValueSource(strings = {
+            "uk_users_email_verified",
+            "uk_users_email_history",
+            "uk_users_email_token",
+            "uk_users_email_index_",
+            "uk_users_email_index_abc",
+            "uk_users_email_index_4_extra",
+            "chk_user_status",
+            "uk_items_code"
+    })
+    @DisplayName("Rethrows DataIntegrityViolationException when constraint is unrelated, malformed, or null")
+    void provisionStaff_negativeMatcherVariants_rethrowsOriginalException(String constraintVariant) {
         StaffProvisioningRequest request = new StaffProvisioningRequest(
                 "Jane",
                 "Admin",
-                "other.admin@example.com",
-                null,
-                Role.ADMINISTRATOR,
-                "Password123"
-        );
-
-        org.hibernate.exception.ConstraintViolationException hibernateCve =
-                new org.hibernate.exception.ConstraintViolationException(
-                        "Check constraint failed",
-                        new java.sql.SQLException("Check constraint", "23000"),
-                        "chk_user_status"
-                );
-        DataIntegrityViolationException dive =
-                new DataIntegrityViolationException("could not execute statement", hibernateCve);
-
-        when(userRepository.existsByEmailIgnoreCase("other.admin@example.com")).thenReturn(false);
-        when(passwordEncoder.encode(anyString())).thenReturn("$2a$12$hashed");
-        when(userRepository.saveAndFlush(any(User.class))).thenThrow(dive);
-
-        DataIntegrityViolationException ex = assertThrows(DataIntegrityViolationException.class,
-                () -> staffProvisioningService.provisionStaff(request));
-
-        assertSame(dive, ex);
-        verify(userRepository, times(1)).existsByEmailIgnoreCase("other.admin@example.com");
-    }
-
-    @Test
-    @DisplayName("Rethrows DataIntegrityViolationException when Hibernate constraint name is null")
-    void provisionStaff_nullConstraintName_rethrowsOriginalException() {
-        StaffProvisioningRequest request = new StaffProvisioningRequest(
-                "Jane",
-                "Admin",
-                "nullc.admin@example.com",
+                "negative.admin@example.com",
                 null,
                 Role.ADMINISTRATOR,
                 "Password123"
@@ -306,13 +286,13 @@ class StaffProvisioningServiceTest {
         org.hibernate.exception.ConstraintViolationException hibernateCve =
                 new org.hibernate.exception.ConstraintViolationException(
                         "Constraint failed",
-                        new java.sql.SQLException("Unknown constraint", "23000"),
-                        null
+                        new java.sql.SQLException("Constraint failed", "23000"),
+                        constraintVariant
                 );
         DataIntegrityViolationException dive =
                 new DataIntegrityViolationException("could not execute statement", hibernateCve);
 
-        when(userRepository.existsByEmailIgnoreCase("nullc.admin@example.com")).thenReturn(false);
+        when(userRepository.existsByEmailIgnoreCase("negative.admin@example.com")).thenReturn(false);
         when(passwordEncoder.encode(anyString())).thenReturn("$2a$12$hashed");
         when(userRepository.saveAndFlush(any(User.class))).thenThrow(dive);
 
@@ -320,7 +300,7 @@ class StaffProvisioningServiceTest {
                 () -> staffProvisioningService.provisionStaff(request));
 
         assertSame(dive, ex);
-        verify(userRepository, times(1)).existsByEmailIgnoreCase("nullc.admin@example.com");
+        verify(userRepository, times(1)).existsByEmailIgnoreCase("negative.admin@example.com");
     }
 
     @Test

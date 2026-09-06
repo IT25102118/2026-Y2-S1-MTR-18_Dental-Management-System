@@ -123,6 +123,6 @@ public class StaffProvisioningServiceImpl implements StaffProvisioningService {
             normalized = normalized.substring(normalized.lastIndexOf('.') + 1);
         }
         // Match exact constraint name or H2 index name variant (e.g. uk_users_email_index_4)
-        return normalized.equals("uk_users_email") || normalized.startsWith("uk_users_email_");
+        return normalized.equals("uk_users_email") || normalized.matches("^uk_users_email_index_\\d+$");
     }
 }

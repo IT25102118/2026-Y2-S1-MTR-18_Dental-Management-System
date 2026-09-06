@@ -79,7 +79,7 @@ class UserRepositoryTest {
                     org.hibernate.exception.ConstraintViolationException cve =
                             (org.hibernate.exception.ConstraintViolationException) cause;
                     assertThat(cve.getConstraintName()).isNotNull();
-                    assertThat(cve.getConstraintName().toLowerCase()).contains("uk_users_email");
+                    assertThat(cve.getConstraintName().toUpperCase()).matches("^PUBLIC\\.UK_USERS_EMAIL_INDEX_\\d+$");
                 });
     }
 
