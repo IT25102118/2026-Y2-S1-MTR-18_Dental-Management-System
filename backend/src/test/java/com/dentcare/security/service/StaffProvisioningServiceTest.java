@@ -12,6 +12,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.EnumSource;
+import org.junit.jupiter.params.provider.ValueSource;
 import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
@@ -185,8 +186,8 @@ class StaffProvisioningServiceTest {
     }
 
     @Test
-    @DisplayName("Translates DataIntegrityViolationException on duplicate race condition to DuplicateEmailException when email exists")
-    void provisionStaff_duplicateEmailRaceCondition_throwsDuplicateEmailException() {
+    @DisplayName("Translates DataIntegrityViolationException caused by uk_users_email to DuplicateEmailException")
+    void provisionStaff_duplicateEmailConstraint_throwsDuplicateEmailException() {
         StaffProvisioningRequest request = new StaffProvisioningRequest(
                 "Jane",
                 "Admin",
@@ -196,42 +197,156 @@ class StaffProvisioningServiceTest {
                 "Password123"
         );
 
-        when(userRepository.existsByEmailIgnoreCase("race.admin@example.com")).thenReturn(false, true);
+        org.hibernate.exception.ConstraintViolationException hibernateCve =
+                new org.hibernate.exception.ConstraintViolationException(
+                        "Duplicate entry",
+                        new java.sql.SQLException("Duplicate entry", "23000", 1062),
+                        "uk_users_email"
+                );
+        DataIntegrityViolationException dive =
+                new DataIntegrityViolationException("could not execute statement", hibernateCve);
+
+        when(userRepository.existsByEmailIgnoreCase("race.admin@example.com")).thenReturn(false);
         when(passwordEncoder.encode(anyString())).thenReturn("$2a$12$hashed");
-        when(userRepository.saveAndFlush(any(User.class)))
-                .thenThrow(new DataIntegrityViolationException("Duplicate entry 'race.admin@example.com' for key 'uk_users_email'"));
+        when(userRepository.saveAndFlush(any(User.class))).thenThrow(dive);
 
         DuplicateEmailException ex = assertThrows(DuplicateEmailException.class,
                 () -> staffProvisioningService.provisionStaff(request));
 
         assertTrue(ex.getMessage().contains("already exists"));
-        verify(userRepository, times(2)).existsByEmailIgnoreCase("race.admin@example.com");
+        // Verify only ONE existence lookup occurred (during pre-check) and NONE after failure
+        verify(userRepository, times(1)).existsByEmailIgnoreCase("race.admin@example.com");
     }
 
-    @Test
-    @DisplayName("Rethrows original DataIntegrityViolationException when failure is unrelated to duplicate email")
-    void provisionStaff_unrelatedDataIntegrityViolation_rethrowsOriginalException() {
+    @ParameterizedTest
+    @ValueSource(strings = {
+            "UK_USERS_EMAIL",
+            "public.uk_users_email",
+            "PUBLIC.UK_USERS_EMAIL",
+            "\"uk_users_email\"",
+            "`uk_users_email`",
+            "PUBLIC.UK_USERS_EMAIL_INDEX_4",
+            "uk_users_email_index_1"
+    })
+    @DisplayName("Detects uk_users_email constraint across case, quotes, schema qualification, and index suffix")
+    void provisionStaff_constraintVariants_throwsDuplicateEmailException(String constraintVariant) {
         StaffProvisioningRequest request = new StaffProvisioningRequest(
                 "Jane",
                 "Admin",
-                "unrelated.admin@example.com",
+                "variant.admin@example.com",
                 null,
                 Role.ADMINISTRATOR,
                 "Password123"
         );
 
-        DataIntegrityViolationException originalException =
-                new DataIntegrityViolationException("Check constraint 'chk_something' failed");
+        org.hibernate.exception.ConstraintViolationException hibernateCve =
+                new org.hibernate.exception.ConstraintViolationException(
+                        "Duplicate entry",
+                        new java.sql.SQLException("Duplicate entry", "23000", 1062),
+                        constraintVariant
+                );
+        DataIntegrityViolationException dive =
+                new DataIntegrityViolationException("could not execute statement", hibernateCve);
 
-        when(userRepository.existsByEmailIgnoreCase("unrelated.admin@example.com")).thenReturn(false, false);
+        when(userRepository.existsByEmailIgnoreCase("variant.admin@example.com")).thenReturn(false);
         when(passwordEncoder.encode(anyString())).thenReturn("$2a$12$hashed");
-        when(userRepository.saveAndFlush(any(User.class))).thenThrow(originalException);
+        when(userRepository.saveAndFlush(any(User.class))).thenThrow(dive);
+
+        DuplicateEmailException ex = assertThrows(DuplicateEmailException.class,
+                () -> staffProvisioningService.provisionStaff(request));
+
+        assertTrue(ex.getMessage().contains("already exists"));
+        verify(userRepository, times(1)).existsByEmailIgnoreCase("variant.admin@example.com");
+    }
+
+    @Test
+    @DisplayName("Rethrows DataIntegrityViolationException when caused by a different named constraint")
+    void provisionStaff_differentConstraint_rethrowsOriginalException() {
+        StaffProvisioningRequest request = new StaffProvisioningRequest(
+                "Jane",
+                "Admin",
+                "other.admin@example.com",
+                null,
+                Role.ADMINISTRATOR,
+                "Password123"
+        );
+
+        org.hibernate.exception.ConstraintViolationException hibernateCve =
+                new org.hibernate.exception.ConstraintViolationException(
+                        "Check constraint failed",
+                        new java.sql.SQLException("Check constraint", "23000"),
+                        "chk_user_status"
+                );
+        DataIntegrityViolationException dive =
+                new DataIntegrityViolationException("could not execute statement", hibernateCve);
+
+        when(userRepository.existsByEmailIgnoreCase("other.admin@example.com")).thenReturn(false);
+        when(passwordEncoder.encode(anyString())).thenReturn("$2a$12$hashed");
+        when(userRepository.saveAndFlush(any(User.class))).thenThrow(dive);
 
         DataIntegrityViolationException ex = assertThrows(DataIntegrityViolationException.class,
                 () -> staffProvisioningService.provisionStaff(request));
 
-        assertSame(originalException, ex);
-        verify(userRepository, times(2)).existsByEmailIgnoreCase("unrelated.admin@example.com");
+        assertSame(dive, ex);
+        verify(userRepository, times(1)).existsByEmailIgnoreCase("other.admin@example.com");
+    }
+
+    @Test
+    @DisplayName("Rethrows DataIntegrityViolationException when Hibernate constraint name is null")
+    void provisionStaff_nullConstraintName_rethrowsOriginalException() {
+        StaffProvisioningRequest request = new StaffProvisioningRequest(
+                "Jane",
+                "Admin",
+                "nullc.admin@example.com",
+                null,
+                Role.ADMINISTRATOR,
+                "Password123"
+        );
+
+        org.hibernate.exception.ConstraintViolationException hibernateCve =
+                new org.hibernate.exception.ConstraintViolationException(
+                        "Constraint failed",
+                        new java.sql.SQLException("Unknown constraint", "23000"),
+                        null
+                );
+        DataIntegrityViolationException dive =
+                new DataIntegrityViolationException("could not execute statement", hibernateCve);
+
+        when(userRepository.existsByEmailIgnoreCase("nullc.admin@example.com")).thenReturn(false);
+        when(passwordEncoder.encode(anyString())).thenReturn("$2a$12$hashed");
+        when(userRepository.saveAndFlush(any(User.class))).thenThrow(dive);
+
+        DataIntegrityViolationException ex = assertThrows(DataIntegrityViolationException.class,
+                () -> staffProvisioningService.provisionStaff(request));
+
+        assertSame(dive, ex);
+        verify(userRepository, times(1)).existsByEmailIgnoreCase("nullc.admin@example.com");
+    }
+
+    @Test
+    @DisplayName("Rethrows DataIntegrityViolationException when no Hibernate ConstraintViolationException in cause chain")
+    void provisionStaff_noHibernateCause_rethrowsOriginalException() {
+        StaffProvisioningRequest request = new StaffProvisioningRequest(
+                "Jane",
+                "Admin",
+                "nocause.admin@example.com",
+                null,
+                Role.ADMINISTRATOR,
+                "Password123"
+        );
+
+        DataIntegrityViolationException dive =
+                new DataIntegrityViolationException("Generic DB error without Hibernate cause");
+
+        when(userRepository.existsByEmailIgnoreCase("nocause.admin@example.com")).thenReturn(false);
+        when(passwordEncoder.encode(anyString())).thenReturn("$2a$12$hashed");
+        when(userRepository.saveAndFlush(any(User.class))).thenThrow(dive);
+
+        DataIntegrityViolationException ex = assertThrows(DataIntegrityViolationException.class,
+                () -> staffProvisioningService.provisionStaff(request));
+
+        assertSame(dive, ex);
+        verify(userRepository, times(1)).existsByEmailIgnoreCase("nocause.admin@example.com");
     }
 
     @Test

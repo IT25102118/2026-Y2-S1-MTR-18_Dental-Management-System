@@ -85,11 +85,44 @@ public class StaffProvisioningServiceImpl implements StaffProvisioningService {
             User saved = userRepository.saveAndFlush(user);
             return StaffProvisioningResponse.fromEntity(saved);
         } catch (DataIntegrityViolationException ex) {
-            // Guard against concurrent duplicate insertion race conditions
-            if (userRepository.existsByEmailIgnoreCase(normalizedEmail)) {
+            // Guard against concurrent duplicate insertion race conditions by verifying database constraint
+            if (isEmailUniqueConstraintViolation(ex)) {
                 throw new DuplicateEmailException("An account with this email address already exists");
             }
             throw ex;
         }
+    }
+
+    /**
+     * Inspects the exception cause chain to determine if the violation was specifically caused
+     * by the email unique constraint (uk_users_email).
+     */
+    private boolean isEmailUniqueConstraintViolation(Throwable throwable) {
+        Throwable current = throwable;
+        Set<Throwable> visited = java.util.Collections.newSetFromMap(new java.util.IdentityHashMap<>());
+        while (current != null && visited.add(current)) {
+            if (current instanceof org.hibernate.exception.ConstraintViolationException cve) {
+                String constraintName = cve.getConstraintName();
+                if (isEmailConstraintName(constraintName)) {
+                    return true;
+                }
+            }
+            current = current.getCause();
+        }
+        return false;
+    }
+
+    private static boolean isEmailConstraintName(String constraintName) {
+        if (constraintName == null || constraintName.isBlank()) {
+            return false;
+        }
+        // Normalize: remove quotes (single, double, backticks, brackets) and trim
+        String normalized = constraintName.replaceAll("[\"'`\\[\\]]", "").trim().toLowerCase();
+        // Strip schema or table qualification if present (e.g. "public.uk_users_email" -> "uk_users_email")
+        if (normalized.contains(".")) {
+            normalized = normalized.substring(normalized.lastIndexOf('.') + 1);
+        }
+        // Match exact constraint name or H2 index name variant (e.g. uk_users_email_index_4)
+        return normalized.equals("uk_users_email") || normalized.startsWith("uk_users_email_");
     }
 }

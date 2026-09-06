@@ -72,7 +72,15 @@ class UserRepositoryTest {
         );
 
         assertThatThrownBy(() -> userRepository.saveAndFlush(user2))
-                .isInstanceOf(DataIntegrityViolationException.class);
+                .isInstanceOf(DataIntegrityViolationException.class)
+                .satisfies(throwable -> {
+                    Throwable cause = throwable.getCause();
+                    assertThat(cause).isInstanceOf(org.hibernate.exception.ConstraintViolationException.class);
+                    org.hibernate.exception.ConstraintViolationException cve =
+                            (org.hibernate.exception.ConstraintViolationException) cause;
+                    assertThat(cve.getConstraintName()).isNotNull();
+                    assertThat(cve.getConstraintName().toLowerCase()).contains("uk_users_email");
+                });
     }
 
     @Test
