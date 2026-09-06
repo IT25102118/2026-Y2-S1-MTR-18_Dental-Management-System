@@ -7,6 +7,7 @@ import InventoryItemEditPage from './features/inventory/pages/InventoryItemEditP
 import InventoryBatchesPage from './features/inventory/pages/InventoryBatchesPage';
 import InventoryAlertsPage from './features/inventory/pages/InventoryAlertsPage';
 import InventoryOverviewPage from './features/inventory/pages/InventoryOverviewPage';
+import PatientRegistrationPage from './features/auth/pages/PatientRegistrationPage';
 
 function RootPage() {
   return (
@@ -21,6 +22,9 @@ function RootPage() {
           <li>
             <Link to="/inventory">Inventory Management</Link>
           </li>
+          <li>
+            <Link to="/register">Patient Registration</Link>
+          </li>
         </ul>
       </main>
     </div>
@@ -31,6 +35,7 @@ export default function App() {
   return (
     <Routes>
       <Route path="/" element={<RootPage />} />
+      <Route path="/register" element={<PatientRegistrationPage />} />
       <Route path="/inventory" element={<InventoryOverviewPage />} />
       <Route path="/inventory/items" element={<InventoryItemsPage />} />
       <Route path="/inventory/items/new" element={<InventoryItemCreatePage />} />
