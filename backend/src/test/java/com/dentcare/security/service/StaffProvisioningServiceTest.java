@@ -185,7 +185,7 @@ class StaffProvisioningServiceTest {
     }
 
     @Test
-    @DisplayName("Translates DataIntegrityViolationException on race condition to DuplicateEmailException")
+    @DisplayName("Translates DataIntegrityViolationException on duplicate race condition to DuplicateEmailException when email exists")
     void provisionStaff_duplicateEmailRaceCondition_throwsDuplicateEmailException() {
         StaffProvisioningRequest request = new StaffProvisioningRequest(
                 "Jane",
@@ -196,7 +196,7 @@ class StaffProvisioningServiceTest {
                 "Password123"
         );
 
-        when(userRepository.existsByEmailIgnoreCase("race.admin@example.com")).thenReturn(false);
+        when(userRepository.existsByEmailIgnoreCase("race.admin@example.com")).thenReturn(false, true);
         when(passwordEncoder.encode(anyString())).thenReturn("$2a$12$hashed");
         when(userRepository.saveAndFlush(any(User.class)))
                 .thenThrow(new DataIntegrityViolationException("Duplicate entry 'race.admin@example.com' for key 'uk_users_email'"));
@@ -205,6 +205,33 @@ class StaffProvisioningServiceTest {
                 () -> staffProvisioningService.provisionStaff(request));
 
         assertTrue(ex.getMessage().contains("already exists"));
+        verify(userRepository, times(2)).existsByEmailIgnoreCase("race.admin@example.com");
+    }
+
+    @Test
+    @DisplayName("Rethrows original DataIntegrityViolationException when failure is unrelated to duplicate email")
+    void provisionStaff_unrelatedDataIntegrityViolation_rethrowsOriginalException() {
+        StaffProvisioningRequest request = new StaffProvisioningRequest(
+                "Jane",
+                "Admin",
+                "unrelated.admin@example.com",
+                null,
+                Role.ADMINISTRATOR,
+                "Password123"
+        );
+
+        DataIntegrityViolationException originalException =
+                new DataIntegrityViolationException("Check constraint 'chk_something' failed");
+
+        when(userRepository.existsByEmailIgnoreCase("unrelated.admin@example.com")).thenReturn(false, false);
+        when(passwordEncoder.encode(anyString())).thenReturn("$2a$12$hashed");
+        when(userRepository.saveAndFlush(any(User.class))).thenThrow(originalException);
+
+        DataIntegrityViolationException ex = assertThrows(DataIntegrityViolationException.class,
+                () -> staffProvisioningService.provisionStaff(request));
+
+        assertSame(originalException, ex);
+        verify(userRepository, times(2)).existsByEmailIgnoreCase("unrelated.admin@example.com");
     }
 
     @Test

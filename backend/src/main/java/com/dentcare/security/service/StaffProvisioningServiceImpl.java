@@ -86,7 +86,10 @@ public class StaffProvisioningServiceImpl implements StaffProvisioningService {
             return StaffProvisioningResponse.fromEntity(saved);
         } catch (DataIntegrityViolationException ex) {
             // Guard against concurrent duplicate insertion race conditions
-            throw new DuplicateEmailException("An account with this email address already exists");
+            if (userRepository.existsByEmailIgnoreCase(normalizedEmail)) {
+                throw new DuplicateEmailException("An account with this email address already exists");
+            }
+            throw ex;
         }
     }
 }
