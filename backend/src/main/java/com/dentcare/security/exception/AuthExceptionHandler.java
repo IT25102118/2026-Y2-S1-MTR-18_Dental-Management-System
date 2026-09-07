@@ -75,4 +75,25 @@ public class AuthExceptionHandler {
         );
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(error);
     }
+
+    @ExceptionHandler(org.springframework.security.core.AuthenticationException.class)
+    public ResponseEntity<AuthErrorResponse> handleAuthenticationException(org.springframework.security.core.AuthenticationException ex) {
+        AuthErrorResponse error = AuthErrorResponse.of(
+                HttpStatus.UNAUTHORIZED.value(),
+                "Unauthorized",
+                "Invalid email or password"
+        );
+        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(error);
+    }
+
+    @ExceptionHandler(org.springframework.security.access.AccessDeniedException.class)
+    public ResponseEntity<AuthErrorResponse> handleAccessDeniedException(org.springframework.security.access.AccessDeniedException ex) {
+        AuthErrorResponse error = AuthErrorResponse.of(
+                HttpStatus.FORBIDDEN.value(),
+                "Forbidden",
+                "Access denied"
+        );
+        return ResponseEntity.status(HttpStatus.FORBIDDEN).body(error);
+    }
 }
+
