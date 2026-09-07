@@ -40,7 +40,7 @@ public class AuthExceptionHandler {
         AuthErrorResponse error = AuthErrorResponse.of(
                 HttpStatus.BAD_REQUEST.value(),
                 "Bad Request",
-                "Validation failed for registration request",
+                "Validation failed",
                 fieldErrors
         );
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(error);
@@ -52,6 +52,26 @@ public class AuthExceptionHandler {
                 HttpStatus.BAD_REQUEST.value(),
                 "Bad Request",
                 ex.getMessage()
+        );
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(error);
+    }
+
+    @ExceptionHandler(InvalidStaffRoleException.class)
+    public ResponseEntity<AuthErrorResponse> handleInvalidStaffRole(InvalidStaffRoleException ex) {
+        AuthErrorResponse error = AuthErrorResponse.of(
+                HttpStatus.BAD_REQUEST.value(),
+                "Bad Request",
+                ex.getMessage()
+        );
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(error);
+    }
+
+    @ExceptionHandler(org.springframework.http.converter.HttpMessageNotReadableException.class)
+    public ResponseEntity<AuthErrorResponse> handleHttpMessageNotReadable(org.springframework.http.converter.HttpMessageNotReadableException ex) {
+        AuthErrorResponse error = AuthErrorResponse.of(
+                HttpStatus.BAD_REQUEST.value(),
+                "Bad Request",
+                "Malformed request body or invalid field value"
         );
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(error);
     }

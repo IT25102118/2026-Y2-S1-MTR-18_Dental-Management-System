@@ -33,6 +33,9 @@ public class SecurityConfig {
             .csrf(AbstractHttpConfigurer::disable)
             .cors(Customizer.withDefaults())
             .authorizeHttpRequests(auth -> auth
+                // Strictly guard administrator endpoints: only authenticated users with ADMINISTRATOR role can access.
+                // In PR-C (prior to PR-D session authentication), anonymous requests are denied access.
+                .requestMatchers("/api/admin/**").hasRole("ADMINISTRATOR")
                 // Temporary permit-all baseline for PR-A: preserves unrestricted access to existing APIs
                 .anyRequest().permitAll()
             );

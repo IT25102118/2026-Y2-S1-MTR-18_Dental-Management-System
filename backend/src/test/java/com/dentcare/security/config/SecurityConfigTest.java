@@ -72,4 +72,35 @@ class SecurityConfigTest {
                         .content("{}"))
                 .andExpect(result -> assertThat(result.getResponse().getStatus()).isNotEqualTo(403));
     }
+
+    @Test
+    @DisplayName("Patient registration remains publicly callable without authentication")
+    void testPatientRegistrationPubliclyCallable() throws Exception {
+        mockMvc.perform(post("/api/auth/register/patient")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{}"))
+                .andExpect(status().isBadRequest()); // 400 validation error proves request reached controller past security
+    }
+
+    @Test
+    @DisplayName("Admin endpoints reject unauthenticated callers with security denial")
+    void testAdminEndpointsDeniedToAnonymous() throws Exception {
+        mockMvc.perform(post("/api/admin/staff")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{}"))
+                .andExpect(result -> {
+                    int status = result.getResponse().getStatus();
+                    assertThat(status).isIn(401, 403);
+                });
+    }
+
+    @Test
+    @org.springframework.security.test.context.support.WithMockUser(roles = "ADMINISTRATOR")
+    @DisplayName("Admin endpoints permit access to authenticated ADMINISTRATOR")
+    void testAdminEndpointsPermittedToAdministrator() throws Exception {
+        mockMvc.perform(post("/api/admin/staff")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{}"))
+                .andExpect(status().isBadRequest()); // 400 validation error proves request reached controller past security
+    }
 }
