@@ -1,20 +1,34 @@
 package com.dentcare.security.config;
 
+import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpMethod;
+import org.springframework.http.MediaType;
 import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
-import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
+import org.springframework.security.config.annotation.web.configurers.SessionFixationConfigurer;
+import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.authentication.session.ChangeSessionIdAuthenticationStrategy;
+import org.springframework.security.web.authentication.session.CompositeSessionAuthenticationStrategy;
+import org.springframework.security.web.authentication.session.SessionAuthenticationStrategy;
+import org.springframework.security.web.context.HttpSessionSecurityContextRepository;
+import org.springframework.security.web.context.SecurityContextRepository;
+import org.springframework.security.web.csrf.CookieCsrfTokenRepository;
+import org.springframework.security.web.csrf.CsrfAuthenticationStrategy;
+import org.springframework.security.web.csrf.CsrfTokenRepository;
+import org.springframework.security.web.csrf.CsrfTokenRequestAttributeHandler;
+
+import java.util.List;
 
 /**
- * Baseline Spring Security configuration for DentCare.
- * Provides the BCrypt PasswordEncoder bean and configures a temporary permit-all
- * security filter chain so existing module endpoints (such as MF-06 Inventory)
- * remain fully accessible until authentication endpoints and role-based guards are introduced.
+ * Spring Security configuration for DentCare (PR-D1).
+ * Configures server-side session management via JSESSIONID, CSRF protection via CookieCsrfTokenRepository,
+ * API-safe JSON error entry points, Spring Security logout DSL, and role-based request authorization.
  */
 @Configuration
 @EnableWebSecurity
@@ -26,19 +40,88 @@ public class SecurityConfig {
     }
 
     @Bean
-    public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
+    public SecurityContextRepository securityContextRepository() {
+        return new HttpSessionSecurityContextRepository();
+    }
+
+    @Bean
+    public CookieCsrfTokenRepository csrfTokenRepository() {
+        CookieCsrfTokenRepository repository = CookieCsrfTokenRepository.withHttpOnlyFalse();
+        repository.setCookiePath("/");
+        repository.setCookieName("XSRF-TOKEN");
+        repository.setHeaderName("X-XSRF-TOKEN");
+        repository.setCookieCustomizer(cookie -> cookie.sameSite("Lax"));
+        return repository;
+    }
+
+    @Bean
+    public SessionAuthenticationStrategy sessionAuthenticationStrategy(CsrfTokenRepository csrfTokenRepository) {
+        return new CompositeSessionAuthenticationStrategy(List.of(
+                new ChangeSessionIdAuthenticationStrategy(),
+                new CsrfAuthenticationStrategy(csrfTokenRepository)
+        ));
+    }
+
+    @Bean
+    public SecurityFilterChain securityFilterChain(HttpSecurity http,
+                                                   CsrfTokenRepository csrfTokenRepository,
+                                                   SecurityContextRepository securityContextRepository) throws Exception {
+        CsrfTokenRequestAttributeHandler requestHandler = new CsrfTokenRequestAttributeHandler();
+        // Setting attribute name to null ensures raw unmasked token can be matched from the X-XSRF-TOKEN header
+        requestHandler.setCsrfRequestAttributeName(null);
+
         http
-            // Temporarily disable CSRF for PR-A foundation to keep existing REST/MockMvc tests green
-            // until session-based authentication and CSRF token handling are implemented.
-            .csrf(AbstractHttpConfigurer::disable)
+            .csrf(csrf -> csrf
+                .csrfTokenRepository(csrfTokenRepository)
+                .csrfTokenRequestHandler(requestHandler)
+                // Temporary compatibility debt (removed in PR-D4): allow unmigrated frontend mutations to succeed
+                .ignoringRequestMatchers(
+                    "/api/auth/register/patient",
+                    "/api/inventory/**"
+                )
+            )
             .cors(Customizer.withDefaults())
+            .sessionManagement(session -> session
+                .sessionCreationPolicy(SessionCreationPolicy.IF_REQUIRED)
+                .sessionFixation(SessionFixationConfigurer::changeSessionId)
+            )
+            .securityContext(securityContext -> securityContext
+                .securityContextRepository(securityContextRepository)
+            )
             .authorizeHttpRequests(auth -> auth
-                // Strictly guard administrator endpoints: only authenticated users with ADMINISTRATOR role can access.
-                // In PR-C (prior to PR-D session authentication), anonymous requests are denied access.
+                .requestMatchers(HttpMethod.GET, "/api/auth/csrf").permitAll()
+                .requestMatchers(HttpMethod.POST, "/api/auth/register/patient").permitAll()
+                .requestMatchers(HttpMethod.POST, "/api/auth/login").permitAll()
+                .requestMatchers(HttpMethod.GET, "/api/auth/me").authenticated()
                 .requestMatchers("/api/admin/**").hasRole("ADMINISTRATOR")
-                // Temporary permit-all baseline for PR-A: preserves unrestricted access to existing APIs
-                .anyRequest().permitAll()
+                .requestMatchers("/api/inventory/**").permitAll()
+                .requestMatchers("/error").permitAll()
+                .anyRequest().authenticated()
+            )
+            .exceptionHandling(ex -> ex
+                .authenticationEntryPoint((request, response, authException) -> {
+                    response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+                    response.setContentType(MediaType.APPLICATION_JSON_VALUE);
+                    response.getWriter().write("{\"status\":401,\"error\":\"Unauthorized\",\"message\":\"Authentication required\"}");
+                })
+                .accessDeniedHandler((request, response, accessDeniedException) -> {
+                    response.setStatus(HttpServletResponse.SC_FORBIDDEN);
+                    response.setContentType(MediaType.APPLICATION_JSON_VALUE);
+                    response.getWriter().write("{\"status\":403,\"error\":\"Forbidden\",\"message\":\"Access denied\"}");
+                })
+            )
+            .logout(logout -> logout
+                .logoutUrl("/api/auth/logout")
+                .invalidateHttpSession(true)
+                .clearAuthentication(true)
+                .deleteCookies("JSESSIONID")
+                .logoutSuccessHandler((request, response, authentication) -> {
+                    response.setStatus(HttpServletResponse.SC_OK);
+                    response.setContentType(MediaType.APPLICATION_JSON_VALUE);
+                    response.getWriter().write("{\"message\":\"Successfully logged out\"}");
+                })
             );
+
         return http.build();
     }
 }
