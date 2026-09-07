@@ -12,6 +12,7 @@ import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.web.servlet.MockMvc;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -86,6 +87,7 @@ class SecurityConfigTest {
     @DisplayName("Admin endpoints reject unauthenticated callers with security denial")
     void testAdminEndpointsDeniedToAnonymous() throws Exception {
         mockMvc.perform(post("/api/admin/staff")
+                        .with(csrf())
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("{}"))
                 .andExpect(result -> {
@@ -96,11 +98,22 @@ class SecurityConfigTest {
 
     @Test
     @org.springframework.security.test.context.support.WithMockUser(roles = "ADMINISTRATOR")
-    @DisplayName("Admin endpoints permit access to authenticated ADMINISTRATOR")
+    @DisplayName("Admin endpoints permit access to authenticated ADMINISTRATOR with valid CSRF")
     void testAdminEndpointsPermittedToAdministrator() throws Exception {
         mockMvc.perform(post("/api/admin/staff")
+                        .with(csrf())
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("{}"))
                 .andExpect(status().isBadRequest()); // 400 validation error proves request reached controller past security
+    }
+
+    @Test
+    @org.springframework.security.test.context.support.WithMockUser(roles = "ADMINISTRATOR")
+    @DisplayName("Admin endpoints reject authenticated ADMINISTRATOR when CSRF token is missing")
+    void testAdminEndpointsRejectedWithoutCsrf() throws Exception {
+        mockMvc.perform(post("/api/admin/staff")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{}"))
+                .andExpect(status().isForbidden());
     }
 }
