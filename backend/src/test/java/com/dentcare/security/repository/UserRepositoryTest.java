@@ -159,4 +159,23 @@ class UserRepositoryTest {
         assertThatThrownBy(() -> userRepository.saveAndFlush(invalidUser))
                 .isInstanceOf(ConstraintViolationException.class);
     }
+
+    @Test
+    @DisplayName("Verify existsByRole returns true when role exists and false otherwise")
+    void testExistsByRole() {
+        assertThat(userRepository.existsByRole(Role.ADMINISTRATOR)).isFalse();
+
+        User admin = new User(
+                "admin.query@dentcare.com",
+                "$2a$10$hashedPasswordAdmin",
+                "Admin",
+                "User",
+                null,
+                Role.ADMINISTRATOR
+        );
+        userRepository.saveAndFlush(admin);
+
+        assertThat(userRepository.existsByRole(Role.ADMINISTRATOR)).isTrue();
+        assertThat(userRepository.existsByRole(Role.DENTAL_ASSISTANT)).isFalse();
+    }
 }
