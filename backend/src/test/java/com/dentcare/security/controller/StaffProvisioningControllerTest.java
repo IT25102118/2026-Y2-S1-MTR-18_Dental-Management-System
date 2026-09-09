@@ -27,6 +27,7 @@ import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.notNullValue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
+import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -71,6 +72,7 @@ class StaffProvisioningControllerTest {
         when(staffProvisioningService.provisionStaff(any(StaffProvisioningRequest.class))).thenReturn(response);
 
         mockMvc.perform(post("/api/admin/staff")
+                        .with(csrf())
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isCreated())
@@ -102,6 +104,7 @@ class StaffProvisioningControllerTest {
                 .thenThrow(new InvalidStaffRoleException("PATIENT role cannot be provisioned via staff endpoint"));
 
         mockMvc.perform(post("/api/admin/staff")
+                        .with(csrf())
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isBadRequest())
@@ -123,6 +126,7 @@ class StaffProvisioningControllerTest {
                 """;
 
         mockMvc.perform(post("/api/admin/staff")
+                        .with(csrf())
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(jsonPayload))
                 .andExpect(status().isBadRequest())
@@ -147,6 +151,7 @@ class StaffProvisioningControllerTest {
                 """;
 
         mockMvc.perform(post("/api/admin/staff")
+                        .with(csrf())
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(jsonPayload))
                 .andExpect(status().isBadRequest())
@@ -171,6 +176,7 @@ class StaffProvisioningControllerTest {
                 """;
 
         mockMvc.perform(post("/api/admin/staff")
+                        .with(csrf())
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(jsonPayload))
                 .andExpect(status().isBadRequest())
@@ -195,6 +201,7 @@ class StaffProvisioningControllerTest {
                 """;
 
         mockMvc.perform(post("/api/admin/staff")
+                        .with(csrf())
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(jsonPayload))
                 .andExpect(status().isBadRequest())
@@ -221,6 +228,7 @@ class StaffProvisioningControllerTest {
                 """, invalidPassword);
 
         mockMvc.perform(post("/api/admin/staff")
+                        .with(csrf())
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(jsonPayload))
                 .andExpect(status().isBadRequest())
@@ -247,6 +255,7 @@ class StaffProvisioningControllerTest {
                 .thenThrow(new DuplicateEmailException("An account with email 'existing@example.com' already exists"));
 
         mockMvc.perform(post("/api/admin/staff")
+                        .with(csrf())
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isConflict())
@@ -268,6 +277,7 @@ class StaffProvisioningControllerTest {
         );
 
         mockMvc.perform(post("/api/admin/staff")
+                        .with(csrf())
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
                 .andExpect(result -> {
@@ -294,6 +304,7 @@ class StaffProvisioningControllerTest {
         );
 
         mockMvc.perform(post("/api/admin/staff")
+                        .with(csrf())
                         .with(org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.user("user").roles(role))
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
