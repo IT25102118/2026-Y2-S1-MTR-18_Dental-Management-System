@@ -31,6 +31,7 @@ import static org.hamcrest.Matchers.is;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.when;
+import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.header;
@@ -87,6 +88,7 @@ class StockMovementControllerTest {
                 .thenReturn(sampleResponse);
 
         mockMvc.perform(post("/api/inventory/items/1/movements")
+                        .with(csrf())
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isCreated())
@@ -112,6 +114,7 @@ class StockMovementControllerTest {
         );
 
         mockMvc.perform(post("/api/inventory/items/1/movements")
+                        .with(csrf())
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(invalidRequest)))
                 .andExpect(status().isBadRequest())
@@ -136,6 +139,7 @@ class StockMovementControllerTest {
                 .thenThrow(new InsufficientStockException(1L, 50, 20));
 
         mockMvc.perform(post("/api/inventory/items/1/movements")
+                        .with(csrf())
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isConflict())
@@ -162,6 +166,7 @@ class StockMovementControllerTest {
                 .thenThrow(new InactiveInventoryItemException(1L));
 
         mockMvc.perform(post("/api/inventory/items/1/movements")
+                        .with(csrf())
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isConflict())
@@ -187,6 +192,7 @@ class StockMovementControllerTest {
                 .thenThrow(new InvalidMovementException("Adjustment direction is required"));
 
         mockMvc.perform(post("/api/inventory/items/1/movements")
+                        .with(csrf())
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isBadRequest())
@@ -212,6 +218,7 @@ class StockMovementControllerTest {
                 .thenThrow(new InventoryItemNotFoundException(999L));
 
         mockMvc.perform(post("/api/inventory/items/999/movements")
+                        .with(csrf())
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isNotFound())
@@ -268,6 +275,7 @@ class StockMovementControllerTest {
                 .thenReturn(reversalResponse);
 
         mockMvc.perform(post("/api/inventory/items/1/movements/10/reverse")
+                        .with(csrf())
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isCreated())
@@ -287,6 +295,7 @@ class StockMovementControllerTest {
                 .thenThrow(new com.dentcare.inventory.exception.DuplicateReversalException(10L));
 
         mockMvc.perform(post("/api/inventory/items/1/movements/10/reverse")
+                        .with(csrf())
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isConflict())
@@ -304,6 +313,7 @@ class StockMovementControllerTest {
                 .thenThrow(new com.dentcare.inventory.exception.StockMovementNotFoundException(999L));
 
         mockMvc.perform(post("/api/inventory/items/1/movements/999/reverse")
+                        .with(csrf())
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isNotFound())
@@ -317,6 +327,7 @@ class StockMovementControllerTest {
                 new com.dentcare.inventory.dto.ReverseStockMovementRequest("   ", 201L);
 
         mockMvc.perform(post("/api/inventory/items/1/movements/10/reverse")
+                        .with(csrf())
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isBadRequest())

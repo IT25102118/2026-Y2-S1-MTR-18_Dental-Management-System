@@ -31,6 +31,7 @@ import static org.hamcrest.Matchers.is;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.when;
+import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
@@ -83,6 +84,7 @@ class InventoryItemControllerTest {
                 .thenReturn(sampleResponse);
 
         mockMvc.perform(post("/api/inventory/items")
+                        .with(csrf())
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isCreated())
@@ -107,6 +109,7 @@ class InventoryItemControllerTest {
         );
 
         mockMvc.perform(post("/api/inventory/items")
+                        .with(csrf())
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(invalidRequest)))
                 .andExpect(status().isBadRequest())
@@ -133,6 +136,7 @@ class InventoryItemControllerTest {
                 .thenThrow(new DuplicateItemCodeException("ITM-DUP"));
 
         mockMvc.perform(post("/api/inventory/items")
+                        .with(csrf())
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isConflict())
@@ -196,6 +200,7 @@ class InventoryItemControllerTest {
                 .thenReturn(updatedResponse);
 
         mockMvc.perform(put("/api/inventory/items/1")
+                        .with(csrf())
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isOk())
@@ -228,6 +233,7 @@ class InventoryItemControllerTest {
                 .thenReturn(deactivatedResponse);
 
         mockMvc.perform(patch("/api/inventory/items/1/status")
+                        .with(csrf())
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isOk())
@@ -241,6 +247,7 @@ class InventoryItemControllerTest {
         UpdateInventoryItemStatusRequest request = new UpdateInventoryItemStatusRequest(null);
 
         mockMvc.perform(patch("/api/inventory/items/1/status")
+                        .with(csrf())
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isBadRequest())

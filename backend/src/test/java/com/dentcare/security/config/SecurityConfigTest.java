@@ -66,18 +66,38 @@ class SecurityConfigTest {
     }
 
     @Test
-    @DisplayName("CSRF is disabled on permit-all baseline, allowing POST requests without CSRF tokens")
-    void testCsrfDisabledAllowsPostWithoutToken() throws Exception {
+    @DisplayName("POST /api/inventory/items without CSRF token is rejected with 403 Forbidden")
+    void testInventoryPostWithoutCsrfRejected() throws Exception {
         mockMvc.perform(post("/api/inventory/items")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("{}"))
-                .andExpect(result -> assertThat(result.getResponse().getStatus()).isNotEqualTo(403));
+                .andExpect(status().isForbidden());
     }
 
     @Test
-    @DisplayName("Patient registration remains publicly callable without authentication")
-    void testPatientRegistrationPubliclyCallable() throws Exception {
+    @DisplayName("POST /api/inventory/items with valid CSRF token reaches controller past security")
+    void testInventoryPostWithCsrfReachesController() throws Exception {
+        mockMvc.perform(post("/api/inventory/items")
+                        .with(csrf())
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{}"))
+                .andExpect(status().isBadRequest()); // 400 validation error proves request reached controller past security
+    }
+
+    @Test
+    @DisplayName("POST /api/auth/register/patient without CSRF token is rejected with 403 Forbidden")
+    void testPatientRegistrationWithoutCsrfRejected() throws Exception {
         mockMvc.perform(post("/api/auth/register/patient")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{}"))
+                .andExpect(status().isForbidden());
+    }
+
+    @Test
+    @DisplayName("POST /api/auth/register/patient remains publicly callable without authentication when valid CSRF is present")
+    void testPatientRegistrationPubliclyCallableWithCsrf() throws Exception {
+        mockMvc.perform(post("/api/auth/register/patient")
+                        .with(csrf())
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("{}"))
                 .andExpect(status().isBadRequest()); // 400 validation error proves request reached controller past security
