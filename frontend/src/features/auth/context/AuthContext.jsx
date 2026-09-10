@@ -68,36 +68,34 @@ export function AuthProvider({ children }) {
   }, [hydrateSession]);
 
   const login = useCallback(async (credentials) => {
-    const operationId = ++authOperationIdRef.current;
+    const loggedInUser = await apiLogin(credentials);
+    // Only after successful server authentication: advance generation
+    // to invalidate any prior in-flight hydration requests.
+    ++authOperationIdRef.current;
 
-    try {
-      const loggedInUser = await apiLogin(credentials);
-      if (!isMountedRef.current || operationId !== authOperationIdRef.current) {
-        return loggedInUser;
-      }
+    if (isMountedRef.current) {
       setUser(loggedInUser);
       setStatus('authenticated');
       setError(null);
-      return loggedInUser;
-    } catch (err) {
-      throw err;
     }
+    return loggedInUser;
   }, []);
 
   const logout = useCallback(async () => {
-    const operationId = ++authOperationIdRef.current;
-
     try {
       await apiLogout();
-      if (!isMountedRef.current || operationId !== authOperationIdRef.current) {
-        return true;
+      // Only after confirmed successful/unauthenticated result: advance generation
+      // to invalidate any prior in-flight hydration requests.
+      ++authOperationIdRef.current;
+
+      if (isMountedRef.current) {
+        setUser(null);
+        setStatus('unauthenticated');
+        setError(null);
       }
-      setUser(null);
-      setStatus('unauthenticated');
-      setError(null);
       return true;
     } catch (err) {
-      if (isMountedRef.current && operationId === authOperationIdRef.current) {
+      if (isMountedRef.current) {
         setError(err);
       }
       throw err;

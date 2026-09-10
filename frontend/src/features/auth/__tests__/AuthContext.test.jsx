@@ -444,6 +444,125 @@ describe('AuthContext / AuthProvider', () => {
     expect(screen.getByTestId('user-email')).toHaveTextContent('b-winner@dentcare.com');
   });
 
+  it('pending startup hydration is not invalidated by failed login, resolving cleanly to unauthenticated', async () => {
+    let resolveStartup;
+    const startupPromise = new Promise((resolve) => {
+      resolveStartup = resolve;
+    });
+    authApi.getCurrentUser.mockReturnValueOnce(startupPromise);
+    authApi.login.mockRejectedValueOnce(new authApi.AuthApiError(401, 'Invalid credentials'));
+
+    render(
+      <AuthProvider>
+        <TestConsumer />
+      </AuthProvider>
+    );
+
+    // Startup /me is pending
+    expect(screen.getByTestId('status')).toHaveTextContent('loading');
+
+    // Attempt login and fail
+    await act(async () => {
+      screen.getByTestId('btn-login').click();
+    });
+
+    // Startup /me now completes as 401 unauthenticated
+    await act(async () => {
+      resolveStartup(null);
+    });
+
+    // Must resolve cleanly to unauthenticated and NOT remain stuck in loading
+    expect(screen.getByTestId('status')).toHaveTextContent('unauthenticated');
+    expect(screen.getByTestId('loading-flag')).toHaveTextContent('not-loading');
+    expect(screen.getByTestId('user-email')).toHaveTextContent('no-user');
+  });
+
+  it('pending startup hydration is not invalidated by failed login, discovering existing authenticated session', async () => {
+    let resolveStartup;
+    const startupPromise = new Promise((resolve) => {
+      resolveStartup = resolve;
+    });
+    authApi.getCurrentUser.mockReturnValueOnce(startupPromise);
+    authApi.login.mockRejectedValueOnce(new authApi.AuthApiError(401, 'Invalid credentials'));
+
+    const existingSessionUser = {
+      id: 5,
+      email: 'existing@dentcare.com',
+      role: 'RECEPTIONIST'
+    };
+
+    render(
+      <AuthProvider>
+        <TestConsumer />
+      </AuthProvider>
+    );
+
+    expect(screen.getByTestId('status')).toHaveTextContent('loading');
+
+    // Attempt login and fail
+    await act(async () => {
+      screen.getByTestId('btn-login').click();
+    });
+
+    // Startup /me finishes and finds an existing active session
+    await act(async () => {
+      resolveStartup(existingSessionUser);
+    });
+
+    expect(screen.getByTestId('status')).toHaveTextContent('authenticated');
+    expect(screen.getByTestId('loading-flag')).toHaveTextContent('not-loading');
+    expect(screen.getByTestId('user-email')).toHaveTextContent('existing@dentcare.com');
+  });
+
+  it('failed logout does not invalidate pending hydration, allowing hydration to resolve authoritatively', async () => {
+    let resolveRetry;
+    const retryPromise = new Promise((resolve) => {
+      resolveRetry = resolve;
+    });
+
+    // Initial startup fails to error state
+    authApi.getCurrentUser.mockRejectedValueOnce(new authApi.AuthApiError(0, 'Network failure'));
+
+    render(
+      <AuthProvider>
+        <TestConsumer />
+      </AuthProvider>
+    );
+
+    await waitFor(() => {
+      expect(screen.getByTestId('status')).toHaveTextContent('error');
+    });
+
+    // Trigger retry hydration, which remains pending
+    authApi.getCurrentUser.mockReturnValueOnce(retryPromise);
+    act(() => {
+      screen.getByTestId('btn-retry').click();
+    });
+
+    expect(screen.getByTestId('status')).toHaveTextContent('loading');
+
+    // While retry is pending, logout fails with network/403 error
+    authApi.logout.mockRejectedValueOnce(new authApi.AuthApiError(403, 'Forbidden'));
+    await act(async () => {
+      screen.getByTestId('btn-logout').click();
+    });
+
+    // Retry resolves with authenticated user
+    const userProfile = {
+      id: 12,
+      email: 'recovered@dentcare.com',
+      role: 'DENTIST'
+    };
+    await act(async () => {
+      resolveRetry(userProfile);
+    });
+
+    // Hydration must resolve authoritatively and not remain stuck in loading
+    expect(screen.getByTestId('status')).toHaveTextContent('authenticated');
+    expect(screen.getByTestId('loading-flag')).toHaveTextContent('not-loading');
+    expect(screen.getByTestId('user-email')).toHaveTextContent('recovered@dentcare.com');
+  });
+
   it('does not update state when unmounted while hydration is pending', async () => {
     let resolveHydration;
     authApi.getCurrentUser.mockReturnValueOnce(
