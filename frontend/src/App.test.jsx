@@ -1,8 +1,9 @@
 import React from 'react';
-import { render, screen } from '@testing-library/react';
+import { render, screen, waitFor } from '@testing-library/react';
 import { MemoryRouter } from 'react-router-dom';
-import { describe, it, expect, vi } from 'vitest';
+import { describe, it, expect, vi, beforeEach } from 'vitest';
 import App from './App';
+import * as authApi from './features/auth/api/authApi';
 
 vi.mock('./features/inventory/api/inventoryApi', () => ({
   getItems: vi.fn().mockResolvedValue({
@@ -43,8 +44,24 @@ vi.mock('./features/inventory/api/alertApi', () => ({
   })
 }));
 
+vi.mock('./features/auth/api/authApi', async () => {
+  const actual = await vi.importActual('./features/auth/api/authApi');
+  return {
+    ...actual,
+    getCurrentUser: vi.fn().mockResolvedValue(null),
+    getCsrfToken: vi.fn().mockResolvedValue({ token: 'test-csrf', headerName: 'X-XSRF-TOKEN' }),
+    login: vi.fn(),
+    logout: vi.fn().mockResolvedValue(true)
+  };
+});
+
 describe('Frontend Runtime Smoke Tests', () => {
-  it('renders root page with application title and Inventory link', () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+    authApi.getCurrentUser.mockResolvedValue(null);
+  });
+
+  it('renders root page with application title and navigation links', async () => {
     render(
       <MemoryRouter initialEntries={['/']}>
         <App />
@@ -59,9 +76,48 @@ describe('Frontend Runtime Smoke Tests', () => {
     const registerLink = screen.getByRole('link', { name: /Patient Registration/i });
     expect(registerLink).toBeInTheDocument();
     expect(registerLink).toHaveAttribute('href', '/register');
+
+    const loginLink = screen.getByRole('link', { name: /Sign In/i });
+    expect(loginLink).toBeInTheDocument();
+    expect(loginLink).toHaveAttribute('href', '/login');
   });
 
-  it('routes /register to the patient registration page', async () => {
+  it('renders root page with My Account link when authenticated', async () => {
+    authApi.getCurrentUser.mockResolvedValueOnce({
+      id: 1,
+      email: 'admin@dentcare.com',
+      firstName: 'System',
+      lastName: 'Admin',
+      role: 'ADMINISTRATOR'
+    });
+
+    render(
+      <MemoryRouter initialEntries={['/']}>
+        <App />
+      </MemoryRouter>
+    );
+
+    await waitFor(() => {
+      expect(screen.getByRole('link', { name: /My Account \(System\)/i })).toBeInTheDocument();
+    });
+
+    expect(screen.queryByRole('link', { name: /Sign In/i })).not.toBeInTheDocument();
+  });
+
+  it('routes /login to the login page (public route)', async () => {
+    render(
+      <MemoryRouter initialEntries={['/login']}>
+        <App />
+      </MemoryRouter>
+    );
+
+    expect(await screen.findByRole('heading', { name: /Sign In/i, level: 1 })).toBeInTheDocument();
+    expect(screen.getByTestId('login-email-input')).toBeInTheDocument();
+    expect(screen.getByTestId('login-password-input')).toBeInTheDocument();
+    expect(screen.getByTestId('login-submit-button')).toBeInTheDocument();
+  });
+
+  it('routes /register to the patient registration page (public route)', async () => {
     render(
       <MemoryRouter initialEntries={['/register']}>
         <App />
@@ -73,7 +129,39 @@ describe('Frontend Runtime Smoke Tests', () => {
     expect(screen.getByRole('button', { name: /register patient account/i })).toBeInTheDocument();
   });
 
-  it('routes /inventory to the inventory overview landing page', async () => {
+  it('redirects unauthenticated access from /account to /login', async () => {
+    render(
+      <MemoryRouter initialEntries={['/account']}>
+        <App />
+      </MemoryRouter>
+    );
+
+    expect(await screen.findByRole('heading', { name: /Sign In/i, level: 1 })).toBeInTheDocument();
+    expect(screen.getByTestId('login-email-input')).toBeInTheDocument();
+  });
+
+  it('allows authenticated access to /account', async () => {
+    authApi.getCurrentUser.mockResolvedValueOnce({
+      id: 1,
+      email: 'dentist@dentcare.com',
+      firstName: 'Sarah',
+      lastName: 'Connor',
+      phone: '+1 555-0199',
+      role: 'DENTIST'
+    });
+
+    render(
+      <MemoryRouter initialEntries={['/account']}>
+        <App />
+      </MemoryRouter>
+    );
+
+    expect(await screen.findByRole('heading', { name: /My Account/i, level: 1 })).toBeInTheDocument();
+    expect(screen.getByTestId('account-user-name')).toHaveTextContent('Sarah Connor');
+    expect(screen.getByTestId('account-role-badge')).toHaveTextContent('DENTIST');
+  });
+
+  it('routes /inventory to the inventory overview landing page (public route)', async () => {
     render(
       <MemoryRouter initialEntries={['/inventory']}>
         <App />
@@ -93,7 +181,7 @@ describe('Frontend Runtime Smoke Tests', () => {
     expect(screen.getByTestId('overview-card-expiry')).toBeInTheDocument();
   });
 
-  it('routes /inventory/items to the inventory catalog items page', async () => {
+  it('routes /inventory/items to the inventory catalog items page (public route)', async () => {
     render(
       <MemoryRouter initialEntries={['/inventory/items']}>
         <App />

@@ -8,8 +8,14 @@ import InventoryBatchesPage from './features/inventory/pages/InventoryBatchesPag
 import InventoryAlertsPage from './features/inventory/pages/InventoryAlertsPage';
 import InventoryOverviewPage from './features/inventory/pages/InventoryOverviewPage';
 import PatientRegistrationPage from './features/auth/pages/PatientRegistrationPage';
+import LoginPage from './features/auth/pages/LoginPage';
+import AccountPage from './features/auth/pages/AccountPage';
+import ProtectedRoute from './features/auth/components/ProtectedRoute';
+import { AuthProvider, useAuth } from './features/auth/context/AuthContext';
 
 function RootPage() {
+  const { isAuthenticated, user } = useAuth();
+
   return (
     <div style={{ padding: '2rem', maxWidth: '800px', margin: '0 auto' }}>
       <header>
@@ -22,9 +28,20 @@ function RootPage() {
           <li>
             <Link to="/inventory">Inventory Management</Link>
           </li>
-          <li>
-            <Link to="/register">Patient Registration</Link>
-          </li>
+          {isAuthenticated ? (
+            <li>
+              <Link to="/account">My Account ({user?.firstName || 'User'})</Link>
+            </li>
+          ) : (
+            <>
+              <li>
+                <Link to="/login">Sign In</Link>
+              </li>
+              <li>
+                <Link to="/register">Patient Registration</Link>
+              </li>
+            </>
+          )}
         </ul>
       </main>
     </div>
@@ -33,16 +50,27 @@ function RootPage() {
 
 export default function App() {
   return (
-    <Routes>
-      <Route path="/" element={<RootPage />} />
-      <Route path="/register" element={<PatientRegistrationPage />} />
-      <Route path="/inventory" element={<InventoryOverviewPage />} />
-      <Route path="/inventory/items" element={<InventoryItemsPage />} />
-      <Route path="/inventory/items/new" element={<InventoryItemCreatePage />} />
-      <Route path="/inventory/items/:id" element={<InventoryItemDetailPage />} />
-      <Route path="/inventory/items/:id/edit" element={<InventoryItemEditPage />} />
-      <Route path="/inventory/batches" element={<InventoryBatchesPage />} />
-      <Route path="/inventory/alerts" element={<InventoryAlertsPage />} />
-    </Routes>
+    <AuthProvider>
+      <Routes>
+        <Route path="/" element={<RootPage />} />
+        <Route path="/login" element={<LoginPage />} />
+        <Route path="/register" element={<PatientRegistrationPage />} />
+        <Route
+          path="/account"
+          element={
+            <ProtectedRoute>
+              <AccountPage />
+            </ProtectedRoute>
+          }
+        />
+        <Route path="/inventory" element={<InventoryOverviewPage />} />
+        <Route path="/inventory/items" element={<InventoryItemsPage />} />
+        <Route path="/inventory/items/new" element={<InventoryItemCreatePage />} />
+        <Route path="/inventory/items/:id" element={<InventoryItemDetailPage />} />
+        <Route path="/inventory/items/:id/edit" element={<InventoryItemEditPage />} />
+        <Route path="/inventory/batches" element={<InventoryBatchesPage />} />
+        <Route path="/inventory/alerts" element={<InventoryAlertsPage />} />
+      </Routes>
+    </AuthProvider>
   );
 }
