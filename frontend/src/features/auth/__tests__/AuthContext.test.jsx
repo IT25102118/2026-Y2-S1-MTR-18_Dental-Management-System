@@ -303,6 +303,169 @@ describe('AuthContext / AuthProvider', () => {
     expect(screen.getByTestId('user-email')).toHaveTextContent('patient@dentcare.com');
   });
 
+  it('stale startup 401 cannot overwrite newer login (race guard)', async () => {
+    let resolveStartup;
+    const startupPromise = new Promise((resolve) => {
+      resolveStartup = resolve;
+    });
+    authApi.getCurrentUser.mockReturnValueOnce(startupPromise);
+
+    const loggedInUser = {
+      id: 1,
+      email: 'admin@dentcare.com',
+      role: 'ADMINISTRATOR'
+    };
+    authApi.login.mockResolvedValueOnce(loggedInUser);
+
+    render(
+      <AuthProvider>
+        <TestConsumer />
+      </AuthProvider>
+    );
+
+    // Startup /me is pending
+    expect(screen.getByTestId('status')).toHaveTextContent('loading');
+
+    // User logs in while startup is pending
+    await act(async () => {
+      screen.getByTestId('btn-login').click();
+    });
+
+    // State is authenticated
+    expect(screen.getByTestId('status')).toHaveTextContent('authenticated');
+    expect(screen.getByTestId('user-email')).toHaveTextContent('admin@dentcare.com');
+
+    // Startup /me resolves afterward as 401 (null)
+    await act(async () => {
+      resolveStartup(null);
+    });
+
+    // Stale startup response must NOT overwrite authenticated state
+    expect(screen.getByTestId('status')).toHaveTextContent('authenticated');
+    expect(screen.getByTestId('user-email')).toHaveTextContent('admin@dentcare.com');
+  });
+
+  it('stale hydration success cannot overwrite newer logout (race guard)', async () => {
+    let resolveHydration;
+    const hydrationPromise = new Promise((resolve) => {
+      resolveHydration = resolve;
+    });
+    authApi.getCurrentUser.mockReturnValueOnce(hydrationPromise);
+    authApi.logout.mockResolvedValueOnce(true);
+
+    render(
+      <AuthProvider>
+        <TestConsumer />
+      </AuthProvider>
+    );
+
+    expect(screen.getByTestId('status')).toHaveTextContent('loading');
+
+    // User triggers logout while hydration is pending
+    await act(async () => {
+      screen.getByTestId('btn-logout').click();
+    });
+
+    // State becomes unauthenticated
+    expect(screen.getByTestId('status')).toHaveTextContent('unauthenticated');
+    expect(screen.getByTestId('user-email')).toHaveTextContent('no-user');
+
+    // Stale hydration resolves with an old user object
+    await act(async () => {
+      resolveHydration({
+        id: 99,
+        email: 'ghost@dentcare.com',
+        role: 'PATIENT'
+      });
+    });
+
+    // State must remain unauthenticated
+    expect(screen.getByTestId('status')).toHaveTextContent('unauthenticated');
+    expect(screen.getByTestId('user-email')).toHaveTextContent('no-user');
+  });
+
+  it('latest retry wins when older retry resolves last with conflicting result', async () => {
+    let resolveRetryA;
+    let resolveRetryB;
+    const promiseA = new Promise((resolve) => {
+      resolveRetryA = resolve;
+    });
+    const promiseB = new Promise((resolve) => {
+      resolveRetryB = resolve;
+    });
+
+    // Initial startup fails
+    authApi.getCurrentUser.mockRejectedValueOnce(new authApi.AuthApiError(0, 'Initial failure'));
+
+    render(
+      <AuthProvider>
+        <TestConsumer />
+      </AuthProvider>
+    );
+
+    await waitFor(() => {
+      expect(screen.getByTestId('status')).toHaveTextContent('error');
+    });
+
+    // Next two calls: retry A, then retry B
+    authApi.getCurrentUser
+      .mockReturnValueOnce(promiseA)
+      .mockReturnValueOnce(promiseB);
+
+    // Trigger retry A
+    act(() => {
+      screen.getByTestId('btn-retry').click();
+    });
+
+    // Trigger retry B
+    act(() => {
+      screen.getByTestId('btn-retry').click();
+    });
+
+    // Retry B resolves first with authenticated user
+    await act(async () => {
+      resolveRetryB({
+        id: 10,
+        email: 'b-winner@dentcare.com',
+        role: 'DENTIST'
+      });
+    });
+
+    expect(screen.getByTestId('status')).toHaveTextContent('authenticated');
+    expect(screen.getByTestId('user-email')).toHaveTextContent('b-winner@dentcare.com');
+
+    // Retry A resolves afterward with 401 unauthenticated
+    await act(async () => {
+      resolveRetryA(null);
+    });
+
+    // Result from Retry B must remain authoritative
+    expect(screen.getByTestId('status')).toHaveTextContent('authenticated');
+    expect(screen.getByTestId('user-email')).toHaveTextContent('b-winner@dentcare.com');
+  });
+
+  it('does not update state when unmounted while hydration is pending', async () => {
+    let resolveHydration;
+    authApi.getCurrentUser.mockReturnValueOnce(
+      new Promise((resolve) => {
+        resolveHydration = resolve;
+      })
+    );
+
+    const { unmount } = render(
+      <AuthProvider>
+        <TestConsumer />
+      </AuthProvider>
+    );
+
+    expect(screen.getByTestId('status')).toHaveTextContent('loading');
+    unmount();
+
+    await act(async () => {
+      resolveHydration({ id: 1, email: 'user@dentcare.com', role: 'PATIENT' });
+    });
+  });
+
   it('throws when useAuth is consumed outside of AuthProvider', () => {
     const consoleError = vi.spyOn(console, 'error').mockImplementation(() => {});
     expect(() => render(<TestConsumer />)).toThrow('useAuth must be used within an AuthProvider');

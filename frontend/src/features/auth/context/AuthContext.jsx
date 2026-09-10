@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
+import React, { createContext, useContext, useState, useEffect, useCallback, useRef } from 'react';
 import { getCurrentUser, login as apiLogin, logout as apiLogout } from '../api/authApi';
 
 const AuthContext = createContext(null);
@@ -6,6 +6,10 @@ const AuthContext = createContext(null);
 /**
  * Authentication Provider component coordinating session state, startup hydration,
  * login, and logout lifecycle across DentCare.
+ *
+ * Employs a generation-counter ref (authOperationIdRef) to guarantee that stale
+ * async hydration requests cannot overwrite state established by newer login, logout,
+ * or retry operations.
  *
  * State model:
  * - status: 'loading' | 'authenticated' | 'unauthenticated' | 'error'
@@ -17,13 +21,26 @@ export function AuthProvider({ children }) {
   const [user, setUser] = useState(null);
   const [error, setError] = useState(null);
 
-  const hydrateSession = useCallback(async (isMountedCheck = () => true) => {
+  const authOperationIdRef = useRef(0);
+  const isMountedRef = useRef(true);
+
+  useEffect(() => {
+    isMountedRef.current = true;
+    return () => {
+      isMountedRef.current = false;
+    };
+  }, []);
+
+  const hydrateSession = useCallback(async () => {
+    const operationId = ++authOperationIdRef.current;
     setStatus('loading');
     setError(null);
 
     try {
       const currentUser = await getCurrentUser();
-      if (!isMountedCheck()) return;
+      if (!isMountedRef.current || operationId !== authOperationIdRef.current) {
+        return;
+      }
 
       if (currentUser) {
         setUser(currentUser);
@@ -33,7 +50,9 @@ export function AuthProvider({ children }) {
         setStatus('unauthenticated');
       }
     } catch (err) {
-      if (!isMountedCheck()) return;
+      if (!isMountedRef.current || operationId !== authOperationIdRef.current) {
+        return;
+      }
       setUser(null);
       setError(err);
       setStatus('error');
@@ -41,36 +60,46 @@ export function AuthProvider({ children }) {
   }, []);
 
   useEffect(() => {
-    let isMounted = true;
-    hydrateSession(() => isMounted);
-
-    return () => {
-      isMounted = false;
-    };
+    hydrateSession();
   }, [hydrateSession]);
 
   const retryHydration = useCallback(() => {
-    return hydrateSession(() => true);
+    return hydrateSession();
   }, [hydrateSession]);
 
   const login = useCallback(async (credentials) => {
-    const loggedInUser = await apiLogin(credentials);
-    setUser(loggedInUser);
-    setStatus('authenticated');
-    setError(null);
-    return loggedInUser;
+    const operationId = ++authOperationIdRef.current;
+
+    try {
+      const loggedInUser = await apiLogin(credentials);
+      if (!isMountedRef.current || operationId !== authOperationIdRef.current) {
+        return loggedInUser;
+      }
+      setUser(loggedInUser);
+      setStatus('authenticated');
+      setError(null);
+      return loggedInUser;
+    } catch (err) {
+      throw err;
+    }
   }, []);
 
   const logout = useCallback(async () => {
+    const operationId = ++authOperationIdRef.current;
+
     try {
       await apiLogout();
+      if (!isMountedRef.current || operationId !== authOperationIdRef.current) {
+        return true;
+      }
       setUser(null);
       setStatus('unauthenticated');
       setError(null);
       return true;
     } catch (err) {
-      // Retain authenticated state on 403 or network failure
-      setError(err);
+      if (isMountedRef.current && operationId === authOperationIdRef.current) {
+        setError(err);
+      }
       throw err;
     }
   }, []);
