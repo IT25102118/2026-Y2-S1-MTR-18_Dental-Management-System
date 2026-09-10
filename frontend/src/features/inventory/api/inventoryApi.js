@@ -1,7 +1,7 @@
-/**
- * API client for Inventory Catalog operations.
- * Communicates with backend /api/inventory/items endpoints.
- */
+import {
+  getCsrfToken,
+  clearCsrfToken
+} from '../../../shared/security/csrfClient';
 
 export class InventoryApiError extends Error {
   constructor(status, message, fieldErrors = {}, error = null, raw = null) {
@@ -48,6 +48,26 @@ async function request(endpoint, options = {}) {
     }
   };
 
+  const method = (config.method || 'GET').toUpperCase();
+  const isMutating = ['POST', 'PUT', 'PATCH', 'DELETE'].includes(method);
+
+  if (isMutating) {
+    config.credentials = 'same-origin';
+    let csrf;
+    try {
+      csrf = await getCsrfToken();
+    } catch (err) {
+      throw new InventoryApiError(
+        err.status || 0,
+        err.message || 'Unable to obtain CSRF token for request',
+        {},
+        'CsrfError',
+        err
+      );
+    }
+    config.headers[csrf.headerName] = csrf.token;
+  }
+
   if (body !== undefined && body !== null) {
     config.body = JSON.stringify(body);
     config.headers['Content-Type'] = 'application/json';
@@ -63,6 +83,10 @@ async function request(endpoint, options = {}) {
       {},
       'NetworkError'
     );
+  }
+
+  if (response.status === 403) {
+    clearCsrfToken();
   }
 
   if (response.status === 204) {
