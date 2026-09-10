@@ -229,6 +229,64 @@ describe('authApi client', () => {
       expect(global.fetch).toHaveBeenCalledTimes(4);
     });
 
+    it('ensures an old in-flight pre-login fetch cannot overwrite post-login cached token', async () => {
+      let resolveSlowPreLogin;
+      const slowPreLoginDeferred = new Promise((resolve) => {
+        resolveSlowPreLogin = resolve;
+      });
+
+      // 1. Slow pre-login fetch is in-flight
+      global.fetch.mockImplementation((url, opts) => {
+        if (url === '/api/auth/csrf' && !opts?.body) {
+          if (global.fetch.mock.calls.length === 1) {
+            return slowPreLoginDeferred;
+          }
+          return Promise.resolve({
+            ok: true,
+            status: 200,
+            headers: new Headers({ 'content-type': 'application/json' }),
+            json: async () => ({ token: 'authoritative-post-login-csrf', headerName: 'X-XSRF-TOKEN' })
+          });
+        }
+        if (url === '/api/auth/login') {
+          return Promise.resolve({
+            ok: true,
+            status: 200,
+            headers: new Headers({ 'content-type': 'application/json' }),
+            json: async () => ({ id: 1, email: 'admin@dentcare.com', role: 'ADMINISTRATOR' })
+          });
+        }
+        return Promise.reject(new Error('Unexpected call'));
+      });
+
+      // Start slow pre-login CSRF fetch
+      const slowFetch = getCsrfToken();
+
+      // Clear cache as login would do
+      clearCsrfToken();
+
+      // Forced post-login fetch completes
+      const postLoginToken = await getCsrfToken({ forceRefresh: true });
+      expect(postLoginToken.token).toBe('authoritative-post-login-csrf');
+      expect(getCachedCsrfToken().token).toBe('authoritative-post-login-csrf');
+
+      // Now slow pre-login fetch finally resolves
+      resolveSlowPreLogin({
+        ok: true,
+        status: 200,
+        headers: new Headers({ 'content-type': 'application/json' }),
+        json: async () => ({ token: 'stale-pre-login-csrf', headerName: 'X-XSRF-TOKEN' })
+      });
+
+      const slowResult = await slowFetch;
+      expect(slowResult.token).toBe('stale-pre-login-csrf');
+
+      // Authoritative post-login token must NOT have been overwritten!
+      expect(getCachedCsrfToken().token).toBe('authoritative-post-login-csrf');
+      const finalToken = await getCsrfToken();
+      expect(finalToken.token).toBe('authoritative-post-login-csrf');
+    });
+
     it('throws AuthApiError with status 401 on invalid credentials', async () => {
       global.fetch
         .mockResolvedValueOnce({
