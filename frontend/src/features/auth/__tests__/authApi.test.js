@@ -4,6 +4,7 @@ import {
   AuthApiError,
   getCsrfToken,
   clearCsrfToken,
+  getCachedCsrfToken,
   login,
   getCurrentUser,
   logout
@@ -481,7 +482,7 @@ describe('authApi client', () => {
   // Patient Registration Regression
   // ==========================================
   describe('registerPatient regression', () => {
-    it('sends POST to /api/auth/register/patient and returns created user payload', async () => {
+    it('obtains CSRF, sends POST to /api/auth/register/patient with CSRF headers, same-origin credentials, and returns created user payload', async () => {
       const mockSuccessResponse = {
         id: 1,
         email: 'jane.doe@example.com',
@@ -493,12 +494,19 @@ describe('authApi client', () => {
         createdAt: '2026-09-06T10:00:00'
       };
 
-      global.fetch.mockResolvedValueOnce({
-        ok: true,
-        status: 201,
-        headers: new Headers({ 'content-type': 'application/json' }),
-        json: async () => mockSuccessResponse
-      });
+      global.fetch
+        .mockResolvedValueOnce({
+          ok: true,
+          status: 200,
+          headers: new Headers({ 'content-type': 'application/json' }),
+          json: async () => ({ token: 'reg-csrf-token', headerName: 'X-XSRF-TOKEN' })
+        })
+        .mockResolvedValueOnce({
+          ok: true,
+          status: 201,
+          headers: new Headers({ 'content-type': 'application/json' }),
+          json: async () => mockSuccessResponse
+        });
 
       const result = await registerPatient({
         firstName: 'Jane',
@@ -508,11 +516,20 @@ describe('authApi client', () => {
         password: 'Password123'
       });
 
-      expect(global.fetch).toHaveBeenCalledTimes(1);
-      const [url, options] = global.fetch.mock.calls[0];
+      expect(global.fetch).toHaveBeenCalledTimes(2);
+
+      const [csrfUrl, csrfOpts] = global.fetch.mock.calls[0];
+      expect(csrfUrl).toBe('/api/auth/csrf');
+      expect(csrfOpts.credentials).toBe('same-origin');
+
+      const [url, options] = global.fetch.mock.calls[1];
       expect(url).toBe('/api/auth/register/patient');
       expect(options.method).toBe('POST');
-      expect(options.headers).toEqual({ 'Content-Type': 'application/json' });
+      expect(options.credentials).toBe('same-origin');
+      expect(options.headers).toEqual({
+        'Content-Type': 'application/json',
+        'X-XSRF-TOKEN': 'reg-csrf-token'
+      });
       expect(JSON.parse(options.body)).toEqual({
         firstName: 'Jane',
         lastName: 'Doe',
@@ -524,13 +541,50 @@ describe('authApi client', () => {
       expect(result).toEqual(mockSuccessResponse);
     });
 
-    it('never sends confirmPassword to the backend API', async () => {
+    it('reuses cached CSRF token if already fetched', async () => {
+      global.fetch
+        .mockResolvedValueOnce({
+          ok: true,
+          status: 200,
+          headers: new Headers({ 'content-type': 'application/json' }),
+          json: async () => ({ token: 'cached-reg-csrf', headerName: 'X-XSRF-TOKEN' })
+        });
+      await getCsrfToken();
+      expect(global.fetch).toHaveBeenCalledTimes(1);
+
       global.fetch.mockResolvedValueOnce({
         ok: true,
         status: 201,
         headers: new Headers({ 'content-type': 'application/json' }),
-        json: async () => ({ id: 2, email: 'test@example.com', role: 'PATIENT' })
+        json: async () => ({ id: 99, email: 'cached@example.com' })
       });
+
+      await registerPatient({
+        firstName: 'Cached',
+        lastName: 'User',
+        email: 'cached@example.com',
+        password: 'Password123'
+      });
+
+      expect(global.fetch).toHaveBeenCalledTimes(2);
+      const [, regOpts] = global.fetch.mock.calls[1];
+      expect(regOpts.headers['X-XSRF-TOKEN']).toBe('cached-reg-csrf');
+    });
+
+    it('never sends confirmPassword to the backend API', async () => {
+      global.fetch
+        .mockResolvedValueOnce({
+          ok: true,
+          status: 200,
+          headers: new Headers({ 'content-type': 'application/json' }),
+          json: async () => ({ token: 'reg-csrf', headerName: 'X-XSRF-TOKEN' })
+        })
+        .mockResolvedValueOnce({
+          ok: true,
+          status: 201,
+          headers: new Headers({ 'content-type': 'application/json' }),
+          json: async () => ({ id: 2, email: 'test@example.com', role: 'PATIENT' })
+        });
 
       await registerPatient({
         firstName: 'Test',
@@ -540,18 +594,25 @@ describe('authApi client', () => {
         confirmPassword: 'Password123'
       });
 
-      const callBody = JSON.parse(global.fetch.mock.calls[0][1].body);
+      const callBody = JSON.parse(global.fetch.mock.calls[1][1].body);
       expect(callBody.confirmPassword).toBeUndefined();
       expect(callBody.role).toBeUndefined();
     });
 
     it('normalizes empty phone to undefined / omitted', async () => {
-      global.fetch.mockResolvedValueOnce({
-        ok: true,
-        status: 201,
-        headers: new Headers({ 'content-type': 'application/json' }),
-        json: async () => ({ id: 3, email: 'nophone@example.com', role: 'PATIENT' })
-      });
+      global.fetch
+        .mockResolvedValueOnce({
+          ok: true,
+          status: 200,
+          headers: new Headers({ 'content-type': 'application/json' }),
+          json: async () => ({ token: 'reg-csrf', headerName: 'X-XSRF-TOKEN' })
+        })
+        .mockResolvedValueOnce({
+          ok: true,
+          status: 201,
+          headers: new Headers({ 'content-type': 'application/json' }),
+          json: async () => ({ id: 3, email: 'nophone@example.com', role: 'PATIENT' })
+        });
 
       await registerPatient({
         firstName: 'No',
@@ -561,23 +622,30 @@ describe('authApi client', () => {
         password: 'Password123'
       });
 
-      const callBody = JSON.parse(global.fetch.mock.calls[0][1].body);
+      const callBody = JSON.parse(global.fetch.mock.calls[1][1].body);
       expect(callBody.phone).toBeUndefined();
     });
 
     it('throws AuthApiError with status 409 on duplicate email', async () => {
-      global.fetch.mockResolvedValueOnce({
-        ok: false,
-        status: 409,
-        statusText: 'Conflict',
-        headers: new Headers({ 'content-type': 'application/json' }),
-        json: async () => ({
-          timestamp: '2026-09-06T10:00:00',
-          status: 409,
-          error: 'Conflict',
-          message: 'An account with this email address already exists'
+      global.fetch
+        .mockResolvedValueOnce({
+          ok: true,
+          status: 200,
+          headers: new Headers({ 'content-type': 'application/json' }),
+          json: async () => ({ token: 'reg-csrf', headerName: 'X-XSRF-TOKEN' })
         })
-      });
+        .mockResolvedValueOnce({
+          ok: false,
+          status: 409,
+          statusText: 'Conflict',
+          headers: new Headers({ 'content-type': 'application/json' }),
+          json: async () => ({
+            timestamp: '2026-09-06T10:00:00',
+            status: 409,
+            error: 'Conflict',
+            message: 'An account with this email address already exists'
+          })
+        });
 
       await expect(registerPatient({
         firstName: 'Dup',
@@ -588,22 +656,29 @@ describe('authApi client', () => {
     });
 
     it('throws AuthApiError with fieldErrors on 400 Bad Request', async () => {
-      global.fetch.mockResolvedValueOnce({
-        ok: false,
-        status: 400,
-        statusText: 'Bad Request',
-        headers: new Headers({ 'content-type': 'application/json' }),
-        json: async () => ({
-          timestamp: '2026-09-06T10:00:00',
-          status: 400,
-          error: 'Bad Request',
-          message: 'Validation failed for registration request',
-          fieldErrors: {
-            email: 'Email must be valid',
-            password: 'Password must be between 8 and 100 characters and contain at least one letter and one number'
-          }
+      global.fetch
+        .mockResolvedValueOnce({
+          ok: true,
+          status: 200,
+          headers: new Headers({ 'content-type': 'application/json' }),
+          json: async () => ({ token: 'reg-csrf', headerName: 'X-XSRF-TOKEN' })
         })
-      });
+        .mockResolvedValueOnce({
+          ok: false,
+          status: 400,
+          statusText: 'Bad Request',
+          headers: new Headers({ 'content-type': 'application/json' }),
+          json: async () => ({
+            timestamp: '2026-09-06T10:00:00',
+            status: 400,
+            error: 'Bad Request',
+            message: 'Validation failed for registration request',
+            fieldErrors: {
+              email: 'Email must be valid',
+              password: 'Password must be between 8 and 100 characters and contain at least one letter and one number'
+            }
+          })
+        });
 
       try {
         await registerPatient({
@@ -619,6 +694,67 @@ describe('authApi client', () => {
         expect(err.fieldErrors.email).toBe('Email must be valid');
         expect(err.fieldErrors.password).toContain('between 8 and 100 characters');
       }
+    });
+
+    it('clears CSRF cache and surfaces AuthApiError on HTTP 403 without automatic retry', async () => {
+      global.fetch
+        .mockResolvedValueOnce({
+          ok: true,
+          status: 200,
+          headers: new Headers({ 'content-type': 'application/json' }),
+          json: async () => ({ token: 'reg-csrf-403', headerName: 'X-XSRF-TOKEN' })
+        })
+        .mockResolvedValueOnce({
+          ok: false,
+          status: 403,
+          statusText: 'Forbidden',
+          headers: new Headers({ 'content-type': 'application/json' }),
+          json: async () => ({
+            timestamp: '2026-09-10T10:00:00',
+            status: 403,
+            error: 'Forbidden',
+            message: 'Invalid CSRF token'
+          })
+        });
+
+      try {
+        await registerPatient({
+          firstName: 'Jane',
+          lastName: 'Doe',
+          email: 'jane.doe@example.com',
+          password: 'Password123'
+        });
+        expect.fail('Should have thrown AuthApiError');
+      } catch (err) {
+        expect(err).toBeInstanceOf(AuthApiError);
+        expect(err.status).toBe(403);
+        expect(err.message).toBe('Invalid CSRF token');
+      }
+
+      // Exactly 2 fetch calls made (1 CSRF + 1 POST), NO automatic retry
+      expect(global.fetch).toHaveBeenCalledTimes(2);
+
+      // CSRF cache was cleared on 403
+      expect(getCachedCsrfToken()).toBeNull();
+    });
+
+    it('throws AuthApiError when CSRF token fetch fails', async () => {
+      global.fetch.mockResolvedValueOnce({
+        ok: false,
+        status: 500,
+        statusText: 'Internal Server Error',
+        headers: new Headers()
+      });
+
+      await expect(registerPatient({
+        firstName: 'Jane',
+        lastName: 'Doe',
+        email: 'jane.doe@example.com',
+        password: 'Password123'
+      })).rejects.toThrow(AuthApiError);
+
+      // POST should never have been attempted
+      expect(global.fetch).toHaveBeenCalledTimes(1);
     });
   });
 });

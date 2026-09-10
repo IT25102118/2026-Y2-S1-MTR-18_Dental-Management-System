@@ -16,10 +16,11 @@ export class AuthApiError extends Error {
 import {
   getCsrfToken as sharedGetCsrfToken,
   clearCsrfToken,
+  getCachedCsrfToken,
   CsrfError
 } from '../../../shared/security/csrfClient';
 
-export { clearCsrfToken };
+export { clearCsrfToken, getCachedCsrfToken };
 
 /**
  * Safely parses response body as JSON if content-type indicates JSON or if parsing succeeds.
@@ -253,12 +254,16 @@ export async function registerPatient(registrationData) {
     payload.phone = registrationData.phone.trim();
   }
 
+  const csrf = await getCsrfToken();
+
   let response;
   try {
     response = await fetch('/api/auth/register/patient', {
       method: 'POST',
+      credentials: 'same-origin',
       headers: {
-        'Content-Type': 'application/json'
+        'Content-Type': 'application/json',
+        [csrf.headerName]: csrf.token
       },
       body: JSON.stringify(payload)
     });
@@ -269,6 +274,10 @@ export async function registerPatient(registrationData) {
       {},
       'NetworkError'
     );
+  }
+
+  if (response.status === 403) {
+    clearCsrfToken();
   }
 
   let data = null;
