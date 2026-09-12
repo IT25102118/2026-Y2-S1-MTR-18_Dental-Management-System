@@ -200,8 +200,12 @@ describe('shared csrfClient', () => {
     expect(getCachedCsrfToken()).toBe(retryResult);
   });
 
-  // Test C: clearCsrfToken prevents in-flight fetch from populating cache
-  it('prevents an in-flight fetch started before clearCsrfToken from repopulating the cache after clear', async () => {
+  // =======================================================
+  // Concurrency, Strict Serialization & Invalidation Tests
+  // =======================================================
+
+  // Test A (Section 12): Stale waiter rejects as invalidated when clearCsrfToken occurs
+  it('rejects original waiter as invalidated when clearCsrfToken occurs while fetch is in-flight', async () => {
     const deferredA = createDeferred();
     global.fetch.mockReturnValueOnce(deferredA.promise);
 
@@ -224,13 +228,53 @@ describe('shared csrfClient', () => {
       })
     });
 
-    const resA = await pA;
-    expect(resA.token).toBe('stale-token-a');
-    // Old token must NOT repopulate cache!
+    // 4. Original waiter must reject as invalidated
+    await expect(pA).rejects.toThrow(CsrfError);
+    // Cache must remain empty
+    expect(getCachedCsrfToken()).toBeNull();
+  });
+
+  // Test B (Section 13): Post-clear caller queues behind active physical fetch without network overlap
+  it('queues post-clear caller behind active physical fetch without network overlap and updates cache on settlement', async () => {
+    const deferredA = createDeferred();
+    const deferredB = createDeferred();
+    global.fetch
+      .mockReturnValueOnce(deferredA.promise)
+      .mockReturnValueOnce(deferredB.promise);
+
+    // 1. Start physical network fetch A
+    const pA = getCsrfToken();
+    expect(global.fetch).toHaveBeenCalledTimes(1);
+
+    // 2. Clear token while A is in-flight
+    clearCsrfToken();
     expect(getCachedCsrfToken()).toBeNull();
 
-    // 4. Next caller starts fetch B and sets cache
-    global.fetch.mockResolvedValueOnce({
+    // 3. Call getCsrfToken for new generation B
+    const pB = getCsrfToken();
+
+    // 4. Assert fetch invocation count is STILL 1 while A unresolved
+    expect(global.fetch).toHaveBeenCalledTimes(1);
+
+    // 5. Resolve A
+    deferredA.resolve({
+      ok: true,
+      status: 200,
+      headers: new Headers({ 'content-type': 'application/json' }),
+      json: async () => ({
+        token: 'stale-token-a',
+        headerName: 'X-XSRF-TOKEN'
+      })
+    });
+
+    // 6. Old A caller rejects
+    await expect(pA).rejects.toThrow(CsrfError);
+
+    // 7. Now assert second network GET starts
+    expect(global.fetch).toHaveBeenCalledTimes(2);
+
+    // 8. Resolve B
+    deferredB.resolve({
       ok: true,
       status: 200,
       headers: new Headers({ 'content-type': 'application/json' }),
@@ -240,14 +284,129 @@ describe('shared csrfClient', () => {
       })
     });
 
-    const resB = await getCsrfToken();
+    // 9. B caller receives token B
+    const resB = await pB;
     expect(resB.token).toBe('fresh-token-b');
-    expect(global.fetch).toHaveBeenCalledTimes(2);
+
+    // 10. Cache = B
     expect(getCachedCsrfToken()).toBe(resB);
   });
 
-  // Test D: forceRefresh bypasses cache and concurrent ordinary callers share it
-  it('bypasses cached token on forceRefresh and shares in-flight forced request with concurrent callers', async () => {
+  // Test C (Section 14): Force supersession without network overlap
+  it('supersedes active ordinary fetch on forceRefresh without network overlap and delivers fresh token to force caller', async () => {
+    const deferredA = createDeferred();
+    const deferredB = createDeferred();
+    global.fetch
+      .mockReturnValueOnce(deferredA.promise)
+      .mockReturnValueOnce(deferredB.promise);
+
+    // 1. Ordinary fetch A is active
+    const pA = getCsrfToken();
+    expect(global.fetch).toHaveBeenCalledTimes(1);
+
+    // 2. Call getCsrfToken({ forceRefresh: true })
+    const pB = getCsrfToken({ forceRefresh: true });
+
+    // 3. While A unresolved, network fetch count remains 1
+    expect(global.fetch).toHaveBeenCalledTimes(1);
+
+    // 4. Resolve A
+    deferredA.resolve({
+      ok: true,
+      status: 200,
+      headers: new Headers({ 'content-type': 'application/json' }),
+      json: async () => ({
+        token: 'superseded-token-a',
+        headerName: 'X-XSRF-TOKEN'
+      })
+    });
+
+    // 5. A waiter rejects as invalidated
+    await expect(pA).rejects.toThrow(CsrfError);
+
+    // 6. Forced fetch B now starts
+    expect(global.fetch).toHaveBeenCalledTimes(2);
+
+    // 7. Resolve B
+    deferredB.resolve({
+      ok: true,
+      status: 200,
+      headers: new Headers({ 'content-type': 'application/json' }),
+      json: async () => ({
+        token: 'forced-token-b',
+        headerName: 'X-XSRF-TOKEN'
+      })
+    });
+
+    // 8. Force caller receives B
+    const resB = await pB;
+    expect(resB.token).toBe('forced-token-b');
+
+    // 9. Cache = B
+    expect(getCachedCsrfToken()).toBe(resB);
+  });
+
+  // Test D (Section 15): Strict response order / cookie safety invariant (no overlapping network fetches)
+  it('enforces strict serialization so subsequent CSRF network request never starts before predecessor settles', async () => {
+    let fetchAActive = false;
+    let fetchBStartedWhileAActive = false;
+
+    const deferredA = createDeferred();
+    const deferredB = createDeferred();
+
+    global.fetch.mockImplementation((url) => {
+      if (url === '/api/auth/csrf') {
+        if (!fetchAActive && global.fetch.mock.calls.length === 1) {
+          fetchAActive = true;
+          return deferredA.promise.finally(() => {
+            fetchAActive = false;
+          });
+        }
+        if (fetchAActive) {
+          fetchBStartedWhileAActive = true;
+        }
+        return deferredB.promise;
+      }
+      return Promise.reject(new Error('Unexpected URL'));
+    });
+
+    const pA = getCsrfToken();
+    clearCsrfToken();
+    const pB = getCsrfToken();
+
+    // While A is physically pending, B must not have started
+    expect(fetchAActive).toBe(true);
+    expect(fetchBStartedWhileAActive).toBe(false);
+    expect(global.fetch).toHaveBeenCalledTimes(1);
+
+    deferredA.resolve({
+      ok: true,
+      status: 200,
+      headers: new Headers({ 'content-type': 'application/json' }),
+      json: async () => ({ token: 'token-a', headerName: 'X-XSRF-TOKEN' })
+    });
+
+    await expect(pA).rejects.toThrow(CsrfError);
+
+    // Now A has settled, B can start
+    expect(fetchAActive).toBe(false);
+    expect(fetchBStartedWhileAActive).toBe(false);
+    expect(global.fetch).toHaveBeenCalledTimes(2);
+
+    deferredB.resolve({
+      ok: true,
+      status: 200,
+      headers: new Headers({ 'content-type': 'application/json' }),
+      json: async () => ({ token: 'token-b', headerName: 'X-XSRF-TOKEN' })
+    });
+
+    const resB = await pB;
+    expect(resB.token).toBe('token-b');
+    expect(fetchBStartedWhileAActive).toBe(false);
+  });
+
+  // Test E (Section 16): Forced refresh with cache — concurrent ordinary caller joins B
+  it('shares in-flight forced refresh with concurrent ordinary callers without returning stale cached token', async () => {
     // Prime cache with token A
     global.fetch.mockResolvedValueOnce({
       ok: true,
@@ -268,9 +427,10 @@ describe('shared csrfClient', () => {
     global.fetch.mockReturnValueOnce(deferredB.promise);
 
     const pForced = getCsrfToken({ forceRefresh: true });
-    // Concurrent ordinary caller should await the forced in-flight request rather than returning stale token A
+    // Concurrent ordinary caller arrives while B is active
     const pConcurrentOrdinary = getCsrfToken();
 
+    // Exactly one B network request
     expect(global.fetch).toHaveBeenCalledTimes(2);
 
     deferredB.resolve({
@@ -288,5 +448,50 @@ describe('shared csrfClient', () => {
     expect(resOrdinary.token).toBe('refreshed-token-b');
     expect(resOrdinary).toBe(resForced);
     expect(getCachedCsrfToken()).toBe(resForced);
+  });
+
+  // Test F (Section 17): Failure + queue recovery
+  it('recovers serialization queue when invalidated predecessor network fetch fails, allowing queued fetch to succeed', async () => {
+    const deferredA = createDeferred();
+    const deferredB = createDeferred();
+    global.fetch
+      .mockReturnValueOnce(deferredA.promise)
+      .mockReturnValueOnce(deferredB.promise);
+
+    // 1. Old invalidated A is active
+    const pA = getCsrfToken();
+    expect(global.fetch).toHaveBeenCalledTimes(1);
+
+    clearCsrfToken();
+
+    // 2. New-generation B is queued
+    const pB = getCsrfToken();
+    expect(global.fetch).toHaveBeenCalledTimes(1);
+
+    // 3. A network request fails
+    deferredA.reject(new Error('Network drop on fetch A'));
+
+    // 4. Old A waiter rejects
+    await expect(pA).rejects.toThrow(CsrfError);
+
+    // 5. Queue is not deadlocked: B still starts after A settles
+    expect(global.fetch).toHaveBeenCalledTimes(2);
+
+    // 6. B can succeed
+    deferredB.resolve({
+      ok: true,
+      status: 200,
+      headers: new Headers({ 'content-type': 'application/json' }),
+      json: async () => ({
+        token: 'token-b-after-failure',
+        headerName: 'X-XSRF-TOKEN'
+      })
+    });
+
+    const resB = await pB;
+    expect(resB.token).toBe('token-b-after-failure');
+
+    // 7. B becomes cache
+    expect(getCachedCsrfToken()).toBe(resB);
   });
 });

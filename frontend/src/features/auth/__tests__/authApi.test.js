@@ -229,7 +229,7 @@ describe('authApi client', () => {
       expect(global.fetch).toHaveBeenCalledTimes(4);
     });
 
-    it('ensures an old in-flight pre-login fetch cannot overwrite post-login cached token', async () => {
+    it('ensures an old in-flight pre-login fetch cannot overwrite post-login cached token and obsolete waiter rejects safely', async () => {
       let resolveSlowPreLogin;
       const slowPreLoginDeferred = new Promise((resolve) => {
         resolveSlowPreLogin = resolve;
@@ -261,16 +261,18 @@ describe('authApi client', () => {
 
       // Start slow pre-login CSRF fetch
       const slowFetch = getCsrfToken();
+      expect(global.fetch).toHaveBeenCalledTimes(1);
 
       // Clear cache as login would do
       clearCsrfToken();
 
-      // Forced post-login fetch completes
-      const postLoginToken = await getCsrfToken({ forceRefresh: true });
-      expect(postLoginToken.token).toBe('authoritative-post-login-csrf');
-      expect(getCachedCsrfToken().token).toBe('authoritative-post-login-csrf');
+      // Forced post-login fetch is requested
+      const postLoginPromise = getCsrfToken({ forceRefresh: true });
 
-      // Now slow pre-login fetch finally resolves
+      // Post-login refresh must NOT overlap with active pre-login HTTP request
+      expect(global.fetch).toHaveBeenCalledTimes(1);
+
+      // Now slow pre-login fetch finally resolves with stale response
       resolveSlowPreLogin({
         ok: true,
         status: 200,
@@ -278,10 +280,16 @@ describe('authApi client', () => {
         json: async () => ({ token: 'stale-pre-login-csrf', headerName: 'X-XSRF-TOKEN' })
       });
 
-      const slowResult = await slowFetch;
-      expect(slowResult.token).toBe('stale-pre-login-csrf');
+      // Obsolete pre-login waiter must reject as invalidated, never receiving the stale token
+      await expect(slowFetch).rejects.toThrow(AuthApiError);
 
-      // Authoritative post-login token must NOT have been overwritten!
+      // Once pre-login fetch settles, post-login refresh issues its network GET
+      expect(global.fetch).toHaveBeenCalledTimes(2);
+
+      const postLoginToken = await postLoginPromise;
+      expect(postLoginToken.token).toBe('authoritative-post-login-csrf');
+
+      // Authoritative post-login token becomes cached
       expect(getCachedCsrfToken().token).toBe('authoritative-post-login-csrf');
       const finalToken = await getCsrfToken();
       expect(finalToken.token).toBe('authoritative-post-login-csrf');

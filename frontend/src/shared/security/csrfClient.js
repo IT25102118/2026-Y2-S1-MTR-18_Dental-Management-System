@@ -16,19 +16,26 @@ export class CsrfError extends Error {
 }
 
 let cachedCsrfToken = null;
-let inFlightPromise = null;
-let inFlightIsForced = false;
 let csrfGeneration = 0;
+
+let activeAuthoritativePromise = null;
+let activeAuthoritativeGeneration = 0;
+let activeAuthoritativeIsForced = false;
+
+let physicalTail = null;
 
 /**
  * Clears the in-memory CSRF token cache and invalidates any in-flight fetch
- * so it cannot repopulate the cache upon completion.
+ * so its callers reject safely and it cannot repopulate the cache upon completion.
+ * Retains the physical network serialization barrier so overlapping HTTP requests
+ * are strictly prevented.
  */
 export function clearCsrfToken() {
   cachedCsrfToken = null;
-  inFlightPromise = null;
-  inFlightIsForced = false;
   csrfGeneration++;
+  activeAuthoritativePromise = null;
+  activeAuthoritativeGeneration = 0;
+  activeAuthoritativeIsForced = false;
 }
 
 /**
@@ -62,6 +69,8 @@ async function parseResponseBody(response) {
 /**
  * Fetches the CSRF token from /api/auth/csrf or returns the in-memory cached token.
  * Deduplicates concurrent in-flight fetches so multiple callers share a single network request.
+ * Strictly serializes physical network fetches to ensure at most one GET /api/auth/csrf is in flight.
+ * Safely invalidates waiters of superseded generations so stale tokens are never returned.
  *
  * @param {Object} [options]
  * @param {boolean} [options.forceRefresh=false] If true, bypasses the cache and issues a fresh network request.
@@ -69,23 +78,42 @@ async function parseResponseBody(response) {
  */
 export async function getCsrfToken({ forceRefresh = false } = {}) {
   if (!forceRefresh) {
-    if (inFlightPromise !== null) {
-      return inFlightPromise;
+    if (activeAuthoritativePromise !== null && activeAuthoritativeGeneration === csrfGeneration) {
+      return activeAuthoritativePromise;
     }
     if (cachedCsrfToken !== null) {
       return cachedCsrfToken;
     }
   } else {
-    if (inFlightPromise !== null && inFlightIsForced) {
-      return inFlightPromise;
+    if (
+      activeAuthoritativePromise !== null &&
+      activeAuthoritativeGeneration === csrfGeneration &&
+      activeAuthoritativeIsForced
+    ) {
+      return activeAuthoritativePromise;
     }
   }
 
   const isForced = forceRefresh;
-  const capturedGeneration = ++csrfGeneration;
-  inFlightIsForced = isForced;
 
-  const fetchPromise = (async () => {
+  if (isForced) {
+    cachedCsrfToken = null;
+    if (activeAuthoritativePromise !== null && !activeAuthoritativeIsForced) {
+      csrfGeneration++;
+    }
+  }
+
+  const generation = ++csrfGeneration;
+
+  // Network serialization barrier: chain behind any physically active request
+  const prevTail = physicalTail;
+  let releaseBarrier;
+  const currentBarrier = new Promise((resolve) => {
+    releaseBarrier = resolve;
+  });
+  physicalTail = currentBarrier;
+
+  const runPhysicalFetch = async () => {
     let response;
     try {
       response = await fetch('/api/auth/csrf', {
@@ -118,22 +146,61 @@ export async function getCsrfToken({ forceRefresh = false } = {}) {
       parameterName: data.parameterName || '_csrf'
     };
 
-    // Only commit to cache if this fetch has not been invalidated by clearCsrfToken or superseded
-    if (capturedGeneration === csrfGeneration) {
-      cachedCsrfToken = tokenData;
+    if (generation !== csrfGeneration) {
+      throw new CsrfError(
+        0,
+        'CSRF token fetch was invalidated due to session change or token refresh.',
+        {},
+        'CsrfInvalidated'
+      );
     }
 
+    cachedCsrfToken = tokenData;
     return tokenData;
+  };
+
+  const fetchPromise = (async () => {
+    try {
+      if (prevTail !== null) {
+        try {
+          await prevTail;
+        } catch {
+          // Predecessor failure must not poison our queued request
+        }
+        if (generation !== csrfGeneration) {
+          throw new CsrfError(
+            0,
+            'CSRF token fetch was invalidated due to session change or token refresh.',
+            {},
+            'CsrfInvalidated'
+          );
+        }
+      }
+      return await runPhysicalFetch();
+    } finally {
+      releaseBarrier();
+      if (physicalTail === currentBarrier) {
+        physicalTail = null;
+      }
+      if (activeAuthoritativePromise === fetchPromise) {
+        activeAuthoritativePromise = null;
+        activeAuthoritativeGeneration = 0;
+        activeAuthoritativeIsForced = false;
+      }
+    }
   })();
 
-  inFlightPromise = fetchPromise;
+  activeAuthoritativePromise = fetchPromise;
+  activeAuthoritativeGeneration = generation;
+  activeAuthoritativeIsForced = isForced;
 
   try {
     return await fetchPromise;
   } finally {
-    if (inFlightPromise === fetchPromise) {
-      inFlightPromise = null;
-      inFlightIsForced = false;
+    if (activeAuthoritativePromise === fetchPromise) {
+      activeAuthoritativePromise = null;
+      activeAuthoritativeGeneration = 0;
+      activeAuthoritativeIsForced = false;
     }
   }
 }
