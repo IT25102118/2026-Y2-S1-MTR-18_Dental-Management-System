@@ -26,8 +26,11 @@ import java.util.List;
 
 /**
  * Spring Security configuration for DentCare (PR-D1).
- * Configures server-side session management via JSESSIONID, CSRF protection via CookieCsrfTokenRepository,
- * API-safe JSON error entry points, Spring Security logout DSL, and role-based request authorization.
+ * Configures server-side session management via JSESSIONID,
+ * CSRF protection via CookieCsrfTokenRepository,
+ * API-safe JSON error entry points,
+ * Spring Security logout DSL,
+ * and role-based request authorization.
  */
 @Configuration
 @EnableWebSecurity
@@ -45,16 +48,21 @@ public class SecurityConfig {
 
     @Bean
     public CookieCsrfTokenRepository csrfTokenRepository() {
-        CookieCsrfTokenRepository repository = CookieCsrfTokenRepository.withHttpOnlyFalse();
+        CookieCsrfTokenRepository repository =
+                CookieCsrfTokenRepository.withHttpOnlyFalse();
+
         repository.setCookiePath("/");
         repository.setCookieName("XSRF-TOKEN");
         repository.setHeaderName("X-XSRF-TOKEN");
         repository.setCookieCustomizer(cookie -> cookie.sameSite("Lax"));
+
         return repository;
     }
 
     @Bean
-    public SessionAuthenticationStrategy sessionAuthenticationStrategy(CsrfTokenRepository csrfTokenRepository) {
+    public SessionAuthenticationStrategy sessionAuthenticationStrategy(
+            CsrfTokenRepository csrfTokenRepository) {
+
         return new CompositeSessionAuthenticationStrategy(List.of(
                 new ChangeSessionIdAuthenticationStrategy(),
                 new CsrfAuthenticationStrategy(csrfTokenRepository)
@@ -62,64 +70,119 @@ public class SecurityConfig {
     }
 
     @Bean
-    public SecurityFilterChain securityFilterChain(HttpSecurity http,
-                                                   CsrfTokenRepository csrfTokenRepository,
-                                                   SecurityContextRepository securityContextRepository) throws Exception {
-        CsrfTokenRequestAttributeHandler requestHandler = new CsrfTokenRequestAttributeHandler();
-        // Setting attribute name to null ensures raw unmasked token can be matched from the X-XSRF-TOKEN header
+    public SecurityFilterChain securityFilterChain(
+            HttpSecurity http,
+            CsrfTokenRepository csrfTokenRepository,
+            SecurityContextRepository securityContextRepository) throws Exception {
+
+        CsrfTokenRequestAttributeHandler requestHandler =
+                new CsrfTokenRequestAttributeHandler();
+
+        // Setting attribute name to null ensures the raw unmasked token
+        // can be matched from the X-XSRF-TOKEN header.
         requestHandler.setCsrfRequestAttributeName(null);
 
         http
             .csrf(csrf -> csrf
                 .csrfTokenRepository(csrfTokenRepository)
                 .csrfTokenRequestHandler(requestHandler)
-                // Temporary compatibility debt (removed in PR-D4): allow unmigrated frontend mutations to succeed
+
+                // Temporary compatibility debt:
+                // allow frontend mutations that have not yet migrated
+                // to CSRF-token submission.
                 .ignoringRequestMatchers(
                     "/api/auth/register/patient",
                     "/api/inventory/**",
                     "/api/prescriptions/**"
                 )
             )
+
             .cors(Customizer.withDefaults())
+
             .sessionManagement(session -> session
                 .sessionCreationPolicy(SessionCreationPolicy.IF_REQUIRED)
                 .sessionFixation(fixation -> fixation.changeSessionId())
             )
+
             .securityContext(securityContext -> securityContext
                 .securityContextRepository(securityContextRepository)
             )
+
             .authorizeHttpRequests(auth -> auth
-                .requestMatchers(HttpMethod.GET, "/api/auth/csrf").permitAll()
-                .requestMatchers(HttpMethod.POST, "/api/auth/register/patient").permitAll()
-                .requestMatchers(HttpMethod.POST, "/api/auth/login").permitAll()
-                .requestMatchers(HttpMethod.GET, "/api/auth/me").authenticated()
-                .requestMatchers("/api/admin/**").hasRole("ADMINISTRATOR")
-                .requestMatchers("/api/inventory/**").permitAll()
-                .requestMatchers("/api/prescriptions/**").permitAll()
-                .requestMatchers("/error").permitAll()
+                .requestMatchers(
+                    HttpMethod.GET,
+                    "/api/auth/csrf"
+                ).permitAll()
+
+                .requestMatchers(
+                    HttpMethod.POST,
+                    "/api/auth/register/patient"
+                ).permitAll()
+
+                .requestMatchers(
+                    HttpMethod.POST,
+                    "/api/auth/login"
+                ).permitAll()
+
+                .requestMatchers(
+                    HttpMethod.GET,
+                    "/api/auth/me"
+                ).authenticated()
+
+                .requestMatchers(
+                    "/api/admin/**"
+                ).hasRole("ADMINISTRATOR")
+
+                .requestMatchers(
+                    "/api/inventory/**"
+                ).permitAll()
+
+                // Prescription endpoints are intentionally NOT permitAll.
+                // They fall through to anyRequest().authenticated().
+                // MF-04 business/service logic handles additional rules,
+                // such as valid PATIENT/DENTIST roles and Dentist-only finalization.
+
+                .requestMatchers(
+                    "/error"
+                ).permitAll()
+
                 .anyRequest().authenticated()
             )
+
             .exceptionHandling(ex -> ex
                 .authenticationEntryPoint((request, response, authException) -> {
                     response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
                     response.setContentType(MediaType.APPLICATION_JSON_VALUE);
-                    response.getWriter().write("{\"status\":401,\"error\":\"Unauthorized\",\"message\":\"Authentication required\"}");
+                    response.getWriter().write(
+                        "{\"status\":401," +
+                        "\"error\":\"Unauthorized\"," +
+                        "\"message\":\"Authentication required\"}"
+                    );
                 })
+
                 .accessDeniedHandler((request, response, accessDeniedException) -> {
                     response.setStatus(HttpServletResponse.SC_FORBIDDEN);
                     response.setContentType(MediaType.APPLICATION_JSON_VALUE);
-                    response.getWriter().write("{\"status\":403,\"error\":\"Forbidden\",\"message\":\"Access denied\"}");
+                    response.getWriter().write(
+                        "{\"status\":403," +
+                        "\"error\":\"Forbidden\"," +
+                        "\"message\":\"Access denied\"}"
+                    );
                 })
             )
+
             .logout(logout -> logout
                 .logoutUrl("/api/auth/logout")
                 .invalidateHttpSession(true)
                 .clearAuthentication(true)
                 .deleteCookies("JSESSIONID")
+
                 .logoutSuccessHandler((request, response, authentication) -> {
                     response.setStatus(HttpServletResponse.SC_OK);
                     response.setContentType(MediaType.APPLICATION_JSON_VALUE);
-                    response.getWriter().write("{\"message\":\"Successfully logged out\"}");
+                    response.getWriter().write(
+                        "{\"message\":\"Successfully logged out\"}"
+                    );
                 })
             );
 
