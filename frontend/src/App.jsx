@@ -12,6 +12,10 @@ import LoginPage from './features/auth/pages/LoginPage';
 import AccountPage from './features/auth/pages/AccountPage';
 import ProtectedRoute from './features/auth/components/ProtectedRoute';
 import { AuthProvider, useAuth } from './features/auth/context/AuthContext';
+import PrescriptionListPage from './features/prescription/pages/PrescriptionListPage';
+import PrescriptionCreatePage from './features/prescription/pages/PrescriptionCreatePage';
+import PrescriptionDetailPage from './features/prescription/pages/PrescriptionDetailPage';
+import PrescriptionEditPage from './features/prescription/pages/PrescriptionEditPage';
 
 function RootPage() {
   const { isAuthenticated, user } = useAuth();
@@ -27,6 +31,9 @@ function RootPage() {
         <ul>
           <li>
             <Link to="/inventory">Inventory Management</Link>
+          </li>
+          <li>
+            <Link to="/prescriptions">Prescription Management</Link>
           </li>
           {isAuthenticated ? (
             <li>
@@ -70,6 +77,10 @@ export default function App() {
         <Route path="/inventory/items/:id/edit" element={<InventoryItemEditPage />} />
         <Route path="/inventory/batches" element={<InventoryBatchesPage />} />
         <Route path="/inventory/alerts" element={<InventoryAlertsPage />} />
+        <Route path="/prescriptions" element={<PrescriptionListPage />} />
+        <Route path="/prescriptions/new" element={<PrescriptionCreatePage />} />
+        <Route path="/prescriptions/:id" element={<PrescriptionDetailPage />} />
+        <Route path="/prescriptions/:id/edit" element={<PrescriptionEditPage />} />
       </Routes>
     </AuthProvider>
   );
