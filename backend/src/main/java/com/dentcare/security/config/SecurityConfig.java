@@ -76,7 +76,8 @@ public class SecurityConfig {
                 // Temporary compatibility debt (removed in PR-D4): allow unmigrated frontend mutations to succeed
                 .ignoringRequestMatchers(
                     "/api/auth/register/patient",
-                    "/api/inventory/**"
+                    "/api/inventory/**",
+                    "/api/prescriptions/**"
                 )
             )
             .cors(Customizer.withDefaults())
@@ -94,6 +95,7 @@ public class SecurityConfig {
                 .requestMatchers(HttpMethod.GET, "/api/auth/me").authenticated()
                 .requestMatchers("/api/admin/**").hasRole("ADMINISTRATOR")
                 .requestMatchers("/api/inventory/**").permitAll()
+                .requestMatchers("/api/prescriptions/**").permitAll()
                 .requestMatchers("/error").permitAll()
                 .anyRequest().authenticated()
             )
