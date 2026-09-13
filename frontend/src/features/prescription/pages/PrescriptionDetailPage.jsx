@@ -250,7 +250,9 @@ export default function PrescriptionDetailPage() {
           <div className="meta-field">
             <label>Finalization Status</label>
             <span>
-              {prescription.finalizedAt ? (
+              {isCancelled ? (
+                <em style={{ color: '#b91c1c' }}>Cancelled</em>
+              ) : prescription.finalizedAt ? (
                 <>Finalized on {new Date(prescription.finalizedAt).toLocaleString()}</>
               ) : (
                 <em style={{ color: '#b45309' }}>Pending Finalization (Draft)</em>
