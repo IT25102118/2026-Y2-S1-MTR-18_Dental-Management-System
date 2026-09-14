@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Link, useParams } from 'react-router-dom';
 import { getInvoice, issueInvoice, cancelInvoice, BillingApiError } from '../api/billingApi';
 import InvoiceStatusBadge from '../components/InvoiceStatusBadge';
+import PaymentDialog from '../components/PaymentDialog';
 import '../billing.css';
 
 /**
@@ -52,6 +53,7 @@ export default function InvoiceDetailPage() {
   const [isCancelling, setIsCancelling] = useState(false);
   const [actionError, setActionError] = useState(null);
   const [successMessage, setSuccessMessage] = useState('');
+  const [showPaymentDialog, setShowPaymentDialog] = useState(false);
 
   useEffect(() => {
     let isMounted = true;
@@ -131,6 +133,18 @@ export default function InvoiceDetailPage() {
     }
   };
 
+  const handlePaymentSuccess = async () => {
+    setShowPaymentDialog(false);
+    setSuccessMessage('Payment recorded successfully.');
+    setActionError(null);
+    try {
+      const refreshed = await getInvoice(invoice.id);
+      setInvoice(refreshed);
+    } catch (err) {
+      setActionError(err.message || 'Payment recorded, but failed to refresh invoice details.');
+    }
+  };
+
   if (loading) {
     return (
       <div className="billing-container">
@@ -181,6 +195,7 @@ export default function InvoiceDetailPage() {
   // Lifecycle visibility rules
   const canEdit = invoice.status === 'DRAFT';
   const canIssue = invoice.status === 'DRAFT';
+  const canRecordPayment = invoice.status === 'UNPAID' || invoice.status === 'PARTIALLY_PAID';
   const canCancel = invoice.status !== 'PAID' && invoice.status !== 'CANCELLED';
 
   const items = invoice.items || [];
@@ -217,6 +232,16 @@ export default function InvoiceDetailPage() {
               disabled={actionSubmitting}
             >
               {actionSubmitting && isIssuing ? 'Issuing...' : 'Issue Invoice'}
+            </button>
+          )}
+          {canRecordPayment && (
+            <button
+              type="button"
+              className="btn btn-primary"
+              onClick={() => setShowPaymentDialog(true)}
+              disabled={actionSubmitting}
+            >
+              Record Payment
             </button>
           )}
           {canCancel && (
@@ -362,6 +387,15 @@ export default function InvoiceDetailPage() {
             {invoice.notes}
           </p>
         </div>
+      )}
+
+      {/* Payment Dialog Modal */}
+      {showPaymentDialog && (
+        <PaymentDialog
+          invoice={invoice}
+          onClose={() => setShowPaymentDialog(false)}
+          onSuccess={handlePaymentSuccess}
+        />
       )}
     </div>
   );

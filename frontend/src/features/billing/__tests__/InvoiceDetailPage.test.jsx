@@ -929,7 +929,7 @@ describe('InvoiceDetailPage (UI-BIL-03)', () => {
       expect(screen.queryByRole('button', { name: /delete/i })).not.toBeInTheDocument();
     });
 
-    it('35. no payment action rendered on detail page in this slice', async () => {
+    it('35. no payment gateway or sensitive card credential inputs rendered on detail page', async () => {
       billingApi.getInvoice.mockResolvedValueOnce(sampleUnpaidInvoice);
 
       render(
@@ -944,7 +944,9 @@ describe('InvoiceDetailPage (UI-BIL-03)', () => {
         expect(screen.getByRole('heading', { level: 1 })).toHaveTextContent('Invoice #INV-2026-0010');
       });
 
-      expect(screen.queryByRole('button', { name: /pay/i })).not.toBeInTheDocument();
+      expect(screen.queryByLabelText(/card number/i)).not.toBeInTheDocument();
+      expect(screen.queryByLabelText(/cvv/i)).not.toBeInTheDocument();
+      expect(screen.queryByLabelText(/expiry/i)).not.toBeInTheDocument();
     });
 
     it('36. no receipt action rendered on detail page in this slice', async () => {
