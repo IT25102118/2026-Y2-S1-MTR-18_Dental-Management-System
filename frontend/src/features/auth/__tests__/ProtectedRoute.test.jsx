@@ -141,4 +141,60 @@ describe('ProtectedRoute guard', () => {
 
     expect(screen.getByTestId('protected-content')).toHaveTextContent('Authenticated User Portal');
   });
+
+  it('renders child content when user role matches allowedRoles', () => {
+    vi.spyOn(AuthContextModule, 'useAuth').mockReturnValue({
+      status: 'authenticated',
+      isLoading: false,
+      isError: false,
+      isAuthenticated: true,
+      user: { id: 1, email: 'admin@dentcare.com', role: 'ADMINISTRATOR' }
+    });
+
+    render(
+      <MemoryRouter initialEntries={['/staff-only']}>
+        <Routes>
+          <Route
+            path="/staff-only"
+            element={
+              <ProtectedRoute allowedRoles={['ADMINISTRATOR', 'RECEPTIONIST']}>
+                <div data-testid="staff-content">Staff Portal</div>
+              </ProtectedRoute>
+            }
+          />
+        </Routes>
+      </MemoryRouter>
+    );
+
+    expect(screen.getByTestId('staff-content')).toHaveTextContent('Staff Portal');
+  });
+
+  it('redirects to / when user role is not in allowedRoles', () => {
+    vi.spyOn(AuthContextModule, 'useAuth').mockReturnValue({
+      status: 'authenticated',
+      isLoading: false,
+      isError: false,
+      isAuthenticated: true,
+      user: { id: 5, email: 'patient@dentcare.com', role: 'PATIENT' }
+    });
+
+    render(
+      <MemoryRouter initialEntries={['/staff-only']}>
+        <Routes>
+          <Route
+            path="/staff-only"
+            element={
+              <ProtectedRoute allowedRoles={['ADMINISTRATOR', 'RECEPTIONIST']}>
+                <div data-testid="staff-content">Staff Portal</div>
+              </ProtectedRoute>
+            }
+          />
+          <Route path="/" element={<div data-testid="home-page">Home Page</div>} />
+        </Routes>
+      </MemoryRouter>
+    );
+
+    expect(screen.queryByTestId('staff-content')).not.toBeInTheDocument();
+    expect(screen.getByTestId('home-page')).toBeInTheDocument();
+  });
 });

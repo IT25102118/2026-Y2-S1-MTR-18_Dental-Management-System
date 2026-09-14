@@ -10,11 +10,13 @@ import InventoryOverviewPage from './features/inventory/pages/InventoryOverviewP
 import PatientRegistrationPage from './features/auth/pages/PatientRegistrationPage';
 import LoginPage from './features/auth/pages/LoginPage';
 import AccountPage from './features/auth/pages/AccountPage';
+import InvoiceListPage from './features/billing/pages/InvoiceListPage';
 import ProtectedRoute from './features/auth/components/ProtectedRoute';
 import { AuthProvider, useAuth } from './features/auth/context/AuthContext';
 
 function RootPage() {
   const { isAuthenticated, user } = useAuth();
+  const isStaffBilling = isAuthenticated && (user?.role === 'ADMINISTRATOR' || user?.role === 'RECEPTIONIST');
 
   return (
     <div style={{ padding: '2rem', maxWidth: '800px', margin: '0 auto' }}>
@@ -28,6 +30,11 @@ function RootPage() {
           <li>
             <Link to="/inventory">Inventory Management</Link>
           </li>
+          {isStaffBilling && (
+            <li>
+              <Link to="/billing/invoices">Invoices &amp; Billing</Link>
+            </li>
+          )}
           {isAuthenticated ? (
             <li>
               <Link to="/account">My Account ({user?.firstName || 'User'})</Link>
@@ -60,6 +67,22 @@ export default function App() {
           element={
             <ProtectedRoute>
               <AccountPage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/billing/invoices"
+          element={
+            <ProtectedRoute allowedRoles={['ADMINISTRATOR', 'RECEPTIONIST']}>
+              <InvoiceListPage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/invoices"
+          element={
+            <ProtectedRoute allowedRoles={['ADMINISTRATOR', 'RECEPTIONIST']}>
+              <InvoiceListPage />
             </ProtectedRoute>
           }
         />

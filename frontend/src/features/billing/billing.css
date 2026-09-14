@@ -1,0 +1,128 @@
+/* Feature-scoped styles for Billing and Payment Management (MF-05) */
+
+.billing-container {
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 1.5rem;
+  color: #1e293b;
+}
+
+.billing-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+}
+
+.billing-header h1 {
+  margin: 0;
+  font-size: 1.75rem;
+  color: #0f172a;
+}
+
+.billing-nav {
+  margin-bottom: 1rem;
+}
+
+.billing-nav a {
+  color: #2563eb;
+  text-decoration: none;
+  font-size: 0.9rem;
+}
+
+.billing-nav a:hover {
+  text-decoration: underline;
+}
+
+/* Status Badges */
+.badge-status-draft {
+  background-color: #f1f5f9;
+  color: #475569;
+  border: 1px solid #cbd5e1;
+}
+
+.badge-status-unpaid {
+  background-color: #fee2e2;
+  color: #b91c1c;
+}
+
+.badge-status-partially-paid {
+  background-color: #fef3c7;
+  color: #b45309;
+}
+
+.badge-status-paid {
+  background-color: #dcfce7;
+  color: #15803d;
+}
+
+.badge-status-cancelled {
+  background-color: #f3f4f6;
+  color: #94a3b8;
+  text-decoration: line-through;
+  border: 1px solid #e2e8f0;
+}
+
+/* Filter Card */
+.filter-card {
+  background-color: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-radius: 6px;
+  padding: 1.25rem;
+  margin-bottom: 1.5rem;
+}
+
+.filter-form {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  gap: 1rem;
+}
+
+.filter-form .form-group {
+  flex: 1 1 180px;
+  margin-bottom: 0;
+}
+
+.filter-actions {
+  display: flex;
+  gap: 0.5rem;
+  align-items: flex-end;
+}
+
+/* Billing Table */
+.billing-table {
+  width: 100%;
+  border-collapse: collapse;
+  text-align: left;
+  font-size: 0.875rem;
+}
+
+.billing-table th {
+  background-color: #f8fafc;
+  padding: 0.75rem 1rem;
+  font-weight: 600;
+  color: #475569;
+  border-bottom: 1px solid #e2e8f0;
+}
+
+.billing-table td {
+  padding: 0.75rem 1rem;
+  border-bottom: 1px solid #f1f5f9;
+  vertical-align: middle;
+}
+
+.billing-table tr:hover td {
+  background-color: #f8fafc;
+}
+
+.amount-cell {
+  font-variant-numeric: tabular-nums;
+  text-align: right;
+}
+
+.billing-table th.amount-header {
+  text-align: right;
+}

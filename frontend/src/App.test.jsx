@@ -44,6 +44,10 @@ vi.mock('./features/inventory/api/alertApi', () => ({
   })
 }));
 
+vi.mock('./features/billing/api/billingApi', () => ({
+  getInvoices: vi.fn().mockResolvedValue([])
+}));
+
 vi.mock('./features/auth/api/authApi', async () => {
   const actual = await vi.importActual('./features/auth/api/authApi');
   return {
@@ -205,5 +209,33 @@ describe('Frontend Runtime Smoke Tests', () => {
     expect(screen.queryByText(/dental assistant/i)).not.toBeInTheDocument();
     expect(screen.queryByText(/responsibleUserId/i)).not.toBeInTheDocument();
     expect(screen.getByText(/shared authentication\/current-user integration/i)).toBeInTheDocument();
+  });
+
+  it('routes /billing/invoices to invoice list page when authenticated as staff', async () => {
+    authApi.getCurrentUser.mockResolvedValueOnce({
+      id: 1,
+      email: 'reception@dentcare.com',
+      firstName: 'Reception',
+      lastName: 'Staff',
+      role: 'RECEPTIONIST'
+    });
+
+    render(
+      <MemoryRouter initialEntries={['/billing/invoices']}>
+        <App />
+      </MemoryRouter>
+    );
+
+    expect(await screen.findByRole('heading', { name: /^Invoices$/i, level: 1 })).toBeInTheDocument();
+  });
+
+  it('redirects unauthenticated access from /billing/invoices to /login', async () => {
+    render(
+      <MemoryRouter initialEntries={['/billing/invoices']}>
+        <App />
+      </MemoryRouter>
+    );
+
+    expect(await screen.findByRole('heading', { name: /Sign In/i, level: 1 })).toBeInTheDocument();
   });
 });
