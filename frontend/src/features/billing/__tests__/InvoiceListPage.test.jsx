@@ -333,7 +333,7 @@ describe('InvoiceListPage (UI-BIL-01)', () => {
     expect(billingApi.getInvoices.mock.calls.length).toBe(initialCallCount);
   });
 
-  it('19. no row actions (edit, issue, cancel, pay, receipt, view detail) rendered in table', async () => {
+  it('19a. non-draft row has no operational action buttons (issue, cancel, pay, receipt, edit)', async () => {
     billingApi.getInvoices.mockResolvedValueOnce([sampleInvoices[0]]);
 
     render(
@@ -347,12 +347,45 @@ describe('InvoiceListPage (UI-BIL-01)', () => {
     });
 
     const table = screen.getByRole('table');
-    expect(within(table).queryByRole('button', { name: /edit/i })).not.toBeInTheDocument();
+    expect(within(table).queryByRole('link', { name: /edit/i })).not.toBeInTheDocument();
     expect(within(table).queryByRole('button', { name: /issue/i })).not.toBeInTheDocument();
     expect(within(table).queryByRole('button', { name: /cancel/i })).not.toBeInTheDocument();
     expect(within(table).queryByRole('button', { name: /pay/i })).not.toBeInTheDocument();
     expect(within(table).queryByRole('button', { name: /receipt/i })).not.toBeInTheDocument();
     expect(within(table).queryByRole('link', { name: /view/i })).not.toBeInTheDocument();
+  });
+
+  it('19b. draft row renders Edit link pointing to edit form', async () => {
+    billingApi.getInvoices.mockResolvedValueOnce([sampleInvoices[3]]); // ID 4 is DRAFT
+
+    render(
+      <MemoryRouter>
+        <InvoiceListPage />
+      </MemoryRouter>
+    );
+
+    await waitFor(() => {
+      expect(screen.getByText('INV-2026-0004')).toBeInTheDocument();
+    });
+
+    const table = screen.getByRole('table');
+    const editLink = within(table).getByRole('link', { name: /edit/i });
+    expect(editLink).toBeInTheDocument();
+    expect(editLink).toHaveAttribute('href', '/billing/invoices/4/edit');
+  });
+
+  it('19c. header renders Create Invoice link pointing to new invoice form', async () => {
+    billingApi.getInvoices.mockResolvedValueOnce([]);
+
+    render(
+      <MemoryRouter>
+        <InvoiceListPage />
+      </MemoryRouter>
+    );
+
+    const createLink = screen.getByRole('link', { name: /\+ create invoice/i });
+    expect(createLink).toBeInTheDocument();
+    expect(createLink).toHaveAttribute('href', '/billing/invoices/new');
   });
 
   it('20a. role-aware navigation: ADMINISTRATOR sees Invoices & Billing link on home page', async () => {

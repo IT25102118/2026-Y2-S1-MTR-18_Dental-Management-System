@@ -81,6 +81,9 @@ export default function InvoiceListPage() {
 
       <div className="billing-header">
         <h1>Invoices</h1>
+        <Link to="/billing/invoices/new" className="btn btn-primary">
+          Create Invoice
+        </Link>
       </div>
 
       <InvoiceFilters
@@ -128,6 +131,7 @@ export default function InvoiceListPage() {
                 <th scope="col" className="amount-header">Paid</th>
                 <th scope="col" className="amount-header">Balance</th>
                 <th scope="col">Status</th>
+                <th scope="col">Actions</th>
               </tr>
             </thead>
             <tbody>
@@ -141,6 +145,19 @@ export default function InvoiceListPage() {
                   <td className="amount-cell">{formatAmount(inv.balanceAmount)}</td>
                   <td>
                     <InvoiceStatusBadge status={inv.status} />
+                  </td>
+                  <td>
+                    {inv.status === 'DRAFT' ? (
+                      <Link
+                        to={`/billing/invoices/${inv.id}/edit`}
+                        className="btn btn-secondary btn-sm"
+                        aria-label={`Edit draft ${inv.invoiceNumber}`}
+                      >
+                        Edit
+                      </Link>
+                    ) : (
+                      <span className="text-muted">—</span>
+                    )}
                   </td>
                 </tr>
               ))}

@@ -11,6 +11,7 @@ import PatientRegistrationPage from './features/auth/pages/PatientRegistrationPa
 import LoginPage from './features/auth/pages/LoginPage';
 import AccountPage from './features/auth/pages/AccountPage';
 import InvoiceListPage from './features/billing/pages/InvoiceListPage';
+import InvoiceFormPage from './features/billing/pages/InvoiceFormPage';
 import ProtectedRoute from './features/auth/components/ProtectedRoute';
 import { AuthProvider, useAuth } from './features/auth/context/AuthContext';
 
@@ -79,10 +80,42 @@ export default function App() {
           }
         />
         <Route
+          path="/billing/invoices/new"
+          element={
+            <ProtectedRoute allowedRoles={['ADMINISTRATOR', 'RECEPTIONIST']}>
+              <InvoiceFormPage mode="create" />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/billing/invoices/:id/edit"
+          element={
+            <ProtectedRoute allowedRoles={['ADMINISTRATOR', 'RECEPTIONIST']}>
+              <InvoiceFormPage mode="edit" />
+            </ProtectedRoute>
+          }
+        />
+        <Route
           path="/invoices"
           element={
             <ProtectedRoute allowedRoles={['ADMINISTRATOR', 'RECEPTIONIST']}>
               <InvoiceListPage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/invoices/new"
+          element={
+            <ProtectedRoute allowedRoles={['ADMINISTRATOR', 'RECEPTIONIST']}>
+              <InvoiceFormPage mode="create" />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/invoices/:id/edit"
+          element={
+            <ProtectedRoute allowedRoles={['ADMINISTRATOR', 'RECEPTIONIST']}>
+              <InvoiceFormPage mode="edit" />
             </ProtectedRoute>
           }
         />

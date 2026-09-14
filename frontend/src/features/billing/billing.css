@@ -126,3 +126,94 @@
 .billing-table th.amount-header {
   text-align: right;
 }
+
+/* Invoice Form & Line Items */
+.form-card {
+  background-color: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-radius: 6px;
+  padding: 1.5rem;
+  max-width: 850px;
+}
+
+.form-grid-2 {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 1rem;
+}
+
+.items-section {
+  margin: 1.75rem 0;
+  border-top: 1px solid #e2e8f0;
+  padding-top: 1.25rem;
+}
+
+.items-section-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1rem;
+}
+
+.items-section-header h2 {
+  margin: 0;
+  font-size: 1.15rem;
+  color: #1e293b;
+}
+
+.items-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-bottom: 1rem;
+}
+
+.items-table th,
+.items-table td {
+  padding: 0.5rem;
+  border-bottom: 1px solid #f1f5f9;
+  vertical-align: top;
+}
+
+.items-table th {
+  background-color: #f8fafc;
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: #475569;
+  text-align: left;
+}
+
+.items-table td .form-input {
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.preview-card {
+  background-color: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 6px;
+  padding: 1rem 1.25rem;
+  margin: 1.5rem 0;
+  max-width: 400px;
+  margin-left: auto;
+}
+
+.preview-row {
+  display: flex;
+  justify-content: space-between;
+  padding: 0.25rem 0;
+  font-size: 0.9rem;
+  color: #475569;
+}
+
+.preview-total {
+  font-weight: 700;
+  font-size: 1.05rem;
+  color: #0f172a;
+  border-top: 1px solid #cbd5e1;
+  padding-top: 0.5rem;
+  margin-top: 0.25rem;
+}
+
+.text-muted {
+  color: #94a3b8;
+}
