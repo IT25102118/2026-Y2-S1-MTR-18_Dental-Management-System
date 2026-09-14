@@ -99,4 +99,32 @@ public interface PaymentRepository extends JpaRepository<Payment, Long> {
             LocalDateTime startDateTime,
             LocalDateTime endDateTime
     );
+
+    /**
+     * Calculates total clinic income over an explicit half-open date/time range [startDateTime, endDateTime).
+     * Sums only valid RECORDED payments; REVERSED payments are strictly excluded.
+     * Returns null if no recorded payments exist in the specified window.
+     */
+    @Query("SELECT SUM(p.amount) FROM Payment p " +
+           "WHERE p.status = com.dentcare.billing.entity.PaymentStatus.RECORDED " +
+           "AND p.paidAt >= :startDateTime AND p.paidAt < :endDateTime")
+    BigDecimal sumRecordedPaymentsInPeriod(
+            @Param("startDateTime") LocalDateTime startDateTime,
+            @Param("endDateTime") LocalDateTime endDateTime
+    );
+
+    /**
+     * Calculates clinic income for a specific payment method over an explicit half-open date/time range [startDateTime, endDateTime).
+     * Sums only valid RECORDED payments; REVERSED payments are strictly excluded.
+     * Returns null if no recorded payments exist for that method in the window.
+     */
+    @Query("SELECT SUM(p.amount) FROM Payment p " +
+           "WHERE p.status = com.dentcare.billing.entity.PaymentStatus.RECORDED " +
+           "AND p.paymentMethod = :method " +
+           "AND p.paidAt >= :startDateTime AND p.paidAt < :endDateTime")
+    BigDecimal sumRecordedPaymentsByMethodInPeriod(
+            @Param("method") PaymentMethod method,
+            @Param("startDateTime") LocalDateTime startDateTime,
+            @Param("endDateTime") LocalDateTime endDateTime
+    );
 }

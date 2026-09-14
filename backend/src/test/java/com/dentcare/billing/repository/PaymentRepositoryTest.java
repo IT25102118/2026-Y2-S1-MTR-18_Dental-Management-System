@@ -210,4 +210,67 @@ class PaymentRepositoryTest {
         assertThat(foundReversal.get().getPaymentNumber()).isEqualTo("REC-REV-01");
         assertThat(foundReversal.get().getReversalReason()).isEqualTo("Full refund authorized");
     }
+
+    @Test
+    @DisplayName("sumRecordedPaymentsInPeriod aggregates valid payments with start-inclusive, end-exclusive semantics")
+    void testSumRecordedPaymentsInPeriodSemantics() {
+        Invoice invoice = new Invoice("INV-2026-0308", 408L, LocalDate.now());
+        Invoice savedInvoice = entityManager.persistAndFlush(invoice);
+
+        LocalDateTime periodStart = LocalDateTime.of(2026, 9, 15, 0, 0, 0);
+        LocalDateTime periodEnd = LocalDateTime.of(2026, 9, 16, 0, 0, 0);
+
+        // Exactly at periodStart (inclusive)
+        Payment payAtStart = new Payment(savedInvoice, "REC-PER-01", new BigDecimal("100.00"), PaymentMethod.CASH, null, periodStart, 1L);
+        payAtStart.setStatus(PaymentStatus.RECORDED);
+
+        // Midday (inclusive)
+        Payment payMidday = new Payment(savedInvoice, "REC-PER-02", new BigDecimal("150.50"), PaymentMethod.CARD, null, LocalDateTime.of(2026, 9, 15, 12, 30, 0), 1L);
+        payMidday.setStatus(PaymentStatus.RECORDED);
+
+        // REVERSED payment during period (must be excluded)
+        Payment payReversed = new Payment(savedInvoice, "REC-PER-03", new BigDecimal("80.00"), PaymentMethod.CASH, null, LocalDateTime.of(2026, 9, 15, 14, 0, 0), 1L);
+        payReversed.setStatus(PaymentStatus.REVERSED);
+        payReversed.setReversalReason("Error");
+
+        // Exactly at periodEnd (exclusive - must NOT be included)
+        Payment payAtEnd = new Payment(savedInvoice, "REC-PER-04", new BigDecimal("200.00"), PaymentMethod.BANK_TRANSFER, null, periodEnd, 1L);
+        payAtEnd.setStatus(PaymentStatus.RECORDED);
+
+        entityManager.persist(payAtStart);
+        entityManager.persist(payMidday);
+        entityManager.persist(payReversed);
+        entityManager.persist(payAtEnd);
+        entityManager.flush();
+
+        BigDecimal total = paymentRepository.sumRecordedPaymentsInPeriod(periodStart, periodEnd);
+        assertThat(total).isNotNull();
+        // 100.00 + 150.50 = 250.50
+        assertThat(total).isEqualByComparingTo(new BigDecimal("250.50"));
+
+        BigDecimal cashSum = paymentRepository.sumRecordedPaymentsByMethodInPeriod(PaymentMethod.CASH, periodStart, periodEnd);
+        assertThat(cashSum).isEqualByComparingTo(new BigDecimal("100.00"));
+
+        BigDecimal cardSum = paymentRepository.sumRecordedPaymentsByMethodInPeriod(PaymentMethod.CARD, periodStart, periodEnd);
+        assertThat(cardSum).isEqualByComparingTo(new BigDecimal("150.50"));
+
+        BigDecimal transferSum = paymentRepository.sumRecordedPaymentsByMethodInPeriod(PaymentMethod.BANK_TRANSFER, periodStart, periodEnd);
+        assertThat(transferSum).isNull();
+
+        BigDecimal otherSum = paymentRepository.sumRecordedPaymentsByMethodInPeriod(PaymentMethod.OTHER, periodStart, periodEnd);
+        assertThat(otherSum).isNull();
+    }
+
+    @Test
+    @DisplayName("sumRecordedPaymentsInPeriod returns null when no payments exist in period")
+    void testSumRecordedPaymentsInPeriodEmpty() {
+        LocalDateTime periodStart = LocalDateTime.of(2026, 1, 1, 0, 0, 0);
+        LocalDateTime periodEnd = LocalDateTime.of(2026, 1, 2, 0, 0, 0);
+
+        BigDecimal total = paymentRepository.sumRecordedPaymentsInPeriod(periodStart, periodEnd);
+        assertThat(total).isNull();
+
+        BigDecimal methodSum = paymentRepository.sumRecordedPaymentsByMethodInPeriod(PaymentMethod.CASH, periodStart, periodEnd);
+        assertThat(methodSum).isNull();
+    }
 }
