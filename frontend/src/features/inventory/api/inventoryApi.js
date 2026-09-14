@@ -187,7 +187,7 @@ export async function createItem(payload) {
     category: payload.category?.trim(),
     unit: payload.unit?.trim(),
     reorderLevel: Number(payload.reorderLevel),
-    defaultSupplierReference: payload.defaultSupplierReference ? payload.defaultSupplierReference.trim() : null
+    defaultSupplierReference: payload.defaultSupplierReference?.trim() || null
   };
   return request('/api/inventory/items', {
     method: 'POST',
@@ -205,7 +205,7 @@ export async function updateItem(id, payload) {
     category: payload.category?.trim(),
     unit: payload.unit?.trim(),
     reorderLevel: Number(payload.reorderLevel),
-    defaultSupplierReference: payload.defaultSupplierReference ? payload.defaultSupplierReference.trim() : null
+    defaultSupplierReference: payload.defaultSupplierReference?.trim() || null
   };
   return request(`/api/inventory/items/${id}`, {
     method: 'PUT',

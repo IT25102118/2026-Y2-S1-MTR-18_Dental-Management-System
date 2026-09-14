@@ -15,7 +15,7 @@ export default function InventoryPagination({
     return null;
   }
 
-  const currentPageDisplay = totalPages > 0 ? page + 1 : 1;
+  const currentPageDisplay = totalPages > 0 ? Math.min(page + 1, totalPages) : 1;
   const isFirst = page <= 0;
   const isLast = totalPages === 0 || page >= totalPages - 1;
 

@@ -40,6 +40,10 @@ export default function InventoryItemsPage() {
         size: 20,
         sort: 'name,asc'
       });
+      if (data.totalPages > 0 && pageNum >= data.totalPages) {
+        fetchItems(currentFilters, data.totalPages - 1);
+        return;
+      }
       setItems(data.content);
       setPageInfo({
         number: data.number,
