@@ -1,3 +1,5 @@
+import { getCsrfToken } from '../../auth/api/authApi';
+
 /**
  * API client for Clinical Examination operations.
  * Communicates with backend Step 4C-1 /api/clinical/examinations endpoints.
@@ -20,13 +22,23 @@ export class ClinicalApiError extends Error {
  */
 export async function request(endpoint, options = {}) {
   const { body, headers = {}, ...restOptions } = options;
+  const method = (options.method || 'GET').toUpperCase();
+
   const config = {
     ...restOptions,
+    method,
+    credentials: 'same-origin',
     headers: {
       'Accept': 'application/json',
       ...headers
     }
   };
+
+  const stateChangingMethods = ['POST', 'PUT', 'PATCH', 'DELETE'];
+  if (stateChangingMethods.includes(method)) {
+    const csrf = await getCsrfToken();
+    config.headers[csrf.headerName] = csrf.token;
+  }
 
   if (body !== undefined && body !== null) {
     config.body = JSON.stringify(body);

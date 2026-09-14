@@ -14,6 +14,14 @@ import {
   ClinicalApiError
 } from '../api/treatmentPlanApi';
 
+vi.mock('../../auth/api/authApi', () => ({
+  getCsrfToken: vi.fn(() => Promise.resolve({
+    token: 'test-csrf-token',
+    headerName: 'X-XSRF-TOKEN',
+    parameterName: '_csrf'
+  }))
+}));
+
 describe('treatmentPlanApi client', () => {
   const originalFetch = global.fetch;
 

@@ -12,6 +12,7 @@ vi.mock('../../auth/context/AuthContext', () => ({
 }));
 
 import { useAuth } from '../../auth/context/AuthContext';
+import { clearCsrfToken } from '../../auth/api/authApi';
 
 function mockJsonResponse(data, status = 200) {
   return {
@@ -59,6 +60,7 @@ describe('Clinical workflow integration', () => {
 
   beforeEach(() => {
     vi.clearAllMocks();
+    clearCsrfToken();
     useAuth.mockReturnValue({
       user: { id: 7, role: 'DENTIST', firstName: 'Sarah', lastName: 'Connor' },
       isAuthenticated: true,
@@ -114,6 +116,15 @@ describe('Clinical workflow integration', () => {
       const method = (options.method || 'GET').toUpperCase();
       const urlString = String(url);
       const [path] = urlString.split('?');
+
+      // 0. CSRF token endpoint
+      if (path === '/api/auth/csrf' && method === 'GET') {
+        return mockJsonResponse({
+          token: 'workflow-csrf-token',
+          headerName: 'X-XSRF-TOKEN',
+          parameterName: '_csrf'
+        });
+      }
 
       // 1. Examinations listing
       if (path === '/api/clinical/examinations' && method === 'GET') {
@@ -312,6 +323,8 @@ describe('Clinical workflow integration', () => {
     );
     expect(findingPostCall).toBeDefined();
     expect(findingPostCall[0]).toBe('/api/clinical/examinations/42/tooth-findings');
+    expect(findingPostCall[1].headers['X-XSRF-TOKEN']).toBe('workflow-csrf-token');
+    expect(findingPostCall[1].credentials).toBe('same-origin');
     expect(JSON.parse(findingPostCall[1].body)).toEqual(
       expect.objectContaining({
         toothNumber: 36,
@@ -560,6 +573,14 @@ describe('Clinical workflow integration', () => {
       const urlString = String(url);
       const [path] = urlString.split('?');
 
+      if (path === '/api/auth/csrf' && method === 'GET') {
+        return mockJsonResponse({
+          token: 'workflow-csrf-token',
+          headerName: 'X-XSRF-TOKEN',
+          parameterName: '_csrf'
+        });
+      }
+
       if (path === '/api/clinical/treatment-plans/201' && method === 'GET') {
         return mockJsonResponse(proposedPlan);
       }
@@ -611,6 +632,8 @@ describe('Clinical workflow integration', () => {
     );
     expect(approveAttemptCall).toBeDefined();
     expect(approveAttemptCall[0]).toBe('/api/clinical/treatment-plans/201/approve');
+    expect(approveAttemptCall[1].headers['X-XSRF-TOKEN']).toBe('workflow-csrf-token');
+    expect(approveAttemptCall[1].credentials).toBe('same-origin');
     expect(JSON.parse(approveAttemptCall[1].body)).toEqual({ dentistId: 7 });
   });
 });
