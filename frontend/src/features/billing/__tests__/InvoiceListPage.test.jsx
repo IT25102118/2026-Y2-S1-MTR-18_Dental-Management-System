@@ -333,7 +333,7 @@ describe('InvoiceListPage (UI-BIL-01)', () => {
     expect(billingApi.getInvoices.mock.calls.length).toBe(initialCallCount);
   });
 
-  it('19a. non-draft row has no operational action buttons (issue, cancel, pay, receipt, edit)', async () => {
+  it('19a. non-draft row renders View link but no edit, issue, cancel, pay, or receipt actions', async () => {
     billingApi.getInvoices.mockResolvedValueOnce([sampleInvoices[0]]);
 
     render(
@@ -347,15 +347,18 @@ describe('InvoiceListPage (UI-BIL-01)', () => {
     });
 
     const table = screen.getByRole('table');
+    const viewLink = within(table).getByRole('link', { name: /view/i });
+    expect(viewLink).toBeInTheDocument();
+    expect(viewLink).toHaveAttribute('href', '/billing/invoices/1');
+
     expect(within(table).queryByRole('link', { name: /edit/i })).not.toBeInTheDocument();
     expect(within(table).queryByRole('button', { name: /issue/i })).not.toBeInTheDocument();
     expect(within(table).queryByRole('button', { name: /cancel/i })).not.toBeInTheDocument();
     expect(within(table).queryByRole('button', { name: /pay/i })).not.toBeInTheDocument();
     expect(within(table).queryByRole('button', { name: /receipt/i })).not.toBeInTheDocument();
-    expect(within(table).queryByRole('link', { name: /view/i })).not.toBeInTheDocument();
   });
 
-  it('19b. draft row renders Edit link pointing to edit form', async () => {
+  it('19b. draft row renders View link and Edit link pointing to form', async () => {
     billingApi.getInvoices.mockResolvedValueOnce([sampleInvoices[3]]); // ID 4 is DRAFT
 
     render(
@@ -369,6 +372,10 @@ describe('InvoiceListPage (UI-BIL-01)', () => {
     });
 
     const table = screen.getByRole('table');
+    const viewLink = within(table).getByRole('link', { name: /view/i });
+    expect(viewLink).toBeInTheDocument();
+    expect(viewLink).toHaveAttribute('href', '/billing/invoices/4');
+
     const editLink = within(table).getByRole('link', { name: /edit/i });
     expect(editLink).toBeInTheDocument();
     expect(editLink).toHaveAttribute('href', '/billing/invoices/4/edit');

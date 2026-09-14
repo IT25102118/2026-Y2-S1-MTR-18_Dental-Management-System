@@ -147,17 +147,24 @@ export default function InvoiceListPage() {
                     <InvoiceStatusBadge status={inv.status} />
                   </td>
                   <td>
-                    {inv.status === 'DRAFT' ? (
+                    <div className="table-actions">
                       <Link
-                        to={`/billing/invoices/${inv.id}/edit`}
+                        to={`/billing/invoices/${inv.id}`}
                         className="btn btn-secondary btn-sm"
-                        aria-label={`Edit draft ${inv.invoiceNumber}`}
+                        aria-label={`View invoice ${inv.invoiceNumber}`}
                       >
-                        Edit
+                        View
                       </Link>
-                    ) : (
-                      <span className="text-muted">—</span>
-                    )}
+                      {inv.status === 'DRAFT' && (
+                        <Link
+                          to={`/billing/invoices/${inv.id}/edit`}
+                          className="btn btn-secondary btn-sm"
+                          aria-label={`Edit draft ${inv.invoiceNumber}`}
+                        >
+                          Edit
+                        </Link>
+                      )}
+                    </div>
                   </td>
                 </tr>
               ))}
