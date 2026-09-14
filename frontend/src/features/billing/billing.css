@@ -65,6 +65,16 @@
   border: 1px solid #e2e8f0;
 }
 
+.badge-payment-recorded {
+  background-color: #dcfce7;
+  color: #15803d;
+}
+
+.badge-payment-reversed {
+  background-color: #fee2e2;
+  color: #b91c1c;
+}
+
 /* Filter Card */
 .filter-card {
   background-color: #ffffff;

@@ -1,8 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useParams } from 'react-router-dom';
-import { getInvoice, issueInvoice, cancelInvoice, BillingApiError } from '../api/billingApi';
+import { getInvoice, getInvoicePayments, issueInvoice, cancelInvoice, BillingApiError } from '../api/billingApi';
 import InvoiceStatusBadge from '../components/InvoiceStatusBadge';
 import PaymentDialog from '../components/PaymentDialog';
+import ReversePaymentDialog from '../components/ReversePaymentDialog';
 import '../billing.css';
 
 /**
@@ -55,6 +56,25 @@ export default function InvoiceDetailPage() {
   const [successMessage, setSuccessMessage] = useState('');
   const [showPaymentDialog, setShowPaymentDialog] = useState(false);
 
+  // Payment History State
+  const [payments, setPayments] = useState([]);
+  const [paymentsLoading, setPaymentsLoading] = useState(true);
+  const [paymentsError, setPaymentsError] = useState(null);
+  const [selectedPaymentToReverse, setSelectedPaymentToReverse] = useState(null);
+
+  const fetchPayments = async (invoiceId) => {
+    setPaymentsLoading(true);
+    setPaymentsError(null);
+    try {
+      const data = await getInvoicePayments(invoiceId);
+      setPayments(data || []);
+    } catch (err) {
+      setPaymentsError(err.message || 'Failed to load payment history.');
+    } finally {
+      setPaymentsLoading(false);
+    }
+  };
+
   useEffect(() => {
     let isMounted = true;
     setLoading(true);
@@ -65,6 +85,7 @@ export default function InvoiceDetailPage() {
       .then((data) => {
         if (isMounted) {
           setInvoice(data);
+          fetchPayments(data.id);
         }
       })
       .catch((err) => {
@@ -138,10 +159,28 @@ export default function InvoiceDetailPage() {
     setSuccessMessage('Payment recorded successfully.');
     setActionError(null);
     try {
-      const refreshed = await getInvoice(invoice.id);
+      const [refreshed] = await Promise.all([
+        getInvoice(invoice.id),
+        fetchPayments(invoice.id)
+      ]);
       setInvoice(refreshed);
     } catch (err) {
       setActionError(err.message || 'Payment recorded, but failed to refresh invoice details.');
+    }
+  };
+
+  const handleReversalSuccess = async () => {
+    setSelectedPaymentToReverse(null);
+    setSuccessMessage('Payment reversed successfully.');
+    setActionError(null);
+    try {
+      const [refreshed] = await Promise.all([
+        getInvoice(invoice.id),
+        fetchPayments(invoice.id)
+      ]);
+      setInvoice(refreshed);
+    } catch (err) {
+      setActionError(err.message || 'Payment reversed, but failed to refresh invoice details.');
     }
   };
 
@@ -379,6 +418,98 @@ export default function InvoiceDetailPage() {
         )}
       </div>
 
+      {/* Payment History Section */}
+      <div className="detail-card" aria-label="Payment History">
+        <h2>Payment History</h2>
+        {paymentsLoading ? (
+          <div className="loading-state" role="status" data-testid="payments-loading">
+            Loading payment history...
+          </div>
+        ) : paymentsError ? (
+          <div className="error-alert" role="alert" data-testid="payments-error">
+            <p>{paymentsError}</p>
+            <button
+              type="button"
+              className="btn btn-secondary btn-sm"
+              onClick={() => fetchPayments(invoice.id)}
+            >
+              Retry
+            </button>
+          </div>
+        ) : payments.length === 0 ? (
+          <p className="text-muted" data-testid="no-payments-message" style={{ fontStyle: 'italic', margin: '0.5rem 0' }}>
+            No payments recorded
+          </p>
+        ) : (
+          <div className="table-responsive">
+            <table className="billing-table" aria-label="Payment history table">
+              <thead>
+                <tr>
+                  <th scope="col" style={{ width: '22%' }}>Payment Number</th>
+                  <th scope="col" className="amount-header" style={{ width: '13%' }}>Amount</th>
+                  <th scope="col" style={{ width: '12%' }}>Method</th>
+                  <th scope="col" style={{ width: '13%' }}>Reference</th>
+                  <th scope="col" style={{ width: '14%' }}>Paid At</th>
+                  <th scope="col" style={{ width: '12%' }}>Status</th>
+                  <th scope="col" style={{ width: '14%' }}>Reversal Info</th>
+                  <th scope="col" style={{ width: '10%' }}>Action</th>
+                </tr>
+              </thead>
+              <tbody>
+                {payments.map((p) => (
+                  <tr key={p.id}>
+                    <td>
+                      <span style={{ fontWeight: 600 }}>{p.paymentNumber}</span>
+                      {p.reversalOfPaymentId && (
+                        <div className="text-muted" style={{ fontSize: '0.75rem' }}>
+                          Reversal of payment #{p.reversalOfPaymentId}
+                        </div>
+                      )}
+                    </td>
+                    <td className="amount-cell">{formatAmount(p.amount)}</td>
+                    <td>{p.paymentMethod}</td>
+                    <td>{p.paymentReference || '—'}</td>
+                    <td>{formatDateTime(p.paidAt)}</td>
+                    <td>
+                      <span
+                        className={`badge ${p.status === 'RECORDED' ? 'badge-payment-recorded' : 'badge-payment-reversed'}`}
+                        role="status"
+                      >
+                        {p.status}
+                      </span>
+                    </td>
+                    <td>
+                      {p.reversalReason ? (
+                        <span style={{ fontStyle: 'italic', color: '#64748b' }}>
+                          {p.reversalReason}
+                        </span>
+                      ) : (
+                        '—'
+                      )}
+                    </td>
+                    <td>
+                      {p.status === 'RECORDED' ? (
+                        <button
+                          type="button"
+                          className="btn btn-danger btn-sm"
+                          onClick={() => setSelectedPaymentToReverse(p)}
+                          disabled={actionSubmitting}
+                          aria-label={`Reverse payment ${p.paymentNumber}`}
+                        >
+                          Reverse Payment
+                        </button>
+                      ) : (
+                        <span className="text-muted">—</span>
+                      )}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
+      </div>
+
       {/* Notes Section (rendered when present) */}
       {invoice.notes && (
         <div className="detail-card" aria-label="Invoice Notes">
@@ -395,6 +526,15 @@ export default function InvoiceDetailPage() {
           invoice={invoice}
           onClose={() => setShowPaymentDialog(false)}
           onSuccess={handlePaymentSuccess}
+        />
+      )}
+
+      {/* Reversal Dialog Modal */}
+      {selectedPaymentToReverse && (
+        <ReversePaymentDialog
+          payment={selectedPaymentToReverse}
+          onClose={() => setSelectedPaymentToReverse(null)}
+          onSuccess={handleReversalSuccess}
         />
       )}
     </div>
