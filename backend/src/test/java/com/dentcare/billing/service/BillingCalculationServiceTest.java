@@ -261,13 +261,13 @@ class BillingCalculationServiceTest {
         InvoiceItem item2 = new InvoiceItem(invoice, "Item 2", 1, item2Price, item2Price);
 
         BigDecimal subtotal = service.calculateSubtotal(List.of(item1, item2));
-        assertThat(subtotal).isEqualTo(new BigDecimal("0.30"));
+        assertThat(subtotal).isEqualByComparingTo(new BigDecimal("0.30"));
 
         BigDecimal total = service.calculateTotal(subtotal, BigDecimal.ZERO);
-        assertThat(total).isEqualTo(new BigDecimal("0.30"));
+        assertThat(total).isEqualByComparingTo(new BigDecimal("0.30"));
 
         BigDecimal balance = service.calculateBalance(total, new BigDecimal("0.10"));
-        assertThat(balance).isEqualTo(new BigDecimal("0.20"));
+        assertThat(balance).isEqualByComparingTo(new BigDecimal("0.20"));
     }
 
     // -------------------------------------------------------------------------
