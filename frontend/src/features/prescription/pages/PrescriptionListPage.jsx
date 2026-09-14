@@ -134,14 +134,6 @@ export default function PrescriptionListPage() {
               medication orders
             </p>
           </div>
-
-          <Link
-              to="/prescriptions/new"
-              className="btn btn-primary"
-              id="btn-create-prescription"
-          >
-            + Create Prescription
-          </Link>
         </div>
 
         {error && (
@@ -474,9 +466,7 @@ export default function PrescriptionListPage() {
                             </td>
 
                             <td>
-                              <PrescriptionStatusBadge
-                                  status={rx.status}
-                              />
+                              <PrescriptionStatusBadge status={rx.status} />
                             </td>
 
                             <td>
@@ -486,13 +476,14 @@ export default function PrescriptionListPage() {
 
                             <td>
                               {rx.createdAt
-                                  ? new Date(
-                                      rx.createdAt
-                                  ).toLocaleDateString(undefined, {
-                                    year: 'numeric',
-                                    month: 'short',
-                                    day: 'numeric'
-                                  })
+                                  ? new Date(rx.createdAt).toLocaleDateString(
+                                      undefined,
+                                      {
+                                        year: 'numeric',
+                                        month: 'short',
+                                        day: 'numeric'
+                                      }
+                                  )
                                   : '—'}
                             </td>
 
