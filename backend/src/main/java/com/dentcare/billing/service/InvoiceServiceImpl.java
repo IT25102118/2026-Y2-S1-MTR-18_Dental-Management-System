@@ -19,6 +19,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.List;
 
 /**
  * Production implementation of {@link InvoiceService} orchestrating invoice drafting,
@@ -238,6 +239,15 @@ public class InvoiceServiceImpl implements InvoiceService {
 
         Invoice saved = invoiceRepository.save(invoice);
         return billingMapper.toInvoiceResponse(saved);
+    }
+
+    @Override
+    public List<InvoiceResponse> getInvoices(Long patientId, InvoiceStatus status, LocalDate startDate, LocalDate endDate) {
+        if (startDate != null && endDate != null && startDate.isAfter(endDate)) {
+            throw new BillingValidationException("Start date cannot be after end date");
+        }
+        List<Invoice> invoices = invoiceRepository.searchInvoices(patientId, status, startDate, endDate);
+        return billingMapper.toInvoiceResponses(invoices);
     }
 
     private String generateUniqueInvoiceNumber() {

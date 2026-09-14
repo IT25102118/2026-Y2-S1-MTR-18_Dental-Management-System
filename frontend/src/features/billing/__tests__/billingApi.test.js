@@ -2,6 +2,7 @@ import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import {
   createInvoice,
   updateInvoice,
+  getInvoices,
   getInvoice,
   getInvoiceByNumber,
   issueInvoice,
@@ -108,6 +109,56 @@ describe('billingApi client', () => {
       notes: 'Discount applied'
     });
     expect(result).toEqual(mockUpdated);
+  });
+
+  it('2a. getInvoices sends GET to /api/invoices with no query params when filters are omitted', async () => {
+    const mockInvoices = [
+      { id: 1, invoiceNumber: 'INV-2026-0001', status: InvoiceStatus.UNPAID },
+      { id: 2, invoiceNumber: 'INV-2026-0002', status: InvoiceStatus.DRAFT }
+    ];
+
+    global.fetch.mockResolvedValueOnce({
+      ok: true,
+      status: 200,
+      headers: new Headers({ 'content-type': 'application/json' }),
+      json: async () => mockInvoices
+    });
+
+    const result = await getInvoices();
+
+    expect(global.fetch).toHaveBeenCalledTimes(1);
+    const [url, config] = global.fetch.mock.calls[0];
+    expect(url).toBe('/api/invoices');
+    expect(config.method).toBe('GET');
+    expect(config.credentials).toBe('same-origin');
+    expect(config.headers['X-XSRF-TOKEN']).toBeUndefined();
+    expect(result).toEqual(mockInvoices);
+  });
+
+  it('2b. getInvoices sends GET to /api/invoices with formatted query string when filters provided', async () => {
+    const mockInvoices = [
+      { id: 1, invoiceNumber: 'INV-2026-0001', patientId: 101, status: InvoiceStatus.UNPAID }
+    ];
+
+    global.fetch.mockResolvedValueOnce({
+      ok: true,
+      status: 200,
+      headers: new Headers({ 'content-type': 'application/json' }),
+      json: async () => mockInvoices
+    });
+
+    const result = await getInvoices({
+      patientId: 101,
+      status: InvoiceStatus.UNPAID,
+      startDate: '2026-09-01',
+      endDate: '2026-09-30'
+    });
+
+    expect(global.fetch).toHaveBeenCalledTimes(1);
+    const [url, config] = global.fetch.mock.calls[0];
+    expect(url).toBe('/api/invoices?patientId=101&status=UNPAID&startDate=2026-09-01&endDate=2026-09-30');
+    expect(config.method).toBe('GET');
+    expect(result).toEqual(mockInvoices);
   });
 
   it('3. getInvoice sends GET to /api/invoices/{id} with credentials and no CSRF header', async () => {

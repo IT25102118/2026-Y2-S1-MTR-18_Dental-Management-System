@@ -880,4 +880,78 @@ class InvoiceServiceTest {
         assertThat(invoice.getPaidAmount()).isEqualByComparingTo(BigDecimal.ZERO);
         assertThat(invoice.getBalanceAmount()).isEqualByComparingTo(new BigDecimal("100.00"));
     }
+
+    // -------------------------------------------------------------------------
+    // Invoice Search / List Tests (48 - 52)
+    // -------------------------------------------------------------------------
+
+    @Test
+    @DisplayName("48. getInvoices delegates filters to repository and maps entities to responses")
+    void testGetInvoicesDelegatesToRepositoryAndMaps() {
+        Invoice inv = createTestInvoice(101L, InvoiceStatus.UNPAID, new BigDecimal("100.00"), BigDecimal.ZERO, new BigDecimal("100.00"));
+        LocalDate start = LocalDate.of(2026, 9, 1);
+        LocalDate end = LocalDate.of(2026, 9, 30);
+
+        when(invoiceRepository.searchInvoices(100L, InvoiceStatus.UNPAID, start, end))
+                .thenReturn(List.of(inv));
+
+        List<InvoiceResponse> responses = invoiceService.getInvoices(100L, InvoiceStatus.UNPAID, start, end);
+
+        assertThat(responses).hasSize(1);
+        assertThat(responses.get(0).id()).isEqualTo(101L);
+        assertThat(responses.get(0).status()).isEqualTo(InvoiceStatus.UNPAID);
+        verify(invoiceRepository).searchInvoices(100L, InvoiceStatus.UNPAID, start, end);
+    }
+
+    @Test
+    @DisplayName("49. getInvoices with null filters passes nulls to repository")
+    void testGetInvoicesWithNullFilters() {
+        Invoice inv = createTestInvoice(102L, InvoiceStatus.DRAFT, new BigDecimal("50.00"), BigDecimal.ZERO, new BigDecimal("50.00"));
+
+        when(invoiceRepository.searchInvoices(null, null, null, null))
+                .thenReturn(List.of(inv));
+
+        List<InvoiceResponse> responses = invoiceService.getInvoices(null, null, null, null);
+
+        assertThat(responses).hasSize(1);
+        assertThat(responses.get(0).id()).isEqualTo(102L);
+        verify(invoiceRepository).searchInvoices(null, null, null, null);
+    }
+
+    @Test
+    @DisplayName("50. getInvoices with startDate after endDate throws BillingValidationException")
+    void testGetInvoicesStartDateAfterEndDateThrows() {
+        LocalDate start = LocalDate.of(2026, 9, 30);
+        LocalDate end = LocalDate.of(2026, 9, 1);
+
+        assertThatThrownBy(() -> invoiceService.getInvoices(null, null, start, end))
+                .isInstanceOf(BillingValidationException.class)
+                .hasMessageContaining("Start date cannot be after end date");
+
+        verify(invoiceRepository, never()).searchInvoices(any(), any(), any(), any());
+    }
+
+    @Test
+    @DisplayName("51. getInvoices with equal startDate and endDate is valid")
+    void testGetInvoicesEqualDatesValid() {
+        LocalDate date = LocalDate.of(2026, 9, 15);
+        when(invoiceRepository.searchInvoices(null, null, date, date))
+                .thenReturn(List.of());
+
+        List<InvoiceResponse> responses = invoiceService.getInvoices(null, null, date, date);
+
+        assertThat(responses).isEmpty();
+        verify(invoiceRepository).searchInvoices(null, null, date, date);
+    }
+
+    @Test
+    @DisplayName("52. getInvoices returns empty list when repository returns no matches")
+    void testGetInvoicesEmptyList() {
+        when(invoiceRepository.searchInvoices(null, null, null, null))
+                .thenReturn(List.of());
+
+        List<InvoiceResponse> responses = invoiceService.getInvoices(null, null, null, null);
+
+        assertThat(responses).isEmpty();
+    }
 }

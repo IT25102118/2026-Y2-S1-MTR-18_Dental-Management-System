@@ -65,4 +65,21 @@ public interface InvoiceRepository extends JpaRepository<Invoice, Long> {
      * ordered by invoice date descending.
      */
     List<Invoice> findByPatientIdAndInvoiceDateBetweenOrderByInvoiceDateDescIdDesc(Long patientId, LocalDate startDate, LocalDate endDate);
+
+    /**
+     * Searches invoices matching optional filter criteria (patient ID, status, date range),
+     * ordered by invoice date descending (newest first) and id descending.
+     */
+    @Query("SELECT i FROM Invoice i WHERE " +
+           "(:patientId IS NULL OR i.patientId = :patientId) AND " +
+           "(:status IS NULL OR i.status = :status) AND " +
+           "(:startDate IS NULL OR i.invoiceDate >= :startDate) AND " +
+           "(:endDate IS NULL OR i.invoiceDate <= :endDate) " +
+           "ORDER BY i.invoiceDate DESC, i.id DESC")
+    List<Invoice> searchInvoices(
+            @Param("patientId") Long patientId,
+            @Param("status") InvoiceStatus status,
+            @Param("startDate") LocalDate startDate,
+            @Param("endDate") LocalDate endDate
+    );
 }

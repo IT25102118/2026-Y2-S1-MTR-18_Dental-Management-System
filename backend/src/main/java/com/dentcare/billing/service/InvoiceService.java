@@ -3,6 +3,10 @@ package com.dentcare.billing.service;
 import com.dentcare.billing.dto.CreateInvoiceRequest;
 import com.dentcare.billing.dto.InvoiceResponse;
 import com.dentcare.billing.dto.UpdateDraftInvoiceRequest;
+import com.dentcare.billing.entity.InvoiceStatus;
+
+import java.time.LocalDate;
+import java.util.List;
 
 /**
  * Service interface governing patient invoice creation, drafting, calculation, and issuance (MF-05).
@@ -62,4 +66,16 @@ public interface InvoiceService {
      * @return safe response representation of the cancelled invoice
      */
     InvoiceResponse cancelInvoice(Long invoiceId);
+
+    /**
+     * Retrieves all invoices matching optional filter criteria (patient ID, status, date range),
+     * ordered by invoice date descending (newest first) and ID descending.
+     *
+     * @param patientId optional patient ID filter
+     * @param status    optional invoice status filter
+     * @param startDate optional inclusive start date
+     * @param endDate   optional inclusive end date
+     * @return list of safe invoice responses
+     */
+    List<InvoiceResponse> getInvoices(Long patientId, InvoiceStatus status, LocalDate startDate, LocalDate endDate);
 }

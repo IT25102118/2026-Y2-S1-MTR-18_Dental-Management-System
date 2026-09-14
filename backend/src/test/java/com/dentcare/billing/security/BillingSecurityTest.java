@@ -614,4 +614,59 @@ class BillingSecurityTest {
                         .with(SecurityMockMvcRequestPostProcessors.user(adminUser)))
                 .andExpect(status().isForbidden());
     }
+
+    // ==========================================
+    // 9. INVOICE LISTING (UI-BIL-01) AUTHORIZATION
+    // ==========================================
+
+    @Test
+    @DisplayName("38. Unauthenticated list invoices returns 401 Unauthorized")
+    void testUnauthenticatedListInvoicesReturns401() throws Exception {
+        mockMvc.perform(get("/api/invoices"))
+                .andExpect(status().isUnauthorized());
+    }
+
+    @Test
+    @DisplayName("39. ADMINISTRATOR can list invoices")
+    void testAdminCanListInvoices() throws Exception {
+        when(invoiceService.getInvoices(any(), any(), any(), any())).thenReturn(List.of(sampleInvoiceResponse(1L)));
+
+        mockMvc.perform(get("/api/invoices")
+                        .with(SecurityMockMvcRequestPostProcessors.user(adminUser)))
+                .andExpect(status().isOk());
+    }
+
+    @Test
+    @DisplayName("40. RECEPTIONIST can list invoices")
+    void testReceptionistCanListInvoices() throws Exception {
+        when(invoiceService.getInvoices(any(), any(), any(), any())).thenReturn(List.of(sampleInvoiceResponse(1L)));
+
+        mockMvc.perform(get("/api/invoices")
+                        .with(SecurityMockMvcRequestPostProcessors.user(receptionistUser)))
+                .andExpect(status().isOk());
+    }
+
+    @Test
+    @DisplayName("41. PATIENT is denied generic GET /api/invoices list")
+    void testPatientDeniedInvoiceList() throws Exception {
+        mockMvc.perform(get("/api/invoices")
+                        .with(SecurityMockMvcRequestPostProcessors.user(patientUser)))
+                .andExpect(status().isForbidden());
+    }
+
+    @Test
+    @DisplayName("42. DENTIST is denied GET /api/invoices list")
+    void testDentistDeniedInvoiceList() throws Exception {
+        mockMvc.perform(get("/api/invoices")
+                        .with(SecurityMockMvcRequestPostProcessors.user(dentistUser)))
+                .andExpect(status().isForbidden());
+    }
+
+    @Test
+    @DisplayName("43. DENTAL_ASSISTANT is denied GET /api/invoices list")
+    void testDentalAssistantDeniedInvoiceList() throws Exception {
+        mockMvc.perform(get("/api/invoices")
+                        .with(SecurityMockMvcRequestPostProcessors.user(assistantUser)))
+                .andExpect(status().isForbidden());
+    }
 }

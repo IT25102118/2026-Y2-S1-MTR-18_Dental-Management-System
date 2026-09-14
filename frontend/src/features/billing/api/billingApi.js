@@ -164,6 +164,41 @@ export async function updateInvoice(id, payload) {
 }
 
 /**
+ * Retrieves invoices matching optional filter criteria.
+ * Endpoint: GET /api/invoices?patientId=...&status=...&startDate=...&endDate=...
+ *
+ * @param {Object} [filters]
+ * @param {number} [filters.patientId] Filter by patient ID
+ * @param {string} [filters.status] Filter by invoice status (InvoiceStatus)
+ * @param {string} [filters.startDate] Filter by start date (YYYY-MM-DD)
+ * @param {string} [filters.endDate] Filter by end date (YYYY-MM-DD)
+ * @returns {Promise<import('../types').InvoiceResponse[]>} List of invoices
+ */
+export async function getInvoices({ patientId, status, startDate, endDate } = {}) {
+  const params = new URLSearchParams();
+
+  if (patientId !== undefined && patientId !== null && patientId !== '') {
+    params.set('patientId', String(patientId));
+  }
+  if (status !== undefined && status !== null && status !== '') {
+    params.set('status', status);
+  }
+  if (startDate !== undefined && startDate !== null && startDate !== '') {
+    params.set('startDate', startDate);
+  }
+  if (endDate !== undefined && endDate !== null && endDate !== '') {
+    params.set('endDate', endDate);
+  }
+
+  const queryString = params.toString();
+  const endpoint = queryString ? `/api/invoices?${queryString}` : '/api/invoices';
+
+  return request(endpoint, {
+    method: 'GET'
+  });
+}
+
+/**
  * Retrieves invoice details by ID.
  * Endpoint: GET /api/invoices/{id}
  *

@@ -3,8 +3,10 @@ package com.dentcare.billing.controller;
 import com.dentcare.billing.dto.CreateInvoiceRequest;
 import com.dentcare.billing.dto.InvoiceResponse;
 import com.dentcare.billing.dto.UpdateDraftInvoiceRequest;
+import com.dentcare.billing.entity.InvoiceStatus;
 import com.dentcare.billing.service.InvoiceService;
 import jakarta.validation.Valid;
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -12,9 +14,12 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.net.URI;
+import java.time.LocalDate;
+import java.util.List;
 
 /**
  * REST controller managing invoice creation, draft modification, retrieval, issuance, and cancellation (MF-05).
@@ -28,6 +33,16 @@ public class InvoiceController {
 
     public InvoiceController(InvoiceService invoiceService) {
         this.invoiceService = invoiceService;
+    }
+
+    @GetMapping
+    public ResponseEntity<List<InvoiceResponse>> getInvoices(
+            @RequestParam(required = false) Long patientId,
+            @RequestParam(required = false) InvoiceStatus status,
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate startDate,
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate endDate
+    ) {
+        return ResponseEntity.ok(invoiceService.getInvoices(patientId, status, startDate, endDate));
     }
 
     @PostMapping
