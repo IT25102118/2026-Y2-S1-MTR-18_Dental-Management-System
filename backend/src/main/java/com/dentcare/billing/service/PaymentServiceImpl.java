@@ -2,6 +2,7 @@ package com.dentcare.billing.service;
 
 import com.dentcare.billing.dto.PaymentResponse;
 import com.dentcare.billing.dto.RecordPaymentRequest;
+import com.dentcare.billing.dto.ReversePaymentRequest;
 import com.dentcare.billing.entity.Invoice;
 import com.dentcare.billing.entity.InvoiceStatus;
 import com.dentcare.billing.entity.Payment;
@@ -9,7 +10,9 @@ import com.dentcare.billing.entity.PaymentStatus;
 import com.dentcare.billing.exception.BillingValidationException;
 import com.dentcare.billing.exception.InvalidBillingAmountException;
 import com.dentcare.billing.exception.InvalidInvoiceStatusException;
+import com.dentcare.billing.exception.InvalidPaymentStatusException;
 import com.dentcare.billing.exception.InvoiceNotFoundException;
+import com.dentcare.billing.exception.PaymentNotFoundException;
 import com.dentcare.billing.mapper.BillingMapper;
 import com.dentcare.billing.repository.InvoiceRepository;
 import com.dentcare.billing.repository.PaymentRepository;
@@ -130,6 +133,104 @@ public class PaymentServiceImpl implements PaymentService {
         }
         List<Payment> payments = paymentRepository.findByInvoiceIdOrderByPaidAtAscIdAsc(invoiceId);
         return billingMapper.toPaymentResponses(payments);
+    }
+
+    @Override
+    @Transactional
+    public PaymentResponse reversePayment(Long paymentId, String reason, Long reversedByUserId) {
+        if (paymentId == null) {
+            throw new BillingValidationException("Payment ID is required");
+        }
+        if (reason == null || reason.trim().isEmpty()) {
+            throw new BillingValidationException("Reversal reason is required and cannot be blank");
+        }
+        if (reversedByUserId == null) {
+            throw new BillingValidationException("Reversed by user ID is required");
+        }
+
+        Payment originalPayment = paymentRepository.findById(paymentId)
+                .orElseThrow(() -> new PaymentNotFoundException(paymentId));
+
+        if (originalPayment.getStatus() != PaymentStatus.RECORDED) {
+            throw new InvalidPaymentStatusException(
+                    paymentId,
+                    originalPayment.getStatus(),
+                    "Only RECORDED payments can be reversed"
+            );
+        }
+
+        if (paymentRepository.existsByReversalOfPaymentId(paymentId)) {
+            throw new InvalidPaymentStatusException(
+                    paymentId,
+                    originalPayment.getStatus(),
+                    "Payment has already been reversed"
+            );
+        }
+
+        Invoice invoiceRef = originalPayment.getInvoice();
+        if (invoiceRef == null || invoiceRef.getId() == null) {
+            throw new BillingValidationException("Payment is not associated with a valid invoice");
+        }
+
+        // Lock parent invoice with pessimistic lock to prevent concurrent balance corruption
+        Invoice invoice = invoiceRepository.findByIdForUpdate(invoiceRef.getId())
+                .orElseThrow(() -> new InvoiceNotFoundException(invoiceRef.getId()));
+
+        String cleanReason = reason.trim();
+
+        // 1. Mark original payment as REVERSED and attach reversal reason
+        originalPayment.setStatus(PaymentStatus.REVERSED);
+        originalPayment.setReversalReason(cleanReason);
+        paymentRepository.save(originalPayment);
+
+        // 2. Persist linked reversing compensating record
+        String reversalNumber = generateUniquePaymentNumber();
+        LocalDateTime reversalTime = LocalDateTime.now();
+        Payment reversal = new Payment(
+                invoice,
+                reversalNumber,
+                originalPayment.getAmount(),
+                originalPayment.getPaymentMethod(),
+                originalPayment.getPaymentReference(),
+                reversalTime,
+                reversedByUserId
+        );
+        reversal.setStatus(PaymentStatus.REVERSED);
+        reversal.setReversalOfPaymentId(originalPayment.getId());
+        reversal.setReversalReason(cleanReason);
+        Payment savedReversal = paymentRepository.save(reversal);
+
+        // 3. Recompute authoritative recorded-payment sum (REVERSED payments are strictly excluded)
+        BigDecimal rawRecordedSum = paymentRepository.sumRecordedPaymentsByInvoiceId(invoice.getId());
+        BigDecimal newPaidAmount = billingCalculationService.normalizePaidAmount(rawRecordedSum);
+        BigDecimal newBalance = billingCalculationService.calculateBalance(invoice.getTotalAmount(), newPaidAmount);
+
+        invoice.setPaidAmount(newPaidAmount);
+        invoice.setBalanceAmount(newBalance);
+
+        // 4. Derive invoice status according to canonical correction rules (preserve CANCELLED if applicable)
+        if (invoice.getStatus() != InvoiceStatus.CANCELLED) {
+            if (newPaidAmount.compareTo(BigDecimal.ZERO) == 0) {
+                invoice.setStatus(InvoiceStatus.UNPAID);
+            } else if (newBalance.compareTo(BigDecimal.ZERO) == 0) {
+                invoice.setStatus(InvoiceStatus.PAID);
+            } else {
+                invoice.setStatus(InvoiceStatus.PARTIALLY_PAID);
+            }
+        }
+
+        invoiceRepository.save(invoice);
+
+        return billingMapper.toPaymentResponse(savedReversal);
+    }
+
+    @Override
+    @Transactional
+    public PaymentResponse reversePayment(Long paymentId, ReversePaymentRequest request, Long reversedByUserId) {
+        if (request == null) {
+            throw new BillingValidationException("Reverse payment request is required");
+        }
+        return reversePayment(paymentId, request.getReason(), reversedByUserId);
     }
 
     private String generateUniquePaymentNumber() {

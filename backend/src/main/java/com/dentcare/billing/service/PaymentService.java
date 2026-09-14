@@ -2,6 +2,7 @@ package com.dentcare.billing.service;
 
 import com.dentcare.billing.dto.PaymentResponse;
 import com.dentcare.billing.dto.RecordPaymentRequest;
+import com.dentcare.billing.dto.ReversePaymentRequest;
 
 import java.util.List;
 
@@ -30,4 +31,26 @@ public interface PaymentService {
      * @return list of chronological payment responses
      */
     List<PaymentResponse> getPaymentsForInvoice(Long invoiceId);
+
+    /**
+     * Reverses an existing RECORDED payment transaction with an audit reason.
+     * Transactionally locks the parent invoice, creates a linked reversing record, marks the
+     * original payment as REVERSED, and recalculates the invoice's paid amount, balance, and status.
+     *
+     * @param paymentId        database identifier of the payment to reverse
+     * @param reason           mandatory explanation for the financial reversal
+     * @param reversedByUserId trusted user ID of the authenticated staff member authorizing the reversal
+     * @return safe response representation of the newly created reversing payment record
+     */
+    PaymentResponse reversePayment(Long paymentId, String reason, Long reversedByUserId);
+
+    /**
+     * Reverses an existing RECORDED payment transaction using a structured request object.
+     *
+     * @param paymentId        database identifier of the payment to reverse
+     * @param request          reversal request containing the audit reason
+     * @param reversedByUserId trusted user ID of the authenticated staff member authorizing the reversal
+     * @return safe response representation of the newly created reversing payment record
+     */
+    PaymentResponse reversePayment(Long paymentId, ReversePaymentRequest request, Long reversedByUserId);
 }

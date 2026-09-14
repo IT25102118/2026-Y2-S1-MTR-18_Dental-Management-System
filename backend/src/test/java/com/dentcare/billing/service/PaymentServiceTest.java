@@ -2,15 +2,19 @@ package com.dentcare.billing.service;
 
 import com.dentcare.billing.dto.PaymentResponse;
 import com.dentcare.billing.dto.RecordPaymentRequest;
+import com.dentcare.billing.dto.ReversePaymentRequest;
 import com.dentcare.billing.entity.Invoice;
 import com.dentcare.billing.entity.InvoiceStatus;
 import com.dentcare.billing.entity.Payment;
 import com.dentcare.billing.entity.PaymentMethod;
 import com.dentcare.billing.entity.PaymentStatus;
+import com.dentcare.billing.exception.BillingValidationException;
 import com.dentcare.billing.exception.InvalidBillingAmountException;
 import com.dentcare.billing.exception.InvalidInvoiceStatusException;
+import com.dentcare.billing.exception.InvalidPaymentStatusException;
 import com.dentcare.billing.exception.InvoiceNotFoundException;
 import com.dentcare.billing.exception.OverpaymentException;
+import com.dentcare.billing.exception.PaymentNotFoundException;
 import com.dentcare.billing.mapper.BillingMapper;
 import com.dentcare.billing.repository.InvoiceRepository;
 import com.dentcare.billing.repository.PaymentRepository;
@@ -549,5 +553,374 @@ class PaymentServiceTest {
         assertThat(response.amount()).isEqualByComparingTo(paymentAmt);
         assertThat(invoice.getPaidAmount()).isEqualByComparingTo(paymentAmt);
         assertThat(invoice.getBalanceAmount()).isEqualByComparingTo(expectedBalance);
+    }
+
+    // -------------------------------------------------------------------------
+    // Payment Reversal Tests (28 - 45)
+    // -------------------------------------------------------------------------
+
+    @Test
+    @DisplayName("28. Controlled reversal of RECORDED payment succeeds and recalculates invoice to UNPAID")
+    void testReverseRecordedPaymentSuccess() {
+        Invoice invoice = createTestInvoice(28L, InvoiceStatus.PARTIALLY_PAID, new BigDecimal("100.00"), new BigDecimal("50.00"), new BigDecimal("50.00"));
+        Payment originalPayment = new Payment(invoice, "REC-2026-00028", new BigDecimal("50.00"), PaymentMethod.CASH, "REF-28", LocalDateTime.now().minusDays(1), 10L);
+        originalPayment.setId(280L);
+        originalPayment.setStatus(PaymentStatus.RECORDED);
+
+        when(paymentRepository.findById(280L)).thenReturn(Optional.of(originalPayment));
+        when(paymentRepository.existsByReversalOfPaymentId(280L)).thenReturn(false);
+        when(invoiceRepository.findByIdForUpdate(28L)).thenReturn(Optional.of(invoice));
+        when(paymentNumberGenerator.generate()).thenReturn("REC-2026-00028-REV");
+        when(paymentRepository.existsByPaymentNumber("REC-2026-00028-REV")).thenReturn(false);
+        when(paymentRepository.save(any(Payment.class))).thenAnswer(inv -> inv.getArgument(0));
+        when(paymentRepository.sumRecordedPaymentsByInvoiceId(28L)).thenReturn(BigDecimal.ZERO);
+        when(invoiceRepository.save(any(Invoice.class))).thenAnswer(inv -> inv.getArgument(0));
+
+        PaymentResponse response = paymentService.reversePayment(280L, "Duplicate cash entry", 99L);
+
+        assertThat(response).isNotNull();
+        assertThat(response.status()).isEqualTo(PaymentStatus.REVERSED);
+        assertThat(response.reversalOfPaymentId()).isEqualTo(280L);
+        assertThat(response.reversalReason()).isEqualTo("Duplicate cash entry");
+        assertThat(response.recordedBy()).isEqualTo(99L);
+        assertThat(response.amount()).isEqualByComparingTo(new BigDecimal("50.00"));
+
+        // Verify original payment state updated to REVERSED
+        assertThat(originalPayment.getStatus()).isEqualTo(PaymentStatus.REVERSED);
+        assertThat(originalPayment.getReversalReason()).isEqualTo("Duplicate cash entry");
+
+        // Verify invoice recalculated to UNPAID
+        assertThat(invoice.getPaidAmount()).isEqualByComparingTo(BigDecimal.ZERO);
+        assertThat(invoice.getBalanceAmount()).isEqualByComparingTo(new BigDecimal("100.00"));
+        assertThat(invoice.getStatus()).isEqualTo(InvoiceStatus.UNPAID);
+    }
+
+    @Test
+    @DisplayName("29. Reverse payment via ReversePaymentRequest DTO succeeds")
+    void testReversePaymentViaRequestDtoSuccess() {
+        Invoice invoice = createTestInvoice(29L, InvoiceStatus.PAID, new BigDecimal("80.00"), new BigDecimal("80.00"), BigDecimal.ZERO);
+        Payment originalPayment = new Payment(invoice, "REC-2026-00029", new BigDecimal("80.00"), PaymentMethod.CARD, "TXN-29", LocalDateTime.now(), 10L);
+        originalPayment.setId(290L);
+        originalPayment.setStatus(PaymentStatus.RECORDED);
+
+        when(paymentRepository.findById(290L)).thenReturn(Optional.of(originalPayment));
+        when(paymentRepository.existsByReversalOfPaymentId(290L)).thenReturn(false);
+        when(invoiceRepository.findByIdForUpdate(29L)).thenReturn(Optional.of(invoice));
+        when(paymentNumberGenerator.generate()).thenReturn("REC-2026-00029-REV");
+        when(paymentRepository.existsByPaymentNumber("REC-2026-00029-REV")).thenReturn(false);
+        when(paymentRepository.save(any(Payment.class))).thenAnswer(inv -> inv.getArgument(0));
+        when(paymentRepository.sumRecordedPaymentsByInvoiceId(29L)).thenReturn(BigDecimal.ZERO);
+        when(invoiceRepository.save(any(Invoice.class))).thenAnswer(inv -> inv.getArgument(0));
+
+        ReversePaymentRequest request = new ReversePaymentRequest("Card chargeback requested by patient");
+        PaymentResponse response = paymentService.reversePayment(290L, request, 77L);
+
+        assertThat(response).isNotNull();
+        assertThat(response.reversalReason()).isEqualTo("Card chargeback requested by patient");
+        assertThat(invoice.getStatus()).isEqualTo(InvoiceStatus.UNPAID);
+    }
+
+    @Test
+    @DisplayName("30. Reversing nonexistent payment throws PaymentNotFoundException")
+    void testReverseNonexistentPaymentThrowsNotFound() {
+        when(paymentRepository.findById(999L)).thenReturn(Optional.empty());
+
+        assertThatThrownBy(() -> paymentService.reversePayment(999L, "Reason", 1L))
+                .isInstanceOf(PaymentNotFoundException.class)
+                .hasMessageContaining("999");
+    }
+
+    @Test
+    @DisplayName("31. Reversing with null payment ID throws BillingValidationException")
+    void testReverseNullPaymentIdThrowsValidation() {
+        assertThatThrownBy(() -> paymentService.reversePayment(null, "Reason", 1L))
+                .isInstanceOf(BillingValidationException.class)
+                .hasMessageContaining("Payment ID is required");
+    }
+
+    @Test
+    @DisplayName("32. Reversing with null, empty, or blank reason throws BillingValidationException")
+    void testReverseBlankReasonThrowsValidation() {
+        assertThatThrownBy(() -> paymentService.reversePayment(1L, (String) null, 1L))
+                .isInstanceOf(BillingValidationException.class)
+                .hasMessageContaining("Reversal reason is required");
+
+        assertThatThrownBy(() -> paymentService.reversePayment(1L, "", 1L))
+                .isInstanceOf(BillingValidationException.class)
+                .hasMessageContaining("Reversal reason is required");
+
+        assertThatThrownBy(() -> paymentService.reversePayment(1L, "   ", 1L))
+                .isInstanceOf(BillingValidationException.class)
+                .hasMessageContaining("Reversal reason is required");
+    }
+
+    @Test
+    @DisplayName("33. Reversing with null reversedByUserId throws BillingValidationException")
+    void testReverseNullUserIdThrowsValidation() {
+        assertThatThrownBy(() -> paymentService.reversePayment(1L, "Valid reason", null))
+                .isInstanceOf(BillingValidationException.class)
+                .hasMessageContaining("Reversed by user ID is required");
+    }
+
+    @Test
+    @DisplayName("34. Reversing with null ReversePaymentRequest throws BillingValidationException")
+    void testReverseNullRequestDtoThrowsValidation() {
+        assertThatThrownBy(() -> paymentService.reversePayment(1L, (ReversePaymentRequest) null, 1L))
+                .isInstanceOf(BillingValidationException.class)
+                .hasMessageContaining("Reverse payment request is required");
+    }
+
+    @Test
+    @DisplayName("35. Reversing already REVERSED payment throws InvalidPaymentStatusException")
+    void testReverseAlreadyReversedPaymentThrowsInvalidPaymentStatus() {
+        Invoice invoice = createTestInvoice(35L, InvoiceStatus.UNPAID, new BigDecimal("100.00"), BigDecimal.ZERO, new BigDecimal("100.00"));
+        Payment alreadyReversed = new Payment(invoice, "REC-35", new BigDecimal("50.00"), PaymentMethod.CASH, null, LocalDateTime.now(), 1L);
+        alreadyReversed.setId(350L);
+        alreadyReversed.setStatus(PaymentStatus.REVERSED);
+
+        when(paymentRepository.findById(350L)).thenReturn(Optional.of(alreadyReversed));
+
+        assertThatThrownBy(() -> paymentService.reversePayment(350L, "Attempt another reversal", 1L))
+                .isInstanceOf(InvalidPaymentStatusException.class)
+                .hasMessageContaining("Only RECORDED payments can be reversed");
+    }
+
+    @Test
+    @DisplayName("36. Duplicate reversal detection via existsByReversalOfPaymentId throws InvalidPaymentStatusException")
+    void testReverseDuplicateReversalDetectedThrowsInvalidPaymentStatus() {
+        Invoice invoice = createTestInvoice(36L, InvoiceStatus.PARTIALLY_PAID, new BigDecimal("100.00"), new BigDecimal("50.00"), new BigDecimal("50.00"));
+        Payment payment = new Payment(invoice, "REC-36", new BigDecimal("50.00"), PaymentMethod.CASH, null, LocalDateTime.now(), 1L);
+        payment.setId(360L);
+        payment.setStatus(PaymentStatus.RECORDED);
+
+        when(paymentRepository.findById(360L)).thenReturn(Optional.of(payment));
+        when(paymentRepository.existsByReversalOfPaymentId(360L)).thenReturn(true);
+
+        assertThatThrownBy(() -> paymentService.reversePayment(360L, "Duplicate attempt", 1L))
+                .isInstanceOf(InvalidPaymentStatusException.class)
+                .hasMessageContaining("already been reversed");
+    }
+
+    @Test
+    @DisplayName("37. Reversing payment with null invoice reference throws BillingValidationException")
+    void testReversePaymentWithNullInvoiceThrowsValidation() {
+        Payment payment = new Payment(null, "REC-37", new BigDecimal("50.00"), PaymentMethod.CASH, null, LocalDateTime.now(), 1L);
+        payment.setId(370L);
+        payment.setStatus(PaymentStatus.RECORDED);
+
+        when(paymentRepository.findById(370L)).thenReturn(Optional.of(payment));
+        when(paymentRepository.existsByReversalOfPaymentId(370L)).thenReturn(false);
+
+        assertThatThrownBy(() -> paymentService.reversePayment(370L, "Valid reason", 1L))
+                .isInstanceOf(BillingValidationException.class)
+                .hasMessageContaining("Payment is not associated with a valid invoice");
+    }
+
+    @Test
+    @DisplayName("38. Reversing payment when invoice cannot be found for update throws InvoiceNotFoundException")
+    void testReversePaymentInvoiceNotFoundDuringLockThrowsNotFound() {
+        Invoice invoice = createTestInvoice(38L, InvoiceStatus.PARTIALLY_PAID, new BigDecimal("100.00"), new BigDecimal("50.00"), new BigDecimal("50.00"));
+        Payment payment = new Payment(invoice, "REC-38", new BigDecimal("50.00"), PaymentMethod.CASH, null, LocalDateTime.now(), 1L);
+        payment.setId(380L);
+        payment.setStatus(PaymentStatus.RECORDED);
+
+        when(paymentRepository.findById(380L)).thenReturn(Optional.of(payment));
+        when(paymentRepository.existsByReversalOfPaymentId(380L)).thenReturn(false);
+        when(invoiceRepository.findByIdForUpdate(38L)).thenReturn(Optional.empty());
+
+        assertThatThrownBy(() -> paymentService.reversePayment(380L, "Valid reason", 1L))
+                .isInstanceOf(InvoiceNotFoundException.class)
+                .hasMessageContaining("38");
+    }
+
+    @Test
+    @DisplayName("39. Financial history preservation: original payment record is never deleted and fields are preserved")
+    void testHistoryPreservationNeverDeletes() {
+        Invoice invoice = createTestInvoice(39L, InvoiceStatus.PAID, new BigDecimal("100.00"), new BigDecimal("100.00"), BigDecimal.ZERO);
+        LocalDateTime originalPaidAt = LocalDateTime.of(2026, 3, 1, 10, 30);
+        Payment originalPayment = new Payment(invoice, "REC-2026-00039", new BigDecimal("100.00"), PaymentMethod.BANK_TRANSFER, "REF-TXN-39", originalPaidAt, 42L);
+        originalPayment.setId(390L);
+        originalPayment.setStatus(PaymentStatus.RECORDED);
+
+        when(paymentRepository.findById(390L)).thenReturn(Optional.of(originalPayment));
+        when(paymentRepository.existsByReversalOfPaymentId(390L)).thenReturn(false);
+        when(invoiceRepository.findByIdForUpdate(39L)).thenReturn(Optional.of(invoice));
+        when(paymentNumberGenerator.generate()).thenReturn("REC-2026-00039-REV");
+        when(paymentRepository.existsByPaymentNumber("REC-2026-00039-REV")).thenReturn(false);
+        when(paymentRepository.save(any(Payment.class))).thenAnswer(inv -> inv.getArgument(0));
+        when(paymentRepository.sumRecordedPaymentsByInvoiceId(39L)).thenReturn(BigDecimal.ZERO);
+        when(invoiceRepository.save(any(Invoice.class))).thenAnswer(inv -> inv.getArgument(0));
+
+        paymentService.reversePayment(390L, "Reversing bank transfer", 99L);
+
+        // Verify original payment historical attributes remain untouched except status and reversalReason
+        assertThat(originalPayment.getAmount()).isEqualByComparingTo(new BigDecimal("100.00"));
+        assertThat(originalPayment.getPaymentMethod()).isEqualTo(PaymentMethod.BANK_TRANSFER);
+        assertThat(originalPayment.getPaymentReference()).isEqualTo("REF-TXN-39");
+        assertThat(originalPayment.getPaidAt()).isEqualTo(originalPaidAt);
+        assertThat(originalPayment.getRecordedBy()).isEqualTo(42L);
+
+        // Verify ArgumentCaptor captures both original and reversal saves
+        ArgumentCaptor<Payment> paymentCaptor = ArgumentCaptor.forClass(Payment.class);
+        verify(paymentRepository, org.mockito.Mockito.times(2)).save(paymentCaptor.capture());
+        List<Payment> savedPayments = paymentCaptor.getAllValues();
+
+        Payment savedOriginal = savedPayments.get(0);
+        Payment savedReversal = savedPayments.get(1);
+
+        assertThat(savedOriginal.getId()).isEqualTo(390L);
+        assertThat(savedOriginal.getStatus()).isEqualTo(PaymentStatus.REVERSED);
+
+        assertThat(savedReversal.getReversalOfPaymentId()).isEqualTo(390L);
+        assertThat(savedReversal.getStatus()).isEqualTo(PaymentStatus.REVERSED);
+        assertThat(savedReversal.getRecordedBy()).isEqualTo(99L);
+        assertThat(savedReversal.getPaymentNumber()).isEqualTo("REC-2026-00039-REV");
+    }
+
+    @Test
+    @DisplayName("40. Reversal of one of multiple payments transitions invoice from PAID to PARTIALLY_PAID")
+    void testReverseOneOfMultiplePaymentsOnPaidInvoiceTransitionsToPartiallyPaid() {
+        Invoice invoice = createTestInvoice(40L, InvoiceStatus.PAID, new BigDecimal("100.00"), new BigDecimal("100.00"), BigDecimal.ZERO);
+        Payment payment2 = new Payment(invoice, "REC-40-2", new BigDecimal("40.00"), PaymentMethod.CARD, "TXN-402", LocalDateTime.now(), 5L);
+        payment2.setId(402L);
+        payment2.setStatus(PaymentStatus.RECORDED);
+
+        when(paymentRepository.findById(402L)).thenReturn(Optional.of(payment2));
+        when(paymentRepository.existsByReversalOfPaymentId(402L)).thenReturn(false);
+        when(invoiceRepository.findByIdForUpdate(40L)).thenReturn(Optional.of(invoice));
+        when(paymentNumberGenerator.generate()).thenReturn("REC-40-REV");
+        when(paymentRepository.existsByPaymentNumber("REC-40-REV")).thenReturn(false);
+        when(paymentRepository.save(any(Payment.class))).thenAnswer(inv -> inv.getArgument(0));
+
+        // Remaining active payment #1 is 60.00
+        when(paymentRepository.sumRecordedPaymentsByInvoiceId(40L)).thenReturn(new BigDecimal("60.00"));
+        when(invoiceRepository.save(any(Invoice.class))).thenAnswer(inv -> inv.getArgument(0));
+
+        PaymentResponse response = paymentService.reversePayment(402L, "Card payment reversed", 12L);
+
+        assertThat(response).isNotNull();
+        assertThat(invoice.getPaidAmount()).isEqualByComparingTo(new BigDecimal("60.00"));
+        assertThat(invoice.getBalanceAmount()).isEqualByComparingTo(new BigDecimal("40.00"));
+        assertThat(invoice.getStatus()).isEqualTo(InvoiceStatus.PARTIALLY_PAID);
+    }
+
+    @Test
+    @DisplayName("41. Reversal of payment on PARTIALLY_PAID invoice retains PARTIALLY_PAID when remaining balance > 0 and paid > 0")
+    void testReversePaymentRetainsPartiallyPaidWhenOtherPaymentsExist() {
+        Invoice invoice = createTestInvoice(41L, InvoiceStatus.PARTIALLY_PAID, new BigDecimal("200.00"), new BigDecimal("80.00"), new BigDecimal("120.00"));
+        Payment payment = new Payment(invoice, "REC-41", new BigDecimal("30.00"), PaymentMethod.CASH, null, LocalDateTime.now(), 5L);
+        payment.setId(410L);
+        payment.setStatus(PaymentStatus.RECORDED);
+
+        when(paymentRepository.findById(410L)).thenReturn(Optional.of(payment));
+        when(paymentRepository.existsByReversalOfPaymentId(410L)).thenReturn(false);
+        when(invoiceRepository.findByIdForUpdate(41L)).thenReturn(Optional.of(invoice));
+        when(paymentNumberGenerator.generate()).thenReturn("REC-41-REV");
+        when(paymentRepository.existsByPaymentNumber("REC-41-REV")).thenReturn(false);
+        when(paymentRepository.save(any(Payment.class))).thenAnswer(inv -> inv.getArgument(0));
+
+        // 80 - 30 = 50 remaining recorded
+        when(paymentRepository.sumRecordedPaymentsByInvoiceId(41L)).thenReturn(new BigDecimal("50.00"));
+        when(invoiceRepository.save(any(Invoice.class))).thenAnswer(inv -> inv.getArgument(0));
+
+        PaymentResponse response = paymentService.reversePayment(410L, "Correction", 12L);
+
+        assertThat(response).isNotNull();
+        assertThat(invoice.getPaidAmount()).isEqualByComparingTo(new BigDecimal("50.00"));
+        assertThat(invoice.getBalanceAmount()).isEqualByComparingTo(new BigDecimal("150.00"));
+        assertThat(invoice.getStatus()).isEqualTo(InvoiceStatus.PARTIALLY_PAID);
+    }
+
+    @Test
+    @DisplayName("42. Reversal on CANCELLED invoice preserves CANCELLED status")
+    void testReverseOnCancelledInvoicePreservesStatus() {
+        Invoice invoice = createTestInvoice(42L, InvoiceStatus.CANCELLED, new BigDecimal("100.00"), new BigDecimal("50.00"), new BigDecimal("50.00"));
+        Payment payment = new Payment(invoice, "REC-42", new BigDecimal("50.00"), PaymentMethod.CASH, null, LocalDateTime.now(), 5L);
+        payment.setId(420L);
+        payment.setStatus(PaymentStatus.RECORDED);
+
+        when(paymentRepository.findById(420L)).thenReturn(Optional.of(payment));
+        when(paymentRepository.existsByReversalOfPaymentId(420L)).thenReturn(false);
+        when(invoiceRepository.findByIdForUpdate(42L)).thenReturn(Optional.of(invoice));
+        when(paymentNumberGenerator.generate()).thenReturn("REC-42-REV");
+        when(paymentRepository.existsByPaymentNumber("REC-42-REV")).thenReturn(false);
+        when(paymentRepository.save(any(Payment.class))).thenAnswer(inv -> inv.getArgument(0));
+        when(paymentRepository.sumRecordedPaymentsByInvoiceId(42L)).thenReturn(BigDecimal.ZERO);
+        when(invoiceRepository.save(any(Invoice.class))).thenAnswer(inv -> inv.getArgument(0));
+
+        paymentService.reversePayment(420L, "Correction after cancellation", 12L);
+
+        assertThat(invoice.getStatus()).isEqualTo(InvoiceStatus.CANCELLED);
+        assertThat(invoice.getPaidAmount()).isEqualByComparingTo(BigDecimal.ZERO);
+        assertThat(invoice.getBalanceAmount()).isEqualByComparingTo(new BigDecimal("100.00"));
+    }
+
+    @Test
+    @DisplayName("43. Reversal uses pessimistic locking path findByIdForUpdate")
+    void testReverseUsesPessimisticLocking() {
+        Invoice invoice = createTestInvoice(43L, InvoiceStatus.PARTIALLY_PAID, new BigDecimal("100.00"), new BigDecimal("50.00"), new BigDecimal("50.00"));
+        Payment payment = new Payment(invoice, "REC-43", new BigDecimal("50.00"), PaymentMethod.CASH, null, LocalDateTime.now(), 5L);
+        payment.setId(430L);
+        payment.setStatus(PaymentStatus.RECORDED);
+
+        when(paymentRepository.findById(430L)).thenReturn(Optional.of(payment));
+        when(paymentRepository.existsByReversalOfPaymentId(430L)).thenReturn(false);
+        when(invoiceRepository.findByIdForUpdate(43L)).thenReturn(Optional.of(invoice));
+        when(paymentNumberGenerator.generate()).thenReturn("REC-43-REV");
+        when(paymentRepository.existsByPaymentNumber("REC-43-REV")).thenReturn(false);
+        when(paymentRepository.save(any(Payment.class))).thenAnswer(inv -> inv.getArgument(0));
+        when(paymentRepository.sumRecordedPaymentsByInvoiceId(43L)).thenReturn(BigDecimal.ZERO);
+        when(invoiceRepository.save(any(Invoice.class))).thenAnswer(inv -> inv.getArgument(0));
+
+        paymentService.reversePayment(430L, "Lock test", 1L);
+
+        verify(invoiceRepository).findByIdForUpdate(43L);
+    }
+
+    @Test
+    @DisplayName("44. Repository failure during reversal propagates cleanly without masking")
+    void testReverseRepositoryFailurePropagates() {
+        Invoice invoice = createTestInvoice(44L, InvoiceStatus.PARTIALLY_PAID, new BigDecimal("100.00"), new BigDecimal("50.00"), new BigDecimal("50.00"));
+        Payment payment = new Payment(invoice, "REC-44", new BigDecimal("50.00"), PaymentMethod.CASH, null, LocalDateTime.now(), 5L);
+        payment.setId(440L);
+        payment.setStatus(PaymentStatus.RECORDED);
+
+        when(paymentRepository.findById(440L)).thenReturn(Optional.of(payment));
+        when(paymentRepository.existsByReversalOfPaymentId(440L)).thenReturn(false);
+        when(invoiceRepository.findByIdForUpdate(44L)).thenReturn(Optional.of(invoice));
+        when(paymentRepository.save(any(Payment.class))).thenThrow(new RuntimeException("Database write failure"));
+
+        assertThatThrownBy(() -> paymentService.reversePayment(440L, "Fail test", 1L))
+                .isInstanceOf(RuntimeException.class)
+                .hasMessageContaining("Database write failure");
+    }
+
+    @Test
+    @DisplayName("45. BigDecimal calculations preserve precision during payment reversal")
+    void testReversePreservesBigDecimalPrecision() {
+        BigDecimal total = new BigDecimal("150.333");
+        BigDecimal pay1 = new BigDecimal("50.111");
+        BigDecimal pay2 = new BigDecimal("100.222");
+
+        Invoice invoice = createTestInvoice(45L, InvoiceStatus.PAID, total, total, BigDecimal.ZERO);
+        Payment payment2 = new Payment(invoice, "REC-45-2", pay2, PaymentMethod.CARD, "TXN-45", LocalDateTime.now(), 1L);
+        payment2.setId(452L);
+        payment2.setStatus(PaymentStatus.RECORDED);
+
+        when(paymentRepository.findById(452L)).thenReturn(Optional.of(payment2));
+        when(paymentRepository.existsByReversalOfPaymentId(452L)).thenReturn(false);
+        when(invoiceRepository.findByIdForUpdate(45L)).thenReturn(Optional.of(invoice));
+        when(paymentNumberGenerator.generate()).thenReturn("REC-45-REV");
+        when(paymentRepository.existsByPaymentNumber("REC-45-REV")).thenReturn(false);
+        when(paymentRepository.save(any(Payment.class))).thenAnswer(inv -> inv.getArgument(0));
+
+        when(paymentRepository.sumRecordedPaymentsByInvoiceId(45L)).thenReturn(pay1);
+        when(invoiceRepository.save(any(Invoice.class))).thenAnswer(inv -> inv.getArgument(0));
+
+        PaymentResponse response = paymentService.reversePayment(452L, "Precision test", 1L);
+
+        assertThat(response.amount()).isEqualByComparingTo(pay2);
+        assertThat(invoice.getPaidAmount()).isEqualByComparingTo(pay1);
+        assertThat(invoice.getBalanceAmount()).isEqualByComparingTo(pay2);
     }
 }
