@@ -39,6 +39,49 @@ class BillingExceptionHandlerTest {
     }
 
     @Test
+    @DisplayName("handlePaymentNotFound maps PaymentNotFoundException to 404 Not Found")
+    void testHandlePaymentNotFound() {
+        PaymentNotFoundException ex = new PaymentNotFoundException(456L);
+
+        ResponseEntity<BillingErrorResponse> response = exceptionHandler.handlePaymentNotFound(ex);
+
+        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.NOT_FOUND);
+        assertThat(response.getBody()).isNotNull();
+        assertThat(response.getBody().getStatus()).isEqualTo(404);
+        assertThat(response.getBody().getError()).isEqualTo("Not Found");
+        assertThat(response.getBody().getMessage()).contains("456");
+        assertThat(response.getBody().getTimestamp()).isNotNull();
+    }
+
+    @Test
+    @DisplayName("handleInvalidPaymentStatus maps InvalidPaymentStatusException to 400 Bad Request")
+    void testHandleInvalidPaymentStatus() {
+        InvalidPaymentStatusException ex = new InvalidPaymentStatusException(10L, com.dentcare.billing.entity.PaymentStatus.REVERSED, "Already reversed");
+
+        ResponseEntity<BillingErrorResponse> response = exceptionHandler.handleInvalidPaymentStatus(ex);
+
+        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST);
+        assertThat(response.getBody()).isNotNull();
+        assertThat(response.getBody().getStatus()).isEqualTo(400);
+        assertThat(response.getBody().getError()).isEqualTo("Bad Request");
+        assertThat(response.getBody().getMessage()).contains("REVERSED");
+    }
+
+    @Test
+    @DisplayName("handleOverpayment maps OverpaymentException to 400 Bad Request")
+    void testHandleOverpayment() {
+        OverpaymentException ex = new OverpaymentException(new java.math.BigDecimal("150.00"), new java.math.BigDecimal("100.00"));
+
+        ResponseEntity<BillingErrorResponse> response = exceptionHandler.handleOverpayment(ex);
+
+        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST);
+        assertThat(response.getBody()).isNotNull();
+        assertThat(response.getBody().getStatus()).isEqualTo(400);
+        assertThat(response.getBody().getError()).isEqualTo("Bad Request");
+        assertThat(response.getBody().getMessage()).contains("exceeds outstanding balance");
+    }
+
+    @Test
     @DisplayName("handleInvalidInvoiceStatus maps InvalidInvoiceStatusException to 400 Bad Request")
     void testHandleInvalidInvoiceStatus() {
         InvalidInvoiceStatusException ex = new InvalidInvoiceStatusException(1L, InvoiceStatus.PAID, "Invoice is finalized");

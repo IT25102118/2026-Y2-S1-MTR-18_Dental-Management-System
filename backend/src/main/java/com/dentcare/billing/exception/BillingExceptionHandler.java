@@ -28,6 +28,36 @@ public class BillingExceptionHandler {
         return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
     }
 
+    @ExceptionHandler(PaymentNotFoundException.class)
+    public ResponseEntity<BillingErrorResponse> handlePaymentNotFound(PaymentNotFoundException ex) {
+        BillingErrorResponse response = BillingErrorResponse.of(
+                HttpStatus.NOT_FOUND.value(),
+                "Not Found",
+                ex.getMessage()
+        );
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
+    }
+
+    @ExceptionHandler(InvalidPaymentStatusException.class)
+    public ResponseEntity<BillingErrorResponse> handleInvalidPaymentStatus(InvalidPaymentStatusException ex) {
+        BillingErrorResponse response = BillingErrorResponse.of(
+                HttpStatus.BAD_REQUEST.value(),
+                "Bad Request",
+                ex.getMessage()
+        );
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
+    }
+
+    @ExceptionHandler(OverpaymentException.class)
+    public ResponseEntity<BillingErrorResponse> handleOverpayment(OverpaymentException ex) {
+        BillingErrorResponse response = BillingErrorResponse.of(
+                HttpStatus.BAD_REQUEST.value(),
+                "Bad Request",
+                ex.getMessage()
+        );
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
+    }
+
     @ExceptionHandler(InvalidInvoiceStatusException.class)
     public ResponseEntity<BillingErrorResponse> handleInvalidInvoiceStatus(InvalidInvoiceStatusException ex) {
         BillingErrorResponse response = BillingErrorResponse.of(
