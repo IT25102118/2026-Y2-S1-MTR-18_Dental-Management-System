@@ -8,11 +8,11 @@ import jakarta.validation.constraints.Size;
  * DTO representing an incoming request from a licensed dentist to authoritatively confirm a clinical diagnosis.
  */
 public record ConfirmDiagnosisRequest(
-        @NotNull(message = "Dentist ID is required")
-        Long dentistId,
-
         @NotBlank(message = "Confirmed diagnosis is required")
         @Size(max = 500, message = "Confirmed diagnosis cannot exceed 500 characters")
         String confirmedDiagnosis
 ) {
+    public ConfirmDiagnosisRequest(Long dentistId, String confirmedDiagnosis) {
+        this(confirmedDiagnosis);
+    }
 }

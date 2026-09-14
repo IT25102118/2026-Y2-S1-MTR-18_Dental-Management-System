@@ -66,12 +66,7 @@ public class TreatmentProcedureController {
     }
 
     @PostMapping("/treatment-procedures/{id}/start")
-    public ResponseEntity<TreatmentProcedureResponse> startTreatmentProcedure(
-            @PathVariable("id") Long id,
-            @RequestParam(name = "dentistId", required = false) Long dentistId) {
-        if (dentistId != null) {
-            return ResponseEntity.ok(treatmentProcedureService.startTreatmentProcedure(id, dentistId));
-        }
+    public ResponseEntity<TreatmentProcedureResponse> startTreatmentProcedure(@PathVariable("id") Long id) {
         return ResponseEntity.ok(treatmentProcedureService.startTreatmentProcedure(id));
     }
 

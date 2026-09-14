@@ -26,6 +26,8 @@ import com.dentcare.clinical.repository.ClinicalExaminationRepository;
 import com.dentcare.clinical.repository.ClinicalProgressNoteRepository;
 import com.dentcare.clinical.repository.TreatmentPlanRepository;
 import com.dentcare.clinical.repository.TreatmentProcedureRepository;
+import com.dentcare.clinical.security.CurrentDentistProvider;
+import com.dentcare.clinical.security.Dentist;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
@@ -45,6 +47,7 @@ import java.util.Optional;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.lenient;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -70,6 +73,9 @@ class TreatmentPlanServiceTest {
     @Mock
     private DentistLookupPort dentistLookupPort;
 
+    @Mock
+    private CurrentDentistProvider currentDentistProvider;
+
     @InjectMocks
     private TreatmentPlanServiceImpl treatmentPlanService;
 
@@ -84,6 +90,8 @@ class TreatmentPlanServiceTest {
 
     @BeforeEach
     void setUp() {
+        lenient().when(currentDentistProvider.getCurrentDentist()).thenReturn(new Dentist(DENTIST_ID));
+
         proposedPlan = new TreatmentPlan(
                 PATIENT_ID,
                 DENTIST_ID,
@@ -309,7 +317,7 @@ class TreatmentPlanServiceTest {
             when(treatmentProcedureRepository.countByTreatmentPlanIdAndStatus(PLAN_ID, ProcedureStatus.PLANNED)).thenReturn(1L);
             when(treatmentPlanRepository.save(any(TreatmentPlan.class))).thenAnswer(invocation -> invocation.getArgument(0));
 
-            ApproveTreatmentPlanRequest request = new ApproveTreatmentPlanRequest(DENTIST_ID);
+            ApproveTreatmentPlanRequest request = new ApproveTreatmentPlanRequest();
             TreatmentPlanResponse response = treatmentPlanService.approveTreatmentPlan(PLAN_ID, request);
 
             assertThat(response.status()).isEqualTo(TreatmentPlanStatus.APPROVED);
@@ -322,13 +330,29 @@ class TreatmentPlanServiceTest {
         @DisplayName("Approval by non-existent or inactive dentist throws UnauthorizedClinicalOperationException")
         void approveTreatmentPlan_invalidDentist_throwsUnauthorizedException() {
             when(treatmentPlanRepository.findById(PLAN_ID)).thenReturn(Optional.of(proposedPlan));
-            when(dentistLookupPort.existsActiveDentist(RECORDER_ID)).thenReturn(false);
+            when(currentDentistProvider.getCurrentDentist())
+                    .thenThrow(new UnauthorizedClinicalOperationException("Authenticated user " + RECORDER_ID + " is not an active dentist"));
 
-            ApproveTreatmentPlanRequest request = new ApproveTreatmentPlanRequest(RECORDER_ID);
+            ApproveTreatmentPlanRequest request = new ApproveTreatmentPlanRequest();
 
             assertThatThrownBy(() -> treatmentPlanService.approveTreatmentPlan(PLAN_ID, request))
                     .isInstanceOf(UnauthorizedClinicalOperationException.class)
                     .hasMessageContaining("not an active dentist");
+            verify(treatmentPlanRepository, never()).save(any());
+        }
+
+        @Test
+        @DisplayName("Approval by unauthenticated caller throws UnauthorizedClinicalOperationException")
+        void approveTreatmentPlan_unauthenticatedCaller_throwsUnauthorizedException() {
+            when(treatmentPlanRepository.findById(PLAN_ID)).thenReturn(Optional.of(proposedPlan));
+            when(currentDentistProvider.getCurrentDentist())
+                    .thenThrow(new UnauthorizedClinicalOperationException("No authenticated user in security context"));
+
+            ApproveTreatmentPlanRequest request = new ApproveTreatmentPlanRequest();
+
+            assertThatThrownBy(() -> treatmentPlanService.approveTreatmentPlan(PLAN_ID, request))
+                    .isInstanceOf(UnauthorizedClinicalOperationException.class)
+                    .hasMessageContaining("No authenticated user in security context");
             verify(treatmentPlanRepository, never()).save(any());
         }
 
@@ -339,7 +363,7 @@ class TreatmentPlanServiceTest {
             when(dentistLookupPort.existsActiveDentist(DENTIST_ID)).thenReturn(true);
             when(treatmentProcedureRepository.countByTreatmentPlanId(PLAN_ID)).thenReturn(0L);
 
-            ApproveTreatmentPlanRequest request = new ApproveTreatmentPlanRequest(DENTIST_ID);
+            ApproveTreatmentPlanRequest request = new ApproveTreatmentPlanRequest();
 
             assertThatThrownBy(() -> treatmentPlanService.approveTreatmentPlan(PLAN_ID, request))
                     .isInstanceOf(InvalidTreatmentPlanStateException.class)
@@ -354,7 +378,7 @@ class TreatmentPlanServiceTest {
             when(treatmentPlanRepository.findById(PLAN_ID)).thenReturn(Optional.of(proposedPlan));
             when(dentistLookupPort.existsActiveDentist(DENTIST_ID)).thenReturn(true);
 
-            ApproveTreatmentPlanRequest request = new ApproveTreatmentPlanRequest(DENTIST_ID);
+            ApproveTreatmentPlanRequest request = new ApproveTreatmentPlanRequest();
 
             assertThatThrownBy(() -> treatmentPlanService.approveTreatmentPlan(PLAN_ID, request))
                     .isInstanceOf(InvalidTreatmentPlanStateException.class)
@@ -369,7 +393,7 @@ class TreatmentPlanServiceTest {
             when(treatmentPlanRepository.findById(PLAN_ID)).thenReturn(Optional.of(proposedPlan));
             when(dentistLookupPort.existsActiveDentist(DENTIST_ID)).thenReturn(true);
 
-            ApproveTreatmentPlanRequest request = new ApproveTreatmentPlanRequest(DENTIST_ID);
+            ApproveTreatmentPlanRequest request = new ApproveTreatmentPlanRequest();
 
             assertThatThrownBy(() -> treatmentPlanService.approveTreatmentPlan(PLAN_ID, request))
                     .isInstanceOf(InvalidTreatmentPlanStateException.class)
@@ -382,10 +406,9 @@ class TreatmentPlanServiceTest {
         void startTreatmentPlan_approvedPlan_transitionsToInProgress() {
             proposedPlan.setStatus(TreatmentPlanStatus.APPROVED);
             when(treatmentPlanRepository.findById(PLAN_ID)).thenReturn(Optional.of(proposedPlan));
-            when(dentistLookupPort.existsActiveDentist(DENTIST_ID)).thenReturn(true);
             when(treatmentPlanRepository.save(any(TreatmentPlan.class))).thenAnswer(invocation -> invocation.getArgument(0));
 
-            TreatmentPlanResponse response = treatmentPlanService.startTreatmentPlan(PLAN_ID, DENTIST_ID);
+            TreatmentPlanResponse response = treatmentPlanService.startTreatmentPlan(PLAN_ID);
 
             assertThat(response.status()).isEqualTo(TreatmentPlanStatus.IN_PROGRESS);
             verify(treatmentPlanRepository).save(proposedPlan);
@@ -394,9 +417,10 @@ class TreatmentPlanServiceTest {
         @Test
         @DisplayName("Starting plan with inactive dentist throws UnauthorizedClinicalOperationException")
         void startTreatmentPlan_inactiveDentist_throwsUnauthorizedException() {
-            when(dentistLookupPort.existsActiveDentist(999L)).thenReturn(false);
+            when(currentDentistProvider.getCurrentDentist())
+                    .thenThrow(new UnauthorizedClinicalOperationException("Authenticated user 999 is not an active dentist"));
 
-            assertThatThrownBy(() -> treatmentPlanService.startTreatmentPlan(PLAN_ID, 999L))
+            assertThatThrownBy(() -> treatmentPlanService.startTreatmentPlan(PLAN_ID))
                     .isInstanceOf(UnauthorizedClinicalOperationException.class)
                     .hasMessageContaining("not an active dentist");
         }
@@ -418,14 +442,13 @@ class TreatmentPlanServiceTest {
         void completeTreatmentPlan_inProgressWithNoUnfinishedProcedures_transitionsToCompleted() {
             proposedPlan.setStatus(TreatmentPlanStatus.IN_PROGRESS);
             when(treatmentPlanRepository.findById(PLAN_ID)).thenReturn(Optional.of(proposedPlan));
-            when(dentistLookupPort.existsActiveDentist(DENTIST_ID)).thenReturn(true);
             when(treatmentProcedureRepository.countByTreatmentPlanIdAndStatus(PLAN_ID, ProcedureStatus.PLANNED)).thenReturn(0L);
             when(treatmentProcedureRepository.countByTreatmentPlanIdAndStatus(PLAN_ID, ProcedureStatus.IN_PROGRESS)).thenReturn(0L);
             when(treatmentProcedureRepository.countByTreatmentPlanIdAndStatus(PLAN_ID, ProcedureStatus.COMPLETED)).thenReturn(1L);
             when(treatmentProcedureRepository.findByTreatmentPlanIdOrderBySequenceNumberAscIdAsc(PLAN_ID)).thenReturn(Collections.emptyList());
             when(treatmentPlanRepository.save(any(TreatmentPlan.class))).thenAnswer(invocation -> invocation.getArgument(0));
 
-            TreatmentPlanResponse response = treatmentPlanService.completeTreatmentPlan(PLAN_ID, DENTIST_ID);
+            TreatmentPlanResponse response = treatmentPlanService.completeTreatmentPlan(PLAN_ID);
 
             assertThat(response.status()).isEqualTo(TreatmentPlanStatus.COMPLETED);
             assertThat(response.completedAt()).isNotNull();
@@ -476,10 +499,9 @@ class TreatmentPlanServiceTest {
         @DisplayName("Valid cancellation by dentist preserves clinical history")
         void cancelTreatmentPlan_validDentistAndReason_transitionsToCancelled() {
             when(treatmentPlanRepository.findById(PLAN_ID)).thenReturn(Optional.of(proposedPlan));
-            when(dentistLookupPort.existsActiveDentist(DENTIST_ID)).thenReturn(true);
             when(treatmentPlanRepository.save(any(TreatmentPlan.class))).thenAnswer(invocation -> invocation.getArgument(0));
 
-            CancelTreatmentPlanRequest request = new CancelTreatmentPlanRequest(DENTIST_ID, "Patient relocated");
+            CancelTreatmentPlanRequest request = new CancelTreatmentPlanRequest("Patient relocated");
             TreatmentPlanResponse response = treatmentPlanService.cancelTreatmentPlan(PLAN_ID, request);
 
             assertThat(response.status()).isEqualTo(TreatmentPlanStatus.CANCELLED);
@@ -490,9 +512,10 @@ class TreatmentPlanServiceTest {
         @Test
         @DisplayName("Cancellation by inactive dentist throws UnauthorizedClinicalOperationException")
         void cancelTreatmentPlan_inactiveDentist_throwsUnauthorizedException() {
-            when(dentistLookupPort.existsActiveDentist(999L)).thenReturn(false);
+            when(currentDentistProvider.getCurrentDentist())
+                    .thenThrow(new UnauthorizedClinicalOperationException("Authenticated user 999 is not an active dentist"));
 
-            CancelTreatmentPlanRequest request = new CancelTreatmentPlanRequest(999L, "Patient relocated");
+            CancelTreatmentPlanRequest request = new CancelTreatmentPlanRequest("Patient relocated");
 
             assertThatThrownBy(() -> treatmentPlanService.cancelTreatmentPlan(PLAN_ID, request))
                     .isInstanceOf(UnauthorizedClinicalOperationException.class)
@@ -502,9 +525,7 @@ class TreatmentPlanServiceTest {
         @Test
         @DisplayName("Cancellation without reason throws IllegalArgumentException")
         void cancelTreatmentPlan_blankReason_throwsIllegalArgumentException() {
-            when(dentistLookupPort.existsActiveDentist(DENTIST_ID)).thenReturn(true);
-
-            CancelTreatmentPlanRequest request = new CancelTreatmentPlanRequest(DENTIST_ID, "   ");
+            CancelTreatmentPlanRequest request = new CancelTreatmentPlanRequest("   ");
 
             assertThatThrownBy(() -> treatmentPlanService.cancelTreatmentPlan(PLAN_ID, request))
                     .isInstanceOf(IllegalArgumentException.class)
@@ -516,9 +537,8 @@ class TreatmentPlanServiceTest {
         void cancelTreatmentPlan_completedPlan_throwsException() {
             proposedPlan.setStatus(TreatmentPlanStatus.COMPLETED);
             when(treatmentPlanRepository.findById(PLAN_ID)).thenReturn(Optional.of(proposedPlan));
-            when(dentistLookupPort.existsActiveDentist(DENTIST_ID)).thenReturn(true);
 
-            CancelTreatmentPlanRequest request = new CancelTreatmentPlanRequest(DENTIST_ID, "Patient relocated");
+            CancelTreatmentPlanRequest request = new CancelTreatmentPlanRequest("Patient relocated");
 
             assertThatThrownBy(() -> treatmentPlanService.cancelTreatmentPlan(PLAN_ID, request))
                     .isInstanceOf(InvalidTreatmentPlanStateException.class)
@@ -600,12 +620,11 @@ class TreatmentPlanServiceTest {
         @DisplayName("Valid follow-up date schedules progress note successfully")
         void setFollowUpDate_validDate_createsProgressNote() {
             when(treatmentPlanRepository.findById(PLAN_ID)).thenReturn(Optional.of(proposedPlan));
-            when(dentistLookupPort.existsActiveDentist(DENTIST_ID)).thenReturn(true);
+            when(treatmentPlanRepository.save(any(TreatmentPlan.class))).thenAnswer(i -> i.getArgument(0));
             when(clinicalProgressNoteRepository.save(any(ClinicalProgressNote.class))).thenAnswer(i -> i.getArgument(0));
 
             FollowUpRequest request = new FollowUpRequest(
                     LocalDate.now().plusWeeks(2),
-                    DENTIST_ID,
                     "Routine checkup"
             );
 
@@ -619,11 +638,9 @@ class TreatmentPlanServiceTest {
         @DisplayName("Follow-up date before treatment plan creation throws IllegalArgumentException")
         void setFollowUpDate_dateBeforeCreation_throwsIllegalArgumentException() {
             when(treatmentPlanRepository.findById(PLAN_ID)).thenReturn(Optional.of(proposedPlan));
-            when(dentistLookupPort.existsActiveDentist(DENTIST_ID)).thenReturn(true);
 
             FollowUpRequest request = new FollowUpRequest(
                     proposedPlan.getCreatedAt().toLocalDate().minusDays(5),
-                    DENTIST_ID,
                     "Checkup"
             );
 
@@ -638,9 +655,8 @@ class TreatmentPlanServiceTest {
         void setFollowUpDate_cancelledPlan_throwsException() {
             proposedPlan.setStatus(TreatmentPlanStatus.CANCELLED);
             when(treatmentPlanRepository.findById(PLAN_ID)).thenReturn(Optional.of(proposedPlan));
-            when(dentistLookupPort.existsActiveDentist(DENTIST_ID)).thenReturn(true);
 
-            FollowUpRequest request = new FollowUpRequest(LocalDate.now().plusDays(5), DENTIST_ID, "Checkup");
+            FollowUpRequest request = new FollowUpRequest(LocalDate.now().plusDays(5), "Checkup");
 
             assertThatThrownBy(() -> treatmentPlanService.setFollowUpDate(PLAN_ID, request))
                     .isInstanceOf(InvalidTreatmentPlanStateException.class)

@@ -43,13 +43,8 @@ public interface TreatmentProcedureService {
     TreatmentProcedureResponse updateTreatmentProcedure(Long id, UpdateTreatmentProcedureRequest request);
 
     /**
-     * Starts execution of a planned procedure (PLANNED -> IN_PROGRESS).
+     * Starts execution of a planned procedure (PLANNED -> IN_PROGRESS) by the authenticated dentist.
      * Verifies that the parent plan is not CANCELLED or COMPLETED, and is not PROPOSED.
-     */
-    TreatmentProcedureResponse startTreatmentProcedure(Long id, Long dentistId);
-
-    /**
-     * Overload for starting treatment procedure.
      */
     TreatmentProcedureResponse startTreatmentProcedure(Long id);
 

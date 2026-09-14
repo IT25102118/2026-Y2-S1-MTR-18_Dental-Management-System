@@ -27,6 +27,8 @@ import com.dentcare.clinical.repository.ClinicalExaminationRepository;
 import com.dentcare.clinical.repository.ClinicalProgressNoteRepository;
 import com.dentcare.clinical.repository.TreatmentPlanRepository;
 import com.dentcare.clinical.repository.TreatmentProcedureRepository;
+import com.dentcare.clinical.security.CurrentDentistProvider;
+import com.dentcare.clinical.security.Dentist;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -51,6 +53,23 @@ public class TreatmentPlanServiceImpl implements TreatmentPlanService {
     private final ClinicalProgressNoteRepository clinicalProgressNoteRepository;
     private final PatientLookupPort patientLookupPort;
     private final DentistLookupPort dentistLookupPort;
+    private final CurrentDentistProvider currentDentistProvider;
+
+    public TreatmentPlanServiceImpl(TreatmentPlanRepository treatmentPlanRepository,
+                                    TreatmentProcedureRepository treatmentProcedureRepository,
+                                    ClinicalExaminationRepository clinicalExaminationRepository,
+                                    ClinicalProgressNoteRepository clinicalProgressNoteRepository,
+                                    PatientLookupPort patientLookupPort,
+                                    DentistLookupPort dentistLookupPort,
+                                    CurrentDentistProvider currentDentistProvider) {
+        this.treatmentPlanRepository = treatmentPlanRepository;
+        this.treatmentProcedureRepository = treatmentProcedureRepository;
+        this.clinicalExaminationRepository = clinicalExaminationRepository;
+        this.clinicalProgressNoteRepository = clinicalProgressNoteRepository;
+        this.patientLookupPort = patientLookupPort;
+        this.dentistLookupPort = dentistLookupPort;
+        this.currentDentistProvider = currentDentistProvider;
+    }
 
     public TreatmentPlanServiceImpl(TreatmentPlanRepository treatmentPlanRepository,
                                     TreatmentProcedureRepository treatmentProcedureRepository,
@@ -58,12 +77,8 @@ public class TreatmentPlanServiceImpl implements TreatmentPlanService {
                                     ClinicalProgressNoteRepository clinicalProgressNoteRepository,
                                     PatientLookupPort patientLookupPort,
                                     DentistLookupPort dentistLookupPort) {
-        this.treatmentPlanRepository = treatmentPlanRepository;
-        this.treatmentProcedureRepository = treatmentProcedureRepository;
-        this.clinicalExaminationRepository = clinicalExaminationRepository;
-        this.clinicalProgressNoteRepository = clinicalProgressNoteRepository;
-        this.patientLookupPort = patientLookupPort;
-        this.dentistLookupPort = dentistLookupPort;
+        this(treatmentPlanRepository, treatmentProcedureRepository, clinicalExaminationRepository,
+                clinicalProgressNoteRepository, patientLookupPort, dentistLookupPort, null);
     }
 
     @Override
@@ -216,14 +231,15 @@ public class TreatmentPlanServiceImpl implements TreatmentPlanService {
     @Override
     @Transactional
     public TreatmentPlanResponse approveTreatmentPlan(Long id, ApproveTreatmentPlanRequest request) {
+        Dentist actingDentist = currentDentistProvider != null
+                ? currentDentistProvider.getCurrentDentist()
+                : null;
+        if (actingDentist == null) {
+            throw new UnauthorizedClinicalOperationException("No authenticated dentist authorized to approve treatment plans");
+        }
+
         TreatmentPlan plan = treatmentPlanRepository.findById(id)
                 .orElseThrow(() -> new TreatmentPlanNotFoundException(id));
-
-        if (request == null || request.dentistId() == null || !dentistLookupPort.existsActiveDentist(request.dentistId())) {
-            throw new UnauthorizedClinicalOperationException(
-                    "User with id " + (request != null ? request.dentistId() : null) + " is not an active dentist authorized to approve treatment plans"
-            );
-        }
 
         if (plan.getStatus() == TreatmentPlanStatus.CANCELLED) {
             throw new InvalidTreatmentPlanStateException("Cannot approve a cancelled treatment plan");
@@ -253,7 +269,7 @@ public class TreatmentPlanServiceImpl implements TreatmentPlanService {
         }
 
         plan.setStatus(TreatmentPlanStatus.APPROVED);
-        plan.setApprovedByDentistId(request.dentistId());
+        plan.setApprovedByDentistId(actingDentist.id());
         plan.setApprovedAt(LocalDateTime.now());
 
         TreatmentPlan saved = treatmentPlanRepository.save(plan);
@@ -262,11 +278,9 @@ public class TreatmentPlanServiceImpl implements TreatmentPlanService {
 
     @Override
     @Transactional
-    public TreatmentPlanResponse startTreatmentPlan(Long id, Long dentistId) {
-        if (dentistId != null && !dentistLookupPort.existsActiveDentist(dentistId)) {
-            throw new UnauthorizedClinicalOperationException(
-                    "User with id " + dentistId + " is not an active dentist authorized to start treatment plans"
-            );
+    public TreatmentPlanResponse startTreatmentPlan(Long id) {
+        if (currentDentistProvider != null) {
+            currentDentistProvider.getCurrentDentist();
         }
 
         TreatmentPlan plan = treatmentPlanRepository.findById(id)
@@ -295,17 +309,9 @@ public class TreatmentPlanServiceImpl implements TreatmentPlanService {
 
     @Override
     @Transactional
-    public TreatmentPlanResponse startTreatmentPlan(Long id) {
-        return startTreatmentPlan(id, null);
-    }
-
-    @Override
-    @Transactional
-    public TreatmentPlanResponse completeTreatmentPlan(Long id, Long dentistId) {
-        if (dentistId != null && !dentistLookupPort.existsActiveDentist(dentistId)) {
-            throw new UnauthorizedClinicalOperationException(
-                    "User with id " + dentistId + " is not an active dentist authorized to complete treatment plans"
-            );
+    public TreatmentPlanResponse completeTreatmentPlan(Long id) {
+        if (currentDentistProvider != null) {
+            currentDentistProvider.getCurrentDentist();
         }
 
         TreatmentPlan plan = treatmentPlanRepository.findById(id)
@@ -354,17 +360,9 @@ public class TreatmentPlanServiceImpl implements TreatmentPlanService {
 
     @Override
     @Transactional
-    public TreatmentPlanResponse completeTreatmentPlan(Long id) {
-        return completeTreatmentPlan(id, null);
-    }
-
-    @Override
-    @Transactional
     public TreatmentPlanResponse cancelTreatmentPlan(Long id, CancelTreatmentPlanRequest request) {
-        if (request != null && request.dentistId() != null && !dentistLookupPort.existsActiveDentist(request.dentistId())) {
-            throw new UnauthorizedClinicalOperationException(
-                    "User with id " + request.dentistId() + " is not an active dentist authorized to cancel treatment plans"
-            );
+        if (currentDentistProvider != null) {
+            currentDentistProvider.getCurrentDentist();
         }
 
         String reason = request != null ? request.cancellationReason() : null;
@@ -395,7 +393,7 @@ public class TreatmentPlanServiceImpl implements TreatmentPlanService {
     @Override
     @Transactional
     public TreatmentPlanResponse cancelTreatmentPlan(Long id, String cancellationReason) {
-        return cancelTreatmentPlan(id, new CancelTreatmentPlanRequest(null, cancellationReason));
+        return cancelTreatmentPlan(id, new CancelTreatmentPlanRequest(cancellationReason));
     }
 
     @Override
@@ -404,17 +402,11 @@ public class TreatmentPlanServiceImpl implements TreatmentPlanService {
         TreatmentPlan plan = treatmentPlanRepository.findById(id)
                 .orElseThrow(() -> new TreatmentPlanNotFoundException(id));
 
-        if (request == null || request.dentistId() == null || !dentistLookupPort.existsActiveDentist(request.dentistId())) {
-            throw new UnauthorizedClinicalOperationException(
-                    "User with id " + (request != null ? request.dentistId() : null) + " is not an active dentist authorized to schedule follow-up"
-            );
-        }
-
         if (plan.getStatus() == TreatmentPlanStatus.CANCELLED) {
             throw new InvalidTreatmentPlanStateException("Cannot set follow-up date on a cancelled treatment plan");
         }
 
-        if (request.followUpDate() == null) {
+        if (request == null || request.followUpDate() == null) {
             throw new IllegalArgumentException("Follow-up date is required");
         }
 
@@ -425,6 +417,13 @@ public class TreatmentPlanServiceImpl implements TreatmentPlanService {
             );
         }
 
+        Dentist actingDentist = currentDentistProvider != null
+                ? currentDentistProvider.getCurrentDentist()
+                : null;
+        if (actingDentist == null) {
+            throw new UnauthorizedClinicalOperationException("No authenticated dentist authorized to schedule follow-up");
+        }
+
         String noteContent = request.clinicalNotes() != null && !request.clinicalNotes().trim().isEmpty()
                 ? request.clinicalNotes().trim()
                 : "Follow-up appointment scheduled for " + request.followUpDate();
@@ -432,7 +431,7 @@ public class TreatmentPlanServiceImpl implements TreatmentPlanService {
         ClinicalProgressNote progressNote = new ClinicalProgressNote(
                 plan.getId(),
                 null,
-                request.dentistId(),
+                actingDentist.id(),
                 noteContent,
                 request.followUpDate()
         );

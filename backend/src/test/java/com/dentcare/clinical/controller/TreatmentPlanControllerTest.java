@@ -422,7 +422,7 @@ class TreatmentPlanControllerTest {
     }
 
     @Test
-    @DisplayName("POST /api/clinical/treatment-plans/{id}/start with dentistId returns 200 OK")
+    @DisplayName("POST /api/clinical/treatment-plans/{id}/start with dentistId ignored returns 200 OK")
     void startTreatmentPlan_withDentistId_returns200() throws Exception {
         TreatmentPlanResponse startedResponse = new TreatmentPlanResponse(
                 1L,
@@ -444,14 +444,14 @@ class TreatmentPlanControllerTest {
                 2L
         );
 
-        when(treatmentPlanService.startTreatmentPlan(1L, 20L)).thenReturn(startedResponse);
+        when(treatmentPlanService.startTreatmentPlan(1L)).thenReturn(startedResponse);
 
         mockMvc.perform(post("/api/clinical/treatment-plans/1/start").param("dentistId", "20"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.id", is(1)))
                 .andExpect(jsonPath("$.status", is("IN_PROGRESS")));
 
-        verify(treatmentPlanService).startTreatmentPlan(1L, 20L);
+        verify(treatmentPlanService).startTreatmentPlan(1L);
     }
 
     @Test
@@ -595,7 +595,7 @@ class TreatmentPlanControllerTest {
     @Test
     @DisplayName("POST /api/clinical/treatment-plans/{id}/follow-up with missing fields returns 400 Bad Request")
     void setFollowUpDate_missingFields_returns400() throws Exception {
-        FollowUpRequest invalidRequest = new FollowUpRequest(null, null, null);
+        FollowUpRequest invalidRequest = new FollowUpRequest(null, null);
 
         mockMvc.perform(post("/api/clinical/treatment-plans/1/follow-up")
                         .contentType(MediaType.APPLICATION_JSON)
@@ -603,7 +603,6 @@ class TreatmentPlanControllerTest {
                 .andExpect(status().isBadRequest())
                 .andExpect(jsonPath("$.status", is(400)))
                 .andExpect(jsonPath("$.error", is("Bad Request")))
-                .andExpect(jsonPath("$.fieldErrors", hasKey("followUpDate")))
-                .andExpect(jsonPath("$.fieldErrors", hasKey("dentistId")));
+                .andExpect(jsonPath("$.fieldErrors", hasKey("followUpDate")));
     }
 }

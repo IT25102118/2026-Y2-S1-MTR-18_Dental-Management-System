@@ -49,23 +49,13 @@ public interface ClinicalExaminationService {
     ClinicalExaminationResponse updateDraftExamination(Long id, Long patientId, UpdateClinicalExaminationRequest request);
 
     /**
-     * Finalizes and completes a draft clinical examination by an authorized dentist.
-     */
-    ClinicalExaminationResponse completeExamination(Long id, Long dentistId);
-
-    /**
-     * Overload for completing an examination.
+     * Finalizes and completes a draft clinical examination by the authenticated dentist.
      */
     ClinicalExaminationResponse completeExamination(Long id);
 
     /**
-     * Cancels an examination by an authorized dentist while preserving its clinical audit trail.
+     * Cancels an examination by the authenticated dentist while preserving its clinical audit trail.
      * Completed or already cancelled examinations cannot be cancelled.
-     */
-    ClinicalExaminationResponse cancelExamination(Long id, Long dentistId);
-
-    /**
-     * Overload for cancelling an examination.
      */
     ClinicalExaminationResponse cancelExamination(Long id);
 

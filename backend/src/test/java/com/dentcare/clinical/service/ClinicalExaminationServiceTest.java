@@ -16,6 +16,8 @@ import com.dentcare.clinical.exception.UnauthorizedClinicalOperationException;
 import com.dentcare.clinical.integration.DentistLookupPort;
 import com.dentcare.clinical.integration.PatientLookupPort;
 import com.dentcare.clinical.repository.ClinicalExaminationRepository;
+import com.dentcare.clinical.security.CurrentDentistProvider;
+import com.dentcare.clinical.security.Dentist;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
@@ -33,6 +35,7 @@ import java.util.Optional;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.lenient;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -49,6 +52,9 @@ class ClinicalExaminationServiceTest {
     @Mock
     private DentistLookupPort dentistLookupPort;
 
+    @Mock
+    private CurrentDentistProvider currentDentistProvider;
+
     @InjectMocks
     private ClinicalExaminationServiceImpl examinationService;
 
@@ -61,6 +67,8 @@ class ClinicalExaminationServiceTest {
 
     @BeforeEach
     void setUp() {
+        lenient().when(currentDentistProvider.getCurrentDentist()).thenReturn(new Dentist(DENTIST_ID));
+
         draftExam = new ClinicalExamination(
                 PATIENT_ID,
                 DENTIST_ID,
@@ -215,10 +223,7 @@ class ClinicalExaminationServiceTest {
             when(dentistLookupPort.existsActiveDentist(DENTIST_ID)).thenReturn(true);
             when(examinationRepository.save(any(ClinicalExamination.class))).thenAnswer(invocation -> invocation.getArgument(0));
 
-            ConfirmDiagnosisRequest request = new ConfirmDiagnosisRequest(
-                    DENTIST_ID,
-                    "Irreversible pulpitis on tooth 36"
-            );
+            ConfirmDiagnosisRequest request = new ConfirmDiagnosisRequest("Irreversible pulpitis on tooth 36");
 
             ClinicalExaminationResponse response = examinationService.confirmDiagnosis(EXAM_ID, request);
 
@@ -233,17 +238,14 @@ class ClinicalExaminationServiceTest {
         @DisplayName("Test 14: Dental Assistant cannot confirm diagnosis; throws UnauthorizedClinicalOperationException")
         void confirmDiagnosis_dentalAssistant_throwsUnauthorizedException() {
             when(examinationRepository.findById(EXAM_ID)).thenReturn(Optional.of(draftExam));
-            // Dental assistant is not an active dentist in DentistLookupPort
-            when(dentistLookupPort.existsActiveDentist(ASSISTANT_ID)).thenReturn(false);
+            when(currentDentistProvider.getCurrentDentist())
+                    .thenThrow(new UnauthorizedClinicalOperationException("Authenticated user " + ASSISTANT_ID + " is not an active dentist authorized to perform clinical operations"));
 
-            ConfirmDiagnosisRequest request = new ConfirmDiagnosisRequest(
-                    ASSISTANT_ID,
-                    "Irreversible pulpitis"
-            );
+            ConfirmDiagnosisRequest request = new ConfirmDiagnosisRequest("Irreversible pulpitis");
 
             assertThatThrownBy(() -> examinationService.confirmDiagnosis(EXAM_ID, request))
                     .isInstanceOf(UnauthorizedClinicalOperationException.class)
-                    .hasMessageContaining("not an active dentist authorized to confirm diagnosis");
+                    .hasMessageContaining("not an active dentist authorized to perform clinical operations");
             verify(examinationRepository, never()).save(any());
         }
 
@@ -251,12 +253,10 @@ class ClinicalExaminationServiceTest {
         @DisplayName("Test 15: Inactive or non-existent Dentist cannot confirm diagnosis")
         void confirmDiagnosis_inactiveDentist_throwsUnauthorizedException() {
             when(examinationRepository.findById(EXAM_ID)).thenReturn(Optional.of(draftExam));
-            when(dentistLookupPort.existsActiveDentist(999L)).thenReturn(false);
+            when(currentDentistProvider.getCurrentDentist())
+                    .thenThrow(new UnauthorizedClinicalOperationException("Authenticated user 999 is not an active dentist authorized to perform clinical operations"));
 
-            ConfirmDiagnosisRequest request = new ConfirmDiagnosisRequest(
-                    999L,
-                    "Irreversible pulpitis"
-            );
+            ConfirmDiagnosisRequest request = new ConfirmDiagnosisRequest("Irreversible pulpitis");
 
             assertThatThrownBy(() -> examinationService.confirmDiagnosis(EXAM_ID, request))
                     .isInstanceOf(UnauthorizedClinicalOperationException.class)
@@ -265,11 +265,26 @@ class ClinicalExaminationServiceTest {
         }
 
         @Test
+        @DisplayName("Throws UnauthorizedClinicalOperationException when unauthenticated caller attempts to confirm diagnosis")
+        void confirmDiagnosis_unauthenticatedCaller_throwsUnauthorizedException() {
+            when(examinationRepository.findById(EXAM_ID)).thenReturn(Optional.of(draftExam));
+            when(currentDentistProvider.getCurrentDentist())
+                    .thenThrow(new UnauthorizedClinicalOperationException("No authenticated user in security context"));
+
+            ConfirmDiagnosisRequest request = new ConfirmDiagnosisRequest("Irreversible pulpitis");
+
+            assertThatThrownBy(() -> examinationService.confirmDiagnosis(EXAM_ID, request))
+                    .isInstanceOf(UnauthorizedClinicalOperationException.class)
+                    .hasMessageContaining("No authenticated user in security context");
+            verify(examinationRepository, never()).save(any());
+        }
+
+        @Test
         @DisplayName("Throws InvalidDiagnosisConfirmationException when diagnosis text is blank")
         void confirmDiagnosis_blankDiagnosis_throwsException() {
             when(examinationRepository.findById(EXAM_ID)).thenReturn(Optional.of(draftExam));
 
-            ConfirmDiagnosisRequest request = new ConfirmDiagnosisRequest(DENTIST_ID, "   ");
+            ConfirmDiagnosisRequest request = new ConfirmDiagnosisRequest("   ");
 
             assertThatThrownBy(() -> examinationService.confirmDiagnosis(EXAM_ID, request))
                     .isInstanceOf(InvalidDiagnosisConfirmationException.class)
@@ -285,7 +300,7 @@ class ClinicalExaminationServiceTest {
             draftExam.setDiagnosisConfirmedAt(LocalDateTime.now());
             when(examinationRepository.findById(EXAM_ID)).thenReturn(Optional.of(draftExam));
 
-            ConfirmDiagnosisRequest request = new ConfirmDiagnosisRequest(DENTIST_ID, "Overwrite attempt");
+            ConfirmDiagnosisRequest request = new ConfirmDiagnosisRequest("Overwrite attempt");
 
             assertThatThrownBy(() -> examinationService.confirmDiagnosis(EXAM_ID, request))
                     .isInstanceOf(InvalidDiagnosisConfirmationException.class)
@@ -301,10 +316,9 @@ class ClinicalExaminationServiceTest {
         @DisplayName("Test 16: DRAFT examination can be completed by authorized Dentist")
         void completeExamination_authorizedDentist_transitionsToCompleted() {
             when(examinationRepository.findById(EXAM_ID)).thenReturn(Optional.of(draftExam));
-            when(dentistLookupPort.existsActiveDentist(DENTIST_ID)).thenReturn(true);
             when(examinationRepository.save(any(ClinicalExamination.class))).thenAnswer(invocation -> invocation.getArgument(0));
 
-            ClinicalExaminationResponse response = examinationService.completeExamination(EXAM_ID, DENTIST_ID);
+            ClinicalExaminationResponse response = examinationService.completeExamination(EXAM_ID);
 
             assertThat(response.status()).isEqualTo(ExaminationStatus.COMPLETED);
             verify(examinationRepository).save(draftExam);
@@ -313,10 +327,10 @@ class ClinicalExaminationServiceTest {
         @Test
         @DisplayName("Dental Assistant cannot complete examination; throws UnauthorizedClinicalOperationException")
         void completeExamination_dentalAssistant_throwsUnauthorizedException() {
-            when(examinationRepository.findById(EXAM_ID)).thenReturn(Optional.of(draftExam));
-            when(dentistLookupPort.existsActiveDentist(ASSISTANT_ID)).thenReturn(false);
+            when(currentDentistProvider.getCurrentDentist())
+                    .thenThrow(new UnauthorizedClinicalOperationException("Only an active dentist can complete/finalize"));
 
-            assertThatThrownBy(() -> examinationService.completeExamination(EXAM_ID, ASSISTANT_ID))
+            assertThatThrownBy(() -> examinationService.completeExamination(EXAM_ID))
                     .isInstanceOf(UnauthorizedClinicalOperationException.class)
                     .hasMessageContaining("Only an active dentist can complete/finalize");
             verify(examinationRepository, never()).save(draftExam);
@@ -342,10 +356,9 @@ class ClinicalExaminationServiceTest {
         @DisplayName("Test 18 & 23: DRAFT examination can be cancelled by authorized Dentist; stores CANCELLED status")
         void cancelExamination_authorizedDentist_transitionsToCancelled() {
             when(examinationRepository.findById(EXAM_ID)).thenReturn(Optional.of(draftExam));
-            when(dentistLookupPort.existsActiveDentist(DENTIST_ID)).thenReturn(true);
             when(examinationRepository.save(any(ClinicalExamination.class))).thenAnswer(invocation -> invocation.getArgument(0));
 
-            ClinicalExaminationResponse response = examinationService.cancelExamination(EXAM_ID, DENTIST_ID);
+            ClinicalExaminationResponse response = examinationService.cancelExamination(EXAM_ID);
 
             assertThat(response.status()).isEqualTo(ExaminationStatus.CANCELLED);
             verify(examinationRepository).save(draftExam);
@@ -354,10 +367,10 @@ class ClinicalExaminationServiceTest {
         @Test
         @DisplayName("Dental Assistant cannot cancel examination; throws UnauthorizedClinicalOperationException")
         void cancelExamination_dentalAssistant_throwsUnauthorizedException() {
-            when(examinationRepository.findById(EXAM_ID)).thenReturn(Optional.of(draftExam));
-            when(dentistLookupPort.existsActiveDentist(ASSISTANT_ID)).thenReturn(false);
+            when(currentDentistProvider.getCurrentDentist())
+                    .thenThrow(new UnauthorizedClinicalOperationException("Only an active dentist can cancel"));
 
-            assertThatThrownBy(() -> examinationService.cancelExamination(EXAM_ID, ASSISTANT_ID))
+            assertThatThrownBy(() -> examinationService.cancelExamination(EXAM_ID))
                     .isInstanceOf(UnauthorizedClinicalOperationException.class)
                     .hasMessageContaining("Only an active dentist can cancel");
             verify(examinationRepository, never()).save(draftExam);
@@ -368,9 +381,8 @@ class ClinicalExaminationServiceTest {
         void cancelExamination_completedExam_throwsInvalidStateException() {
             draftExam.setStatus(ExaminationStatus.COMPLETED);
             when(examinationRepository.findById(EXAM_ID)).thenReturn(Optional.of(draftExam));
-            when(dentistLookupPort.existsActiveDentist(DENTIST_ID)).thenReturn(true);
 
-            assertThatThrownBy(() -> examinationService.cancelExamination(EXAM_ID, DENTIST_ID))
+            assertThatThrownBy(() -> examinationService.cancelExamination(EXAM_ID))
                     .isInstanceOf(InvalidClinicalExaminationStateException.class)
                     .hasMessageContaining("Cannot cancel a completed examination; clinical history must be preserved");
             verify(examinationRepository, never()).save(any());
@@ -381,9 +393,8 @@ class ClinicalExaminationServiceTest {
         void completeExamination_cancelledExam_throwsInvalidStateException() {
             draftExam.setStatus(ExaminationStatus.CANCELLED);
             when(examinationRepository.findById(EXAM_ID)).thenReturn(Optional.of(draftExam));
-            when(dentistLookupPort.existsActiveDentist(DENTIST_ID)).thenReturn(true);
 
-            assertThatThrownBy(() -> examinationService.completeExamination(EXAM_ID, DENTIST_ID))
+            assertThatThrownBy(() -> examinationService.completeExamination(EXAM_ID))
                     .isInstanceOf(InvalidClinicalExaminationStateException.class)
                     .hasMessageContaining("Cannot complete a cancelled examination");
             verify(examinationRepository, never()).save(any());
@@ -394,9 +405,8 @@ class ClinicalExaminationServiceTest {
         void cancelExamination_alreadyCancelled_throwsInvalidStateException() {
             draftExam.setStatus(ExaminationStatus.CANCELLED);
             when(examinationRepository.findById(EXAM_ID)).thenReturn(Optional.of(draftExam));
-            when(dentistLookupPort.existsActiveDentist(DENTIST_ID)).thenReturn(true);
 
-            assertThatThrownBy(() -> examinationService.cancelExamination(EXAM_ID, DENTIST_ID))
+            assertThatThrownBy(() -> examinationService.cancelExamination(EXAM_ID))
                     .isInstanceOf(InvalidClinicalExaminationStateException.class)
                     .hasMessageContaining("Examination is already cancelled");
             verify(examinationRepository, never()).save(any());

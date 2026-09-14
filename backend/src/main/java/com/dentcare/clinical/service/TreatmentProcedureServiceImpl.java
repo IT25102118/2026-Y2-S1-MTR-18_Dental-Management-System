@@ -20,6 +20,8 @@ import com.dentcare.clinical.integration.DentistLookupPort;
 import com.dentcare.clinical.repository.ClinicalProgressNoteRepository;
 import com.dentcare.clinical.repository.TreatmentPlanRepository;
 import com.dentcare.clinical.repository.TreatmentProcedureRepository;
+import com.dentcare.clinical.security.CurrentDentistProvider;
+import com.dentcare.clinical.security.Dentist;
 import com.dentcare.clinical.validation.FdiToothNumberValidator;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -42,15 +44,26 @@ public class TreatmentProcedureServiceImpl implements TreatmentProcedureService 
     private final TreatmentPlanRepository treatmentPlanRepository;
     private final ClinicalProgressNoteRepository clinicalProgressNoteRepository;
     private final DentistLookupPort dentistLookupPort;
+    private final CurrentDentistProvider currentDentistProvider;
+
+    public TreatmentProcedureServiceImpl(TreatmentProcedureRepository treatmentProcedureRepository,
+                                         TreatmentPlanRepository treatmentPlanRepository,
+                                         ClinicalProgressNoteRepository clinicalProgressNoteRepository,
+                                         DentistLookupPort dentistLookupPort,
+                                         CurrentDentistProvider currentDentistProvider) {
+        this.treatmentProcedureRepository = treatmentProcedureRepository;
+        this.treatmentPlanRepository = treatmentPlanRepository;
+        this.clinicalProgressNoteRepository = clinicalProgressNoteRepository;
+        this.dentistLookupPort = dentistLookupPort;
+        this.currentDentistProvider = currentDentistProvider;
+    }
 
     public TreatmentProcedureServiceImpl(TreatmentProcedureRepository treatmentProcedureRepository,
                                          TreatmentPlanRepository treatmentPlanRepository,
                                          ClinicalProgressNoteRepository clinicalProgressNoteRepository,
                                          DentistLookupPort dentistLookupPort) {
-        this.treatmentProcedureRepository = treatmentProcedureRepository;
-        this.treatmentPlanRepository = treatmentPlanRepository;
-        this.clinicalProgressNoteRepository = clinicalProgressNoteRepository;
-        this.dentistLookupPort = dentistLookupPort;
+        this(treatmentProcedureRepository, treatmentPlanRepository, clinicalProgressNoteRepository,
+                dentistLookupPort, null);
     }
 
     @Override
@@ -219,11 +232,9 @@ public class TreatmentProcedureServiceImpl implements TreatmentProcedureService 
 
     @Override
     @Transactional
-    public TreatmentProcedureResponse startTreatmentProcedure(Long id, Long dentistId) {
-        if (dentistId != null && !dentistLookupPort.existsActiveDentist(dentistId)) {
-            throw new UnauthorizedClinicalOperationException(
-                    "User with id " + dentistId + " is not an active dentist authorized to start procedures"
-            );
+    public TreatmentProcedureResponse startTreatmentProcedure(Long id) {
+        if (currentDentistProvider != null) {
+            currentDentistProvider.getCurrentDentist();
         }
 
         TreatmentProcedure procedure = treatmentProcedureRepository.findById(id)
@@ -268,12 +279,6 @@ public class TreatmentProcedureServiceImpl implements TreatmentProcedureService 
 
     @Override
     @Transactional
-    public TreatmentProcedureResponse startTreatmentProcedure(Long id) {
-        return startTreatmentProcedure(id, null);
-    }
-
-    @Override
-    @Transactional
     public TreatmentProcedureResponse completeTreatmentProcedure(Long id, CompleteTreatmentProcedureRequest request) {
         TreatmentProcedure procedure = treatmentProcedureRepository.findById(id)
                 .orElseThrow(() -> new TreatmentProcedureNotFoundException(id));
@@ -293,13 +298,14 @@ public class TreatmentProcedureServiceImpl implements TreatmentProcedureService 
             throw new InvalidTreatmentProcedureStateException("Cannot complete a cancelled procedure");
         }
 
-        if (request == null || request.performedByDentistId() == null || !dentistLookupPort.existsActiveDentist(request.performedByDentistId())) {
-            throw new UnauthorizedClinicalOperationException(
-                    "User with id " + (request != null ? request.performedByDentistId() : null) + " is not an active dentist authorized to complete procedures"
-            );
+        Dentist actingDentist = currentDentistProvider != null
+                ? currentDentistProvider.getCurrentDentist()
+                : null;
+        if (actingDentist == null) {
+            throw new UnauthorizedClinicalOperationException("No authenticated dentist authorized to complete procedures");
         }
 
-        LocalDate completionDate = request.completionDate() != null ? request.completionDate() : LocalDate.now();
+        LocalDate completionDate = request != null && request.completionDate() != null ? request.completionDate() : LocalDate.now();
         LocalDate creationDate = procedure.getCreatedAt() != null ? procedure.getCreatedAt().toLocalDate() : LocalDate.now();
         if (completionDate.isBefore(creationDate)) {
             throw new IllegalArgumentException(
@@ -307,7 +313,7 @@ public class TreatmentProcedureServiceImpl implements TreatmentProcedureService 
             );
         }
 
-        BigDecimal actualCost = request.actualCost();
+        BigDecimal actualCost = request != null ? request.actualCost() : null;
         if (actualCost != null && actualCost.compareTo(BigDecimal.ZERO) < 0) {
             throw new IllegalArgumentException("Actual cost cannot be negative");
         }
@@ -317,14 +323,14 @@ public class TreatmentProcedureServiceImpl implements TreatmentProcedureService 
 
         procedure.setStatus(ProcedureStatus.COMPLETED);
         procedure.setCompletionDate(completionDate);
-        procedure.setPerformedByDentistId(request.performedByDentistId());
+        procedure.setPerformedByDentistId(actingDentist.id());
         procedure.setActualCost(actualCost);
 
-        if (request.assistedByUserId() != null) {
+        if (request != null && request.assistedByUserId() != null) {
             procedure.setAssistedByUserId(request.assistedByUserId());
         }
 
-        if (request.clinicalProgressNotes() != null) {
+        if (request != null && request.clinicalProgressNotes() != null) {
             String trimmedNotes = trimToNull(request.clinicalProgressNotes());
             procedure.setClinicalProgressNotes(trimmedNotes);
 
@@ -332,7 +338,7 @@ public class TreatmentProcedureServiceImpl implements TreatmentProcedureService 
                 ClinicalProgressNote note = new ClinicalProgressNote(
                         procedure.getTreatmentPlanId(),
                         procedure.getId(),
-                        request.performedByDentistId(),
+                        actingDentist.id(),
                         trimmedNotes,
                         null
                 );
@@ -349,19 +355,17 @@ public class TreatmentProcedureServiceImpl implements TreatmentProcedureService 
     @Override
     @Transactional
     public TreatmentProcedureResponse cancelTreatmentProcedure(Long id, CancelTreatmentProcedureRequest request) {
-        TreatmentProcedure procedure = treatmentProcedureRepository.findById(id)
-                .orElseThrow(() -> new TreatmentProcedureNotFoundException(id));
-
-        if (request != null && request.cancelledByDentistId() != null && !dentistLookupPort.existsActiveDentist(request.cancelledByDentistId())) {
-            throw new UnauthorizedClinicalOperationException(
-                    "User with id " + request.cancelledByDentistId() + " is not an active dentist authorized to cancel procedures"
-            );
+        if (currentDentistProvider != null) {
+            currentDentistProvider.getCurrentDentist();
         }
 
         String reason = request != null ? request.cancellationReason() : null;
         if (reason == null || reason.trim().isEmpty()) {
             throw new IllegalArgumentException("Cancellation reason is required");
         }
+
+        TreatmentProcedure procedure = treatmentProcedureRepository.findById(id)
+                .orElseThrow(() -> new TreatmentProcedureNotFoundException(id));
 
         if (procedure.getStatus() == ProcedureStatus.COMPLETED) {
             throw new InvalidTreatmentProcedureStateException(
@@ -385,7 +389,7 @@ public class TreatmentProcedureServiceImpl implements TreatmentProcedureService 
     @Override
     @Transactional
     public TreatmentProcedureResponse cancelTreatmentProcedure(Long id, String cancellationReason) {
-        return cancelTreatmentProcedure(id, new CancelTreatmentProcedureRequest(null, cancellationReason));
+        return cancelTreatmentProcedure(id, new CancelTreatmentProcedureRequest(cancellationReason));
     }
 
     private void recalculatePlanEstimatedCost(TreatmentPlan plan) {

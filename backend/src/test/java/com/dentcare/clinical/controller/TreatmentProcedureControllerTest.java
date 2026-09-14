@@ -392,14 +392,14 @@ class TreatmentProcedureControllerTest {
                 LocalDateTime.of(2026, 9, 13, 11, 0)
         );
 
-        when(treatmentProcedureService.startTreatmentProcedure(101L, 20L)).thenReturn(inProgressResponse);
+        when(treatmentProcedureService.startTreatmentProcedure(101L)).thenReturn(inProgressResponse);
 
         mockMvc.perform(post("/api/clinical/treatment-procedures/101/start").param("dentistId", "20"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.id", is(101)))
                 .andExpect(jsonPath("$.status", is("IN_PROGRESS")));
 
-        verify(treatmentProcedureService).startTreatmentProcedure(101L, 20L);
+        verify(treatmentProcedureService).startTreatmentProcedure(101L);
     }
 
     @Test
@@ -459,23 +459,43 @@ class TreatmentProcedureControllerTest {
     }
 
     @Test
-    @DisplayName("POST /api/clinical/treatment-procedures/{id}/complete with missing performing dentist returns 400 Bad Request")
-    void completeTreatmentProcedure_missingDentist_returns400() throws Exception {
-        CompleteTreatmentProcedureRequest invalidRequest = new CompleteTreatmentProcedureRequest(
-                null,
-                null,
+    @DisplayName("POST /api/clinical/treatment-procedures/{id}/complete without performing dentist in body succeeds")
+    void completeTreatmentProcedure_withoutDentistInBody_succeeds() throws Exception {
+        CompleteTreatmentProcedureRequest request = new CompleteTreatmentProcedureRequest(
+                25L,
                 LocalDate.of(2026, 9, 13),
                 BigDecimal.valueOf(150.00),
-                null
+                "Restoration completed"
         );
+
+        TreatmentProcedureResponse completedResponse = new TreatmentProcedureResponse(
+                101L,
+                1L,
+                16,
+                "Composite Restoration - Occlusal",
+                "D2391",
+                1,
+                ProcedureStatus.COMPLETED,
+                BigDecimal.valueOf(150.00),
+                BigDecimal.valueOf(150.00),
+                LocalDate.of(2026, 9, 13),
+                20L,
+                25L,
+                "Restoration completed",
+                null,
+                LocalDateTime.of(2026, 9, 13, 10, 30),
+                LocalDateTime.of(2026, 9, 13, 11, 30)
+        );
+
+        when(treatmentProcedureService.completeTreatmentProcedure(eq(101L), any(CompleteTreatmentProcedureRequest.class)))
+                .thenReturn(completedResponse);
 
         mockMvc.perform(post("/api/clinical/treatment-procedures/101/complete")
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(invalidRequest)))
-                .andExpect(status().isBadRequest())
-                .andExpect(jsonPath("$.status", is(400)))
-                .andExpect(jsonPath("$.error", is("Bad Request")))
-                .andExpect(jsonPath("$.fieldErrors", hasKey("performedByDentistId")));
+                        .content(objectMapper.writeValueAsString(request)))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.id", is(101)))
+                .andExpect(jsonPath("$.status", is("COMPLETED")));
     }
 
     @Test

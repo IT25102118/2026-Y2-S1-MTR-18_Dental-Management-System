@@ -78,22 +78,12 @@ public class TreatmentPlanController {
     }
 
     @PostMapping("/{id}/start")
-    public ResponseEntity<TreatmentPlanResponse> startTreatmentPlan(
-            @PathVariable("id") Long id,
-            @RequestParam(name = "dentistId", required = false) Long dentistId) {
-        if (dentistId != null) {
-            return ResponseEntity.ok(treatmentPlanService.startTreatmentPlan(id, dentistId));
-        }
+    public ResponseEntity<TreatmentPlanResponse> startTreatmentPlan(@PathVariable("id") Long id) {
         return ResponseEntity.ok(treatmentPlanService.startTreatmentPlan(id));
     }
 
     @PostMapping("/{id}/complete")
-    public ResponseEntity<TreatmentPlanResponse> completeTreatmentPlan(
-            @PathVariable("id") Long id,
-            @RequestParam(name = "dentistId", required = false) Long dentistId) {
-        if (dentistId != null) {
-            return ResponseEntity.ok(treatmentPlanService.completeTreatmentPlan(id, dentistId));
-        }
+    public ResponseEntity<TreatmentPlanResponse> completeTreatmentPlan(@PathVariable("id") Long id) {
         return ResponseEntity.ok(treatmentPlanService.completeTreatmentPlan(id));
     }
 

@@ -16,6 +16,8 @@ import com.dentcare.clinical.exception.UnauthorizedClinicalOperationException;
 import com.dentcare.clinical.integration.DentistLookupPort;
 import com.dentcare.clinical.integration.PatientLookupPort;
 import com.dentcare.clinical.repository.ClinicalExaminationRepository;
+import com.dentcare.clinical.security.CurrentDentistProvider;
+import com.dentcare.clinical.security.Dentist;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -34,13 +36,22 @@ public class ClinicalExaminationServiceImpl implements ClinicalExaminationServic
     private final ClinicalExaminationRepository examinationRepository;
     private final PatientLookupPort patientLookupPort;
     private final DentistLookupPort dentistLookupPort;
+    private final CurrentDentistProvider currentDentistProvider;
+
+    public ClinicalExaminationServiceImpl(ClinicalExaminationRepository examinationRepository,
+                                          PatientLookupPort patientLookupPort,
+                                          DentistLookupPort dentistLookupPort,
+                                          CurrentDentistProvider currentDentistProvider) {
+        this.examinationRepository = examinationRepository;
+        this.patientLookupPort = patientLookupPort;
+        this.dentistLookupPort = dentistLookupPort;
+        this.currentDentistProvider = currentDentistProvider;
+    }
 
     public ClinicalExaminationServiceImpl(ClinicalExaminationRepository examinationRepository,
                                           PatientLookupPort patientLookupPort,
                                           DentistLookupPort dentistLookupPort) {
-        this.examinationRepository = examinationRepository;
-        this.patientLookupPort = patientLookupPort;
-        this.dentistLookupPort = dentistLookupPort;
+        this(examinationRepository, patientLookupPort, dentistLookupPort, null);
     }
 
     @Override
@@ -165,15 +176,12 @@ public class ClinicalExaminationServiceImpl implements ClinicalExaminationServic
 
     @Override
     @Transactional
-    public ClinicalExaminationResponse completeExamination(Long id, Long dentistId) {
+    public ClinicalExaminationResponse completeExamination(Long id) {
+        if (currentDentistProvider != null) {
+            currentDentistProvider.getCurrentDentist();
+        }
         ClinicalExamination examination = examinationRepository.findById(id)
                 .orElseThrow(() -> new ClinicalExaminationNotFoundException(id));
-
-        if (dentistId != null && !dentistLookupPort.existsActiveDentist(dentistId)) {
-            throw new UnauthorizedClinicalOperationException(
-                    "Only an active dentist can complete/finalize an examination (user " + dentistId + " is not an active dentist)"
-            );
-        }
 
         if (examination.getStatus() == ExaminationStatus.COMPLETED) {
             return ClinicalExaminationResponse.fromEntity(examination);
@@ -194,21 +202,12 @@ public class ClinicalExaminationServiceImpl implements ClinicalExaminationServic
 
     @Override
     @Transactional
-    public ClinicalExaminationResponse completeExamination(Long id) {
-        return completeExamination(id, null);
-    }
-
-    @Override
-    @Transactional
-    public ClinicalExaminationResponse cancelExamination(Long id, Long dentistId) {
+    public ClinicalExaminationResponse cancelExamination(Long id) {
+        if (currentDentistProvider != null) {
+            currentDentistProvider.getCurrentDentist();
+        }
         ClinicalExamination examination = examinationRepository.findById(id)
                 .orElseThrow(() -> new ClinicalExaminationNotFoundException(id));
-
-        if (dentistId != null && !dentistLookupPort.existsActiveDentist(dentistId)) {
-            throw new UnauthorizedClinicalOperationException(
-                    "Only an active dentist can cancel an examination (user " + dentistId + " is not an active dentist)"
-            );
-        }
 
         if (examination.getStatus() == ExaminationStatus.COMPLETED) {
             throw new InvalidClinicalExaminationStateException(
@@ -223,12 +222,6 @@ public class ClinicalExaminationServiceImpl implements ClinicalExaminationServic
         examination.setStatus(ExaminationStatus.CANCELLED);
         ClinicalExamination saved = examinationRepository.save(examination);
         return ClinicalExaminationResponse.fromEntity(saved);
-    }
-
-    @Override
-    @Transactional
-    public ClinicalExaminationResponse cancelExamination(Long id) {
-        return cancelExamination(id, null);
     }
 
     @Override
@@ -253,15 +246,16 @@ public class ClinicalExaminationServiceImpl implements ClinicalExaminationServic
             throw new InvalidDiagnosisConfirmationException("Confirmed diagnosis cannot be blank");
         }
 
-        if (request.dentistId() == null || !dentistLookupPort.existsActiveDentist(request.dentistId())) {
-            throw new UnauthorizedClinicalOperationException(
-                    "User with id " + request.dentistId() + " is not an active dentist authorized to confirm diagnosis"
-            );
+        Dentist actingDentist = currentDentistProvider != null
+                ? currentDentistProvider.getCurrentDentist()
+                : null;
+        if (actingDentist == null) {
+            throw new UnauthorizedClinicalOperationException("No authenticated dentist authorized to confirm diagnosis");
         }
 
         examination.setConfirmedDiagnosis(request.confirmedDiagnosis().trim());
         examination.setDiagnosisConfirmed(true);
-        examination.setConfirmedByDentistId(request.dentistId());
+        examination.setConfirmedByDentistId(actingDentist.id());
         examination.setDiagnosisConfirmedAt(LocalDateTime.now());
 
         ClinicalExamination saved = examinationRepository.save(examination);

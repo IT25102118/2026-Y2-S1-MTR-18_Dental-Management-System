@@ -11,9 +11,6 @@ import java.time.LocalDate;
  * Procedure completion is dentist-only.
  */
 public record CompleteTreatmentProcedureRequest(
-        @NotNull(message = "Performing dentist ID is required")
-        Long performedByDentistId,
-
         Long assistedByUserId,
 
         LocalDate completionDate,
@@ -23,4 +20,9 @@ public record CompleteTreatmentProcedureRequest(
 
         String clinicalProgressNotes
 ) {
+    public CompleteTreatmentProcedureRequest(Long performedByDentistId, Long assistedByUserId,
+                                             LocalDate completionDate, BigDecimal actualCost,
+                                             String clinicalProgressNotes) {
+        this(assistedByUserId, completionDate, actualCost, clinicalProgressNotes);
+    }
 }

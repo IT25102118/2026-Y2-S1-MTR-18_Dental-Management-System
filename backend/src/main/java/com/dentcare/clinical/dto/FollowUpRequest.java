@@ -11,9 +11,9 @@ public record FollowUpRequest(
         @NotNull(message = "Follow-up date is required")
         LocalDate followUpDate,
 
-        @NotNull(message = "Dentist ID is required")
-        Long dentistId,
-
         String clinicalNotes
 ) {
+    public FollowUpRequest(LocalDate followUpDate, Long dentistId, String clinicalNotes) {
+        this(followUpDate, clinicalNotes);
+    }
 }

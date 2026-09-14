@@ -9,11 +9,11 @@ import jakarta.validation.constraints.Size;
  * Procedure cancellation is dentist-only and requires a reason to preserve clinical audit trail.
  */
 public record CancelTreatmentProcedureRequest(
-        @NotNull(message = "Cancelling dentist ID is required")
-        Long cancelledByDentistId,
-
         @NotBlank(message = "Cancellation reason is required")
         @Size(max = 255, message = "Cancellation reason cannot exceed 255 characters")
         String cancellationReason
 ) {
+    public CancelTreatmentProcedureRequest(Long cancelledByDentistId, String cancellationReason) {
+        this(cancellationReason);
+    }
 }

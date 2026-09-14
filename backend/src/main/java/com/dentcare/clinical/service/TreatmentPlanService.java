@@ -66,13 +66,8 @@ public interface TreatmentPlanService {
     TreatmentPlanResponse approveTreatmentPlan(Long id, ApproveTreatmentPlanRequest request);
 
     /**
-     * Starts execution of an approved treatment plan by an authorized dentist.
+     * Starts execution of an approved treatment plan by the authenticated dentist.
      * Transitions status from APPROVED to IN_PROGRESS.
-     */
-    TreatmentPlanResponse startTreatmentPlan(Long id, Long dentistId);
-
-    /**
-     * Overload for starting treatment plan.
      */
     TreatmentPlanResponse startTreatmentPlan(Long id);
 
@@ -80,11 +75,6 @@ public interface TreatmentPlanService {
      * Completes an in-progress treatment plan after verifying that all procedures are resolved
      * (completed or cancelled), at least one is completed, and completion info is present.
      * Transitions status from IN_PROGRESS to COMPLETED.
-     */
-    TreatmentPlanResponse completeTreatmentPlan(Long id, Long dentistId);
-
-    /**
-     * Overload for completing treatment plan.
      */
     TreatmentPlanResponse completeTreatmentPlan(Long id);
 
