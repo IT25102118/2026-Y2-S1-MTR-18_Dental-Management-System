@@ -238,6 +238,36 @@ describe('inventoryApi client', () => {
       const [, postOpts] = global.fetch.mock.calls[1];
       expect(postOpts.headers['X-XSRF-TOKEN']).toBe('pre-cached-token');
     });
+
+    it('normalizes whitespace-only defaultSupplierReference to null in createItem', async () => {
+      global.fetch
+        .mockResolvedValueOnce({
+          ok: true,
+          status: 200,
+          headers: new Headers({ 'content-type': 'application/json' }),
+          json: async () => ({ token: 'create-csrf', headerName: 'X-XSRF-TOKEN' })
+        })
+        .mockResolvedValueOnce({
+          ok: true,
+          status: 201,
+          headers: new Headers({ 'content-type': 'application/json' }),
+          json: async () => ({ id: 3, itemCode: 'ITM-003', name: 'Mask' })
+        });
+
+      await createItem({
+        itemCode: 'ITM-003',
+        name: 'Mask',
+        category: 'Safety',
+        unit: 'box',
+        reorderLevel: 0,
+        defaultSupplierReference: '   '
+      });
+
+      const [, postOpts] = global.fetch.mock.calls[1];
+      const parsedBody = JSON.parse(postOpts.body);
+      expect(parsedBody.defaultSupplierReference).toBeNull();
+      expect(parsedBody.reorderLevel).toBe(0);
+    });
   });
 
   describe('updateItem', () => {
@@ -286,6 +316,35 @@ describe('inventoryApi client', () => {
         defaultSupplierReference: 'SUP-01'
       }));
       expect(res).toEqual(updatedItem);
+    });
+
+    it('normalizes whitespace-only defaultSupplierReference to null in updateItem', async () => {
+      global.fetch
+        .mockResolvedValueOnce({
+          ok: true,
+          status: 200,
+          headers: new Headers({ 'content-type': 'application/json' }),
+          json: async () => ({ token: 'put-csrf-token', headerName: 'X-XSRF-TOKEN' })
+        })
+        .mockResolvedValueOnce({
+          ok: true,
+          status: 200,
+          headers: new Headers({ 'content-type': 'application/json' }),
+          json: async () => ({ id: 1, name: 'Updated Name' })
+        });
+
+      await updateItem(1, {
+        name: 'Updated Name',
+        category: 'Diagnostic',
+        unit: 'piece',
+        reorderLevel: 0,
+        defaultSupplierReference: '   '
+      });
+
+      const [, putOpts] = global.fetch.mock.calls[1];
+      const parsedBody = JSON.parse(putOpts.body);
+      expect(parsedBody.defaultSupplierReference).toBeNull();
+      expect(parsedBody.reorderLevel).toBe(0);
     });
   });
 
