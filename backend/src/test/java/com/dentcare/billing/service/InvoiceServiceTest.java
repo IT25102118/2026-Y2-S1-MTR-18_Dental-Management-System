@@ -7,11 +7,15 @@ import com.dentcare.billing.dto.UpdateDraftInvoiceRequest;
 import com.dentcare.billing.entity.Invoice;
 import com.dentcare.billing.entity.InvoiceItem;
 import com.dentcare.billing.entity.InvoiceStatus;
+import com.dentcare.billing.entity.Payment;
+import com.dentcare.billing.entity.PaymentMethod;
+import com.dentcare.billing.entity.PaymentStatus;
 import com.dentcare.billing.exception.BillingValidationException;
 import com.dentcare.billing.exception.InvalidInvoiceStatusException;
 import com.dentcare.billing.exception.InvoiceNotFoundException;
 import com.dentcare.billing.mapper.BillingMapper;
 import com.dentcare.billing.repository.InvoiceRepository;
+import com.dentcare.billing.repository.PaymentRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -22,6 +26,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 
@@ -29,6 +34,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -37,6 +43,9 @@ class InvoiceServiceTest {
 
     @Mock
     private InvoiceRepository invoiceRepository;
+
+    @Mock
+    private PaymentRepository paymentRepository;
 
     @Mock
     private InvoiceNumberGenerator invoiceNumberGenerator;
@@ -51,6 +60,7 @@ class InvoiceServiceTest {
         billingMapper = new BillingMapper();
         invoiceService = new InvoiceServiceImpl(
                 invoiceRepository,
+                paymentRepository,
                 billingCalculationService,
                 billingMapper,
                 invoiceNumberGenerator
@@ -536,5 +546,338 @@ class InvoiceServiceTest {
         invoice.addItem(item);
         invoiceService.issueInvoice(4001L);
         verify(invoiceRepository, org.mockito.Mockito.times(2)).findByIdForUpdate(4001L);
+    }
+
+    private Invoice createTestInvoice(Long id, InvoiceStatus status, BigDecimal total, BigDecimal paid, BigDecimal balance) {
+        Invoice invoice = new Invoice("INV-2026-" + id, 100L, LocalDate.now());
+        invoice.setId(id);
+        invoice.setStatus(status);
+        invoice.setSubtotal(total);
+        invoice.setTotalAmount(total);
+        invoice.setPaidAmount(paid);
+        invoice.setBalanceAmount(balance);
+        return invoice;
+    }
+
+    // -------------------------------------------------------------------------
+    // Invoice Cancellation Tests (27 - 47)
+    // -------------------------------------------------------------------------
+
+    @Test
+    @DisplayName("27. Cancel DRAFT invoice succeeds and returns CANCELLED response")
+    void testCancelDraftInvoiceSucceeds() {
+        Invoice invoice = createTestInvoice(27L, InvoiceStatus.DRAFT, new BigDecimal("100.00"), BigDecimal.ZERO, new BigDecimal("100.00"));
+        when(invoiceRepository.findByIdForUpdate(27L)).thenReturn(Optional.of(invoice));
+        when(paymentRepository.sumRecordedPaymentsByInvoiceId(27L)).thenReturn(BigDecimal.ZERO);
+        when(invoiceRepository.save(any(Invoice.class))).thenAnswer(inv -> inv.getArgument(0));
+
+        InvoiceResponse response = invoiceService.cancelInvoice(27L);
+
+        assertThat(response).isNotNull();
+        assertThat(response.status()).isEqualTo(InvoiceStatus.CANCELLED);
+    }
+
+    @Test
+    @DisplayName("28. Cancel DRAFT invoice transitions entity status from DRAFT to CANCELLED")
+    void testCancelDraftInvoiceTransitionsStatusToCancelled() {
+        Invoice invoice = createTestInvoice(28L, InvoiceStatus.DRAFT, new BigDecimal("100.00"), BigDecimal.ZERO, new BigDecimal("100.00"));
+        when(invoiceRepository.findByIdForUpdate(28L)).thenReturn(Optional.of(invoice));
+        when(paymentRepository.sumRecordedPaymentsByInvoiceId(28L)).thenReturn(BigDecimal.ZERO);
+        when(invoiceRepository.save(any(Invoice.class))).thenAnswer(inv -> inv.getArgument(0));
+
+        invoiceService.cancelInvoice(28L);
+
+        assertThat(invoice.getStatus()).isEqualTo(InvoiceStatus.CANCELLED);
+    }
+
+    @Test
+    @DisplayName("29. Cancel UNPAID invoice with zero active payments succeeds")
+    void testCancelUnpaidInvoiceWithZeroActivePaymentsSucceeds() {
+        Invoice invoice = createTestInvoice(29L, InvoiceStatus.UNPAID, new BigDecimal("150.00"), BigDecimal.ZERO, new BigDecimal("150.00"));
+        when(invoiceRepository.findByIdForUpdate(29L)).thenReturn(Optional.of(invoice));
+        when(paymentRepository.sumRecordedPaymentsByInvoiceId(29L)).thenReturn(BigDecimal.ZERO);
+        when(invoiceRepository.save(any(Invoice.class))).thenAnswer(inv -> inv.getArgument(0));
+
+        InvoiceResponse response = invoiceService.cancelInvoice(29L);
+
+        assertThat(response).isNotNull();
+        assertThat(response.status()).isEqualTo(InvoiceStatus.CANCELLED);
+    }
+
+    @Test
+    @DisplayName("30. Cancel UNPAID invoice transitions entity status from UNPAID to CANCELLED")
+    void testCancelUnpaidInvoiceTransitionsStatusToCancelled() {
+        Invoice invoice = createTestInvoice(30L, InvoiceStatus.UNPAID, new BigDecimal("150.00"), BigDecimal.ZERO, new BigDecimal("150.00"));
+        when(invoiceRepository.findByIdForUpdate(30L)).thenReturn(Optional.of(invoice));
+        when(paymentRepository.sumRecordedPaymentsByInvoiceId(30L)).thenReturn(BigDecimal.ZERO);
+        when(invoiceRepository.save(any(Invoice.class))).thenAnswer(inv -> inv.getArgument(0));
+
+        invoiceService.cancelInvoice(30L);
+
+        assertThat(invoice.getStatus()).isEqualTo(InvoiceStatus.CANCELLED);
+    }
+
+    @Test
+    @DisplayName("31. Cancel PARTIALLY_PAID invoice with active recorded payments is rejected")
+    void testCancelPartiallyPaidWithActivePaymentsRejected() {
+        Invoice invoice = createTestInvoice(31L, InvoiceStatus.PARTIALLY_PAID, new BigDecimal("200.00"), new BigDecimal("50.00"), new BigDecimal("150.00"));
+        when(invoiceRepository.findByIdForUpdate(31L)).thenReturn(Optional.of(invoice));
+        when(paymentRepository.sumRecordedPaymentsByInvoiceId(31L)).thenReturn(new BigDecimal("50.00"));
+
+        assertThatThrownBy(() -> invoiceService.cancelInvoice(31L))
+                .isInstanceOf(InvalidInvoiceStatusException.class)
+                .hasMessageContaining("active recorded payments remain");
+
+        assertThat(invoice.getStatus()).isEqualTo(InvoiceStatus.PARTIALLY_PAID);
+        verify(invoiceRepository, never()).save(any(Invoice.class));
+    }
+
+    @Test
+    @DisplayName("32. Cancel PAID invoice is rejected")
+    void testCancelPaidInvoiceRejected() {
+        Invoice invoice = createTestInvoice(32L, InvoiceStatus.PAID, new BigDecimal("100.00"), new BigDecimal("100.00"), BigDecimal.ZERO);
+        when(invoiceRepository.findByIdForUpdate(32L)).thenReturn(Optional.of(invoice));
+
+        assertThatThrownBy(() -> invoiceService.cancelInvoice(32L))
+                .isInstanceOf(InvalidInvoiceStatusException.class)
+                .hasMessageContaining("Paid invoices cannot be directly cancelled");
+
+        assertThat(invoice.getStatus()).isEqualTo(InvoiceStatus.PAID);
+        verify(invoiceRepository, never()).save(any(Invoice.class));
+    }
+
+    @Test
+    @DisplayName("33. Cancel already CANCELLED invoice is rejected with InvalidInvoiceStatusException")
+    void testCancelAlreadyCancelledInvoiceRejected() {
+        Invoice invoice = createTestInvoice(33L, InvoiceStatus.CANCELLED, new BigDecimal("100.00"), BigDecimal.ZERO, new BigDecimal("100.00"));
+        when(invoiceRepository.findByIdForUpdate(33L)).thenReturn(Optional.of(invoice));
+
+        assertThatThrownBy(() -> invoiceService.cancelInvoice(33L))
+                .isInstanceOf(InvalidInvoiceStatusException.class)
+                .hasMessageContaining("Invoice is already cancelled");
+
+        verify(invoiceRepository, never()).save(any(Invoice.class));
+    }
+
+    @Test
+    @DisplayName("34. Cancel missing invoice throws InvoiceNotFoundException")
+    void testCancelMissingInvoiceThrowsNotFound() {
+        when(invoiceRepository.findByIdForUpdate(999L)).thenReturn(Optional.empty());
+
+        assertThatThrownBy(() -> invoiceService.cancelInvoice(999L))
+                .isInstanceOf(InvoiceNotFoundException.class)
+                .hasMessageContaining("999");
+    }
+
+    @Test
+    @DisplayName("35. Authoritative PaymentRepository aggregate is checked during cancellation")
+    void testAuthoritativePaymentRepositoryAggregateChecked() {
+        Invoice invoice = createTestInvoice(35L, InvoiceStatus.UNPAID, new BigDecimal("80.00"), BigDecimal.ZERO, new BigDecimal("80.00"));
+        when(invoiceRepository.findByIdForUpdate(35L)).thenReturn(Optional.of(invoice));
+        when(paymentRepository.sumRecordedPaymentsByInvoiceId(35L)).thenReturn(BigDecimal.ZERO);
+        when(invoiceRepository.save(any(Invoice.class))).thenAnswer(inv -> inv.getArgument(0));
+
+        invoiceService.cancelInvoice(35L);
+
+        verify(paymentRepository).sumRecordedPaymentsByInvoiceId(35L);
+    }
+
+    @Test
+    @DisplayName("36. REVERSED-only payment history does not block cancellation")
+    void testReversedOnlyHistoryDoesNotBlockCancellation() {
+        Invoice invoice = createTestInvoice(36L, InvoiceStatus.UNPAID, new BigDecimal("100.00"), BigDecimal.ZERO, new BigDecimal("100.00"));
+
+        Payment originalReversed = new Payment(invoice, "REC-36-1", new BigDecimal("50.00"), PaymentMethod.CASH, null, LocalDateTime.now().minusDays(2), 1L);
+        originalReversed.setId(361L);
+        originalReversed.setStatus(PaymentStatus.REVERSED);
+
+        Payment reversalComp = new Payment(invoice, "REC-36-REV", new BigDecimal("50.00"), PaymentMethod.CASH, null, LocalDateTime.now().minusDays(1), 1L);
+        reversalComp.setId(362L);
+        reversalComp.setStatus(PaymentStatus.REVERSED);
+
+        invoice.getPayments().add(originalReversed);
+        invoice.getPayments().add(reversalComp);
+
+        when(invoiceRepository.findByIdForUpdate(36L)).thenReturn(Optional.of(invoice));
+        // Authoritative query sumRecordedPaymentsByInvoiceId only sums status='RECORDED', so it returns ZERO
+        when(paymentRepository.sumRecordedPaymentsByInvoiceId(36L)).thenReturn(BigDecimal.ZERO);
+        when(invoiceRepository.save(any(Invoice.class))).thenAnswer(inv -> inv.getArgument(0));
+
+        InvoiceResponse response = invoiceService.cancelInvoice(36L);
+
+        assertThat(response).isNotNull();
+        assertThat(response.status()).isEqualTo(InvoiceStatus.CANCELLED);
+        assertThat(invoice.getStatus()).isEqualTo(InvoiceStatus.CANCELLED);
+        assertThat(invoice.getPayments()).hasSize(2);
+    }
+
+    @Test
+    @DisplayName("37. Cancellation uses pessimistic locking path findByIdForUpdate")
+    void testPessimisticLockingUsedForCancellation() {
+        Invoice invoice = createTestInvoice(37L, InvoiceStatus.DRAFT, new BigDecimal("50.00"), BigDecimal.ZERO, new BigDecimal("50.00"));
+        when(invoiceRepository.findByIdForUpdate(37L)).thenReturn(Optional.of(invoice));
+        when(paymentRepository.sumRecordedPaymentsByInvoiceId(37L)).thenReturn(BigDecimal.ZERO);
+        when(invoiceRepository.save(any(Invoice.class))).thenAnswer(inv -> inv.getArgument(0));
+
+        invoiceService.cancelInvoice(37L);
+
+        verify(invoiceRepository).findByIdForUpdate(37L);
+    }
+
+    @Test
+    @DisplayName("38. Invoice number is strictly preserved across cancellation")
+    void testInvoiceNumberPreservedOnCancellation() {
+        Invoice invoice = createTestInvoice(38L, InvoiceStatus.UNPAID, new BigDecimal("120.00"), BigDecimal.ZERO, new BigDecimal("120.00"));
+        String originalNumber = invoice.getInvoiceNumber();
+
+        when(invoiceRepository.findByIdForUpdate(38L)).thenReturn(Optional.of(invoice));
+        when(paymentRepository.sumRecordedPaymentsByInvoiceId(38L)).thenReturn(BigDecimal.ZERO);
+        when(invoiceRepository.save(any(Invoice.class))).thenAnswer(inv -> inv.getArgument(0));
+
+        InvoiceResponse response = invoiceService.cancelInvoice(38L);
+
+        assertThat(response.invoiceNumber()).isEqualTo(originalNumber);
+        assertThat(invoice.getInvoiceNumber()).isEqualTo(originalNumber);
+    }
+
+    @Test
+    @DisplayName("39. Invoice total and discount amounts are preserved on cancellation")
+    void testInvoiceTotalPreservedOnCancellation() {
+        Invoice invoice = createTestInvoice(39L, InvoiceStatus.UNPAID, new BigDecimal("200.00"), BigDecimal.ZERO, new BigDecimal("200.00"));
+        invoice.setDiscountAmount(new BigDecimal("20.00"));
+        invoice.setSubtotal(new BigDecimal("220.00"));
+
+        when(invoiceRepository.findByIdForUpdate(39L)).thenReturn(Optional.of(invoice));
+        when(paymentRepository.sumRecordedPaymentsByInvoiceId(39L)).thenReturn(BigDecimal.ZERO);
+        when(invoiceRepository.save(any(Invoice.class))).thenAnswer(inv -> inv.getArgument(0));
+
+        InvoiceResponse response = invoiceService.cancelInvoice(39L);
+
+        assertThat(response.subtotal()).isEqualByComparingTo(new BigDecimal("220.00"));
+        assertThat(response.discountAmount()).isEqualByComparingTo(new BigDecimal("20.00"));
+        assertThat(response.totalAmount()).isEqualByComparingTo(new BigDecimal("200.00"));
+    }
+
+    @Test
+    @DisplayName("40. Invoice line items are preserved on cancellation")
+    void testInvoiceItemsPreservedOnCancellation() {
+        Invoice invoice = createTestInvoice(40L, InvoiceStatus.UNPAID, new BigDecimal("100.00"), BigDecimal.ZERO, new BigDecimal("100.00"));
+        InvoiceItem item1 = new InvoiceItem(invoice, 501L, "Procedure 1", 1, new BigDecimal("60.00"), new BigDecimal("60.00"));
+        InvoiceItem item2 = new InvoiceItem(invoice, 502L, "Procedure 2", 1, new BigDecimal("40.00"), new BigDecimal("40.00"));
+        invoice.addItem(item1);
+        invoice.addItem(item2);
+
+        when(invoiceRepository.findByIdForUpdate(40L)).thenReturn(Optional.of(invoice));
+        when(paymentRepository.sumRecordedPaymentsByInvoiceId(40L)).thenReturn(BigDecimal.ZERO);
+        when(invoiceRepository.save(any(Invoice.class))).thenAnswer(inv -> inv.getArgument(0));
+
+        InvoiceResponse response = invoiceService.cancelInvoice(40L);
+
+        assertThat(response.items()).hasSize(2);
+        assertThat(invoice.getItems()).hasSize(2);
+    }
+
+    @Test
+    @DisplayName("41. Payment history is not deleted and PaymentRepository delete is never called")
+    void testPaymentHistoryNotDeletedAndNoDeleteOperations() {
+        Invoice invoice = createTestInvoice(41L, InvoiceStatus.UNPAID, new BigDecimal("100.00"), BigDecimal.ZERO, new BigDecimal("100.00"));
+        Payment reversedPayment = new Payment(invoice, "REC-41-REV", new BigDecimal("100.00"), PaymentMethod.CASH, null, LocalDateTime.now(), 1L);
+        reversedPayment.setStatus(PaymentStatus.REVERSED);
+        invoice.getPayments().add(reversedPayment);
+
+        when(invoiceRepository.findByIdForUpdate(41L)).thenReturn(Optional.of(invoice));
+        when(paymentRepository.sumRecordedPaymentsByInvoiceId(41L)).thenReturn(BigDecimal.ZERO);
+        when(invoiceRepository.save(any(Invoice.class))).thenAnswer(inv -> inv.getArgument(0));
+
+        invoiceService.cancelInvoice(41L);
+
+        assertThat(invoice.getPayments()).hasSize(1);
+        assertThat(invoice.getPayments().get(0)).isSameAs(reversedPayment);
+        // Verify payment repository was not invoked for any deletion
+        verify(paymentRepository, never()).deleteAll(any());
+        verify(paymentRepository, never()).delete(any());
+        verify(paymentRepository, never()).deleteById(any());
+    }
+
+    @Test
+    @DisplayName("42. Successful cancellation does not create payment or reversal rows")
+    void testSuccessfulCancellationDoesNotCreatePaymentOrReversalRows() {
+        Invoice invoice = createTestInvoice(42L, InvoiceStatus.UNPAID, new BigDecimal("100.00"), BigDecimal.ZERO, new BigDecimal("100.00"));
+        when(invoiceRepository.findByIdForUpdate(42L)).thenReturn(Optional.of(invoice));
+        when(paymentRepository.sumRecordedPaymentsByInvoiceId(42L)).thenReturn(BigDecimal.ZERO);
+        when(invoiceRepository.save(any(Invoice.class))).thenAnswer(inv -> inv.getArgument(0));
+
+        invoiceService.cancelInvoice(42L);
+
+        verify(paymentRepository, never()).save(any(Payment.class));
+    }
+
+    @Test
+    @DisplayName("43. Failure before save does not partially mutate persisted state")
+    void testFailureBeforeSaveDoesNotPartiallyMutatePersistedState() {
+        Invoice invoice = createTestInvoice(43L, InvoiceStatus.UNPAID, new BigDecimal("100.00"), BigDecimal.ZERO, new BigDecimal("100.00"));
+        when(invoiceRepository.findByIdForUpdate(43L)).thenReturn(Optional.of(invoice));
+        when(paymentRepository.sumRecordedPaymentsByInvoiceId(43L)).thenThrow(new RuntimeException("Database error during payment check"));
+
+        assertThatThrownBy(() -> invoiceService.cancelInvoice(43L))
+                .isInstanceOf(RuntimeException.class)
+                .hasMessageContaining("Database error during payment check");
+
+        verify(invoiceRepository, never()).save(any(Invoice.class));
+    }
+
+    @Test
+    @DisplayName("44. Cancelled invoice remains retrievable and mappable via getInvoice")
+    void testCancelledInvoiceRemainsRetrievableAndMappable() {
+        Invoice invoice = createTestInvoice(44L, InvoiceStatus.CANCELLED, new BigDecimal("100.00"), BigDecimal.ZERO, new BigDecimal("100.00"));
+        when(invoiceRepository.findById(44L)).thenReturn(Optional.of(invoice));
+
+        InvoiceResponse response = invoiceService.getInvoice(44L);
+
+        assertThat(response).isNotNull();
+        assertThat(response.status()).isEqualTo(InvoiceStatus.CANCELLED);
+    }
+
+    @Test
+    @DisplayName("45. BigDecimal financial fields remain numerically unchanged on cancellation")
+    void testBigDecimalFinancialFieldsRemainNumericallyUnchanged() {
+        BigDecimal total = new BigDecimal("123.456");
+        Invoice invoice = createTestInvoice(45L, InvoiceStatus.UNPAID, total, BigDecimal.ZERO, total);
+
+        when(invoiceRepository.findByIdForUpdate(45L)).thenReturn(Optional.of(invoice));
+        when(paymentRepository.sumRecordedPaymentsByInvoiceId(45L)).thenReturn(BigDecimal.ZERO);
+        when(invoiceRepository.save(any(Invoice.class))).thenAnswer(inv -> inv.getArgument(0));
+
+        InvoiceResponse response = invoiceService.cancelInvoice(45L);
+
+        assertThat(response.subtotal()).isEqualByComparingTo(total);
+        assertThat(response.totalAmount()).isEqualByComparingTo(total);
+        assertThat(response.balanceAmount()).isEqualByComparingTo(total);
+        assertThat(response.paidAmount()).isEqualByComparingTo(BigDecimal.ZERO);
+    }
+
+    @Test
+    @DisplayName("46. Cancel with null invoiceId throws BillingValidationException")
+    void testCancelNullInvoiceIdThrowsValidation() {
+        assertThatThrownBy(() -> invoiceService.cancelInvoice(null))
+                .isInstanceOf(BillingValidationException.class)
+                .hasMessageContaining("Invoice ID is required");
+    }
+
+    @Test
+    @DisplayName("47. Stale paidAmount reconciled when authoritative payment sum is zero")
+    void testStalePaidAmountReconciledWhenAuthoritativePaymentSumZero() {
+        Invoice invoice = createTestInvoice(47L, InvoiceStatus.UNPAID, new BigDecimal("100.00"), new BigDecimal("25.00"), new BigDecimal("75.00"));
+
+        when(invoiceRepository.findByIdForUpdate(47L)).thenReturn(Optional.of(invoice));
+        when(paymentRepository.sumRecordedPaymentsByInvoiceId(47L)).thenReturn(BigDecimal.ZERO);
+        when(invoiceRepository.save(any(Invoice.class))).thenAnswer(inv -> inv.getArgument(0));
+
+        InvoiceResponse response = invoiceService.cancelInvoice(47L);
+
+        assertThat(response.paidAmount()).isEqualByComparingTo(BigDecimal.ZERO);
+        assertThat(response.balanceAmount()).isEqualByComparingTo(new BigDecimal("100.00"));
+        assertThat(invoice.getPaidAmount()).isEqualByComparingTo(BigDecimal.ZERO);
+        assertThat(invoice.getBalanceAmount()).isEqualByComparingTo(new BigDecimal("100.00"));
     }
 }

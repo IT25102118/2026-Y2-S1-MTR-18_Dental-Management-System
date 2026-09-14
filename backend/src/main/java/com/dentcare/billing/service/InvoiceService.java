@@ -52,4 +52,14 @@ public interface InvoiceService {
      * @return issued invoice response with UNPAID status
      */
     InvoiceResponse issueInvoice(Long invoiceId);
+
+    /**
+     * Cancels an existing invoice, transitioning its status to CANCELLED (FR-BIL-05, BR-11, BR-14).
+     * Enforces that no active RECORDED payments exist before allowing cancellation.
+     * Preserves invoice details, line items, and payment history without physical deletion.
+     *
+     * @param invoiceId database identifier of the invoice to cancel
+     * @return safe response representation of the cancelled invoice
+     */
+    InvoiceResponse cancelInvoice(Long invoiceId);
 }

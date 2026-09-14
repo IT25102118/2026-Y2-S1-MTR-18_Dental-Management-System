@@ -12,6 +12,7 @@ import com.dentcare.billing.exception.InvalidInvoiceStatusException;
 import com.dentcare.billing.exception.InvoiceNotFoundException;
 import com.dentcare.billing.mapper.BillingMapper;
 import com.dentcare.billing.repository.InvoiceRepository;
+import com.dentcare.billing.repository.PaymentRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -21,22 +22,25 @@ import java.time.LocalDateTime;
 
 /**
  * Production implementation of {@link InvoiceService} orchestrating invoice drafting,
- * recalculation, and issuance.
+ * recalculation, issuance, and cancellation.
  */
 @Service
 @Transactional(readOnly = true)
 public class InvoiceServiceImpl implements InvoiceService {
 
     private final InvoiceRepository invoiceRepository;
+    private final PaymentRepository paymentRepository;
     private final BillingCalculationService billingCalculationService;
     private final BillingMapper billingMapper;
     private final InvoiceNumberGenerator invoiceNumberGenerator;
 
     public InvoiceServiceImpl(InvoiceRepository invoiceRepository,
+                              PaymentRepository paymentRepository,
                               BillingCalculationService billingCalculationService,
                               BillingMapper billingMapper,
                               InvoiceNumberGenerator invoiceNumberGenerator) {
         this.invoiceRepository = invoiceRepository;
+        this.paymentRepository = paymentRepository;
         this.billingCalculationService = billingCalculationService;
         this.billingMapper = billingMapper;
         this.invoiceNumberGenerator = invoiceNumberGenerator;
@@ -186,6 +190,51 @@ public class InvoiceServiceImpl implements InvoiceService {
 
         invoice.setStatus(InvoiceStatus.UNPAID);
         invoice.setIssuedAt(LocalDateTime.now());
+
+        Invoice saved = invoiceRepository.save(invoice);
+        return billingMapper.toInvoiceResponse(saved);
+    }
+
+    @Override
+    @Transactional
+    public InvoiceResponse cancelInvoice(Long invoiceId) {
+        if (invoiceId == null) {
+            throw new BillingValidationException("Invoice ID is required");
+        }
+
+        Invoice invoice = invoiceRepository.findByIdForUpdate(invoiceId)
+                .orElseThrow(() -> new InvoiceNotFoundException(invoiceId));
+
+        if (invoice.getStatus() == InvoiceStatus.CANCELLED) {
+            throw new InvalidInvoiceStatusException(invoiceId, invoice.getStatus(), "Invoice is already cancelled");
+        }
+
+        if (invoice.getStatus() == InvoiceStatus.PAID) {
+            throw new InvalidInvoiceStatusException(
+                    invoiceId,
+                    invoice.getStatus(),
+                    "Paid invoices cannot be directly cancelled; recorded payments must first be reversed"
+            );
+        }
+
+        BigDecimal rawRecordedSum = paymentRepository.sumRecordedPaymentsByInvoiceId(invoiceId);
+        BigDecimal activePaidAmount = billingCalculationService.normalizePaidAmount(rawRecordedSum);
+
+        if (activePaidAmount.compareTo(BigDecimal.ZERO) > 0) {
+            throw new InvalidInvoiceStatusException(
+                    invoiceId,
+                    invoice.getStatus(),
+                    "Invoice cannot be cancelled while active recorded payments remain; recorded payments must first be reversed"
+            );
+        }
+
+        // Reconcile paidAmount and balanceAmount if stale
+        if (invoice.getPaidAmount() == null || invoice.getPaidAmount().compareTo(activePaidAmount) != 0) {
+            invoice.setPaidAmount(activePaidAmount);
+            invoice.setBalanceAmount(invoice.getTotalAmount());
+        }
+
+        invoice.setStatus(InvoiceStatus.CANCELLED);
 
         Invoice saved = invoiceRepository.save(invoice);
         return billingMapper.toInvoiceResponse(saved);
