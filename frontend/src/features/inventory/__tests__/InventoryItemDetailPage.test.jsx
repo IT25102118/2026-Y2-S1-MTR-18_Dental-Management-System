@@ -27,6 +27,16 @@ vi.mock('../api/movementApi', () => ({
     last: true,
     empty: true
   }),
+  getItemBatches: vi.fn().mockResolvedValue({
+    content: [],
+    number: 0,
+    size: 50,
+    totalPages: 0,
+    totalElements: 0,
+    first: true,
+    last: true,
+    empty: true
+  }),
   recordStockMovement: vi.fn(),
   reverseStockMovement: vi.fn()
 }));
