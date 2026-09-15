@@ -352,7 +352,7 @@ describe('billingApi client', () => {
   });
 
   it('11. reversePayment body contains reason only (no actor or reversedBy field)', async () => {
-    global.fetch.mockResolvedValueOnce({
+    global.fetch.mockResolvedValue({
       ok: true,
       status: 200,
       headers: new Headers({ 'content-type': 'application/json' }),

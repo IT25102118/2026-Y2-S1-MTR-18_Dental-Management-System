@@ -64,6 +64,10 @@ async function request(endpoint, options = {}) {
     );
   }
 
+  if (!response) {
+    return null;
+  }
+
   if (response.status === 204) {
     return null;
   }

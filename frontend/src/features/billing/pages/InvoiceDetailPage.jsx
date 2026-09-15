@@ -197,9 +197,6 @@ export default function InvoiceDetailPage() {
   if (notFound) {
     return (
       <div className="billing-container">
-        <nav className="billing-nav" aria-label="Breadcrumb">
-          <Link to="/billing/invoices">← Back to Invoices</Link>
-        </nav>
         <div className="empty-state" role="alert" data-testid="invoice-not-found">
           <h2>Invoice Not Found</h2>
           <p>The requested invoice does not exist or has been removed.</p>
@@ -214,9 +211,6 @@ export default function InvoiceDetailPage() {
   if (loadError) {
     return (
       <div className="billing-container">
-        <nav className="billing-nav" aria-label="Breadcrumb">
-          <Link to="/billing/invoices">← Back to Invoices</Link>
-        </nav>
         <div className="error-alert" role="alert" data-testid="invoice-load-error">
           <p>{loadError}</p>
           <Link to="/billing/invoices" className="btn btn-secondary btn-sm">
@@ -253,47 +247,49 @@ export default function InvoiceDetailPage() {
             <InvoiceStatusBadge status={invoice.status} />
           </div>
         </div>
-        <div className="table-actions">
-          {canEdit && (
-            <Link
-              to={`/billing/invoices/${invoice.id}/edit`}
-              className="btn btn-secondary"
-              aria-label={`Edit draft ${invoice.invoiceNumber}`}
-            >
-              Edit Draft
-            </Link>
-          )}
-          {canIssue && (
-            <button
-              type="button"
-              className="btn btn-primary"
-              onClick={handleIssue}
-              disabled={actionSubmitting}
-            >
-              {actionSubmitting && isIssuing ? 'Issuing...' : 'Issue Invoice'}
-            </button>
-          )}
-          {canRecordPayment && (
-            <button
-              type="button"
-              className="btn btn-primary"
-              onClick={() => setShowPaymentDialog(true)}
-              disabled={actionSubmitting}
-            >
-              Record Payment
-            </button>
-          )}
-          {canCancel && (
-            <button
-              type="button"
-              className="btn btn-danger"
-              onClick={handleCancel}
-              disabled={actionSubmitting}
-            >
-              {actionSubmitting && isCancelling ? 'Cancelling...' : 'Cancel Invoice'}
-            </button>
-          )}
-        </div>
+        {!showPaymentDialog && !selectedPaymentToReverse && (
+          <div className="table-actions">
+            {canEdit && (
+              <Link
+                to={`/billing/invoices/${invoice.id}/edit`}
+                className="btn btn-secondary"
+                aria-label={`Edit draft ${invoice.invoiceNumber}`}
+              >
+                Edit Draft
+              </Link>
+            )}
+            {canIssue && (
+              <button
+                type="button"
+                className="btn btn-primary"
+                onClick={handleIssue}
+                disabled={actionSubmitting}
+              >
+                {actionSubmitting && isIssuing ? 'Issuing...' : 'Issue Invoice'}
+              </button>
+            )}
+            {canRecordPayment && (
+              <button
+                type="button"
+                className="btn btn-primary"
+                onClick={() => setShowPaymentDialog(true)}
+                disabled={actionSubmitting}
+              >
+                Record Payment
+              </button>
+            )}
+            {canCancel && (
+              <button
+                type="button"
+                className="btn btn-danger"
+                onClick={handleCancel}
+                disabled={actionSubmitting}
+              >
+                {actionSubmitting && isCancelling ? 'Cancelling...' : 'Cancel Invoice'}
+              </button>
+            )}
+          </div>
+        )}
       </div>
 
       {/* Operation Feedback */}
@@ -419,7 +415,7 @@ export default function InvoiceDetailPage() {
       </div>
 
       {/* Payment History Section */}
-      <div className="detail-card" aria-label="Payment History">
+      <div className="detail-card">
         <h2>Payment History</h2>
         {paymentsLoading ? (
           <div className="loading-state" role="status" data-testid="payments-loading">

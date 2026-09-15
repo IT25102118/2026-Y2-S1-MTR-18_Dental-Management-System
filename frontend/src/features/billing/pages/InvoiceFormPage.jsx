@@ -352,7 +352,7 @@ export default function InvoiceFormPage({ mode: modeProp }) {
           <h2>Invoice Not Found</h2>
           <p>The invoice you are trying to edit does not exist or has been removed.</p>
           <Link to="/billing/invoices" className="btn btn-primary">
-            Back to Invoices
+            Return to Invoices
           </Link>
         </div>
       </div>
@@ -368,7 +368,7 @@ export default function InvoiceFormPage({ mode: modeProp }) {
         <div className="error-alert" role="alert" data-testid="invoice-load-error">
           <p>{loadError}</p>
           <Link to="/billing/invoices" className="btn btn-secondary btn-sm">
-            Back to Invoices
+            Return to Invoices
           </Link>
         </div>
       </div>
@@ -388,7 +388,7 @@ export default function InvoiceFormPage({ mode: modeProp }) {
             Only DRAFT invoices can be edited. Invoice {invoice.invoiceNumber} is currently in {invoice.status} status.
           </p>
           <Link to="/billing/invoices" className="btn btn-primary">
-            Back to Invoices
+            Return to Invoices
           </Link>
         </div>
       </div>

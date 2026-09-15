@@ -79,6 +79,9 @@ describe('Staff Daily & Monthly Income Reports UI (UI-BIL-05)', () => {
 
   beforeEach(() => {
     vi.clearAllMocks();
+    billingApi.getDailyIncomeSummary.mockReset();
+    billingApi.getMonthlyIncomeSummary.mockReset();
+    billingApi.getInvoicePayments.mockReset();
   });
 
   // ==========================================
@@ -238,6 +241,10 @@ describe('Staff Daily & Monthly Income Reports UI (UI-BIL-05)', () => {
           <IncomeReportsPage />
         </MemoryRouter>
       );
+
+      await waitFor(() => {
+        expect(screen.getByTestId('report-total-income')).toBeInTheDocument();
+      });
 
       const dateInput = screen.getByLabelText(/report date/i);
       fireEvent.change(dateInput, { target: { value: '2026-09-15' } });
@@ -446,6 +453,7 @@ describe('Staff Daily & Monthly Income Reports UI (UI-BIL-05)', () => {
 
       await waitFor(() => {
         expect(screen.getByLabelText(/report month/i)).toBeInTheDocument();
+        expect(screen.getByTestId('report-total-income')).toBeInTheDocument();
       });
 
       const monthInput = screen.getByLabelText(/report month/i);

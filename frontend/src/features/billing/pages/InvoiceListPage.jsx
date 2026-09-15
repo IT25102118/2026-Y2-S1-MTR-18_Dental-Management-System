@@ -82,7 +82,7 @@ export default function InvoiceListPage() {
       <div className="billing-header">
         <h1>Invoices</h1>
         <Link to="/billing/invoices/new" className="btn btn-primary">
-          Create Invoice
+          + Create Invoice
         </Link>
       </div>
 
@@ -90,7 +90,6 @@ export default function InvoiceListPage() {
         filters={filters}
         onApply={handleApplyFilters}
         onReset={handleResetFilters}
-        disabled={loading}
       />
 
       {error && (

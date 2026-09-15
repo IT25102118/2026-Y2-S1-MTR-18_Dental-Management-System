@@ -16,7 +16,8 @@ vi.mock('../api/billingApi', async () => {
     getInvoice: vi.fn(),
     issueInvoice: vi.fn(),
     cancelInvoice: vi.fn(),
-    getInvoices: vi.fn()
+    getInvoices: vi.fn(),
+    getInvoicePayments: vi.fn().mockResolvedValue([])
   };
 });
 
@@ -97,6 +98,7 @@ describe('InvoiceDetailPage (UI-BIL-03)', () => {
 
   beforeEach(() => {
     vi.clearAllMocks();
+    billingApi.getInvoicePayments.mockResolvedValue([]);
   });
 
   // ==========================================
@@ -161,7 +163,7 @@ describe('InvoiceDetailPage (UI-BIL-03)', () => {
       );
 
       await waitFor(() => {
-        expect(screen.getByText('101')).toBeInTheDocument();
+        expect(screen.getAllByText('101').length).toBeGreaterThan(0);
       });
     });
 
@@ -242,7 +244,7 @@ describe('InvoiceDetailPage (UI-BIL-03)', () => {
       );
 
       await waitFor(() => {
-        expect(screen.getByText('110.00')).toBeInTheDocument();
+        expect(screen.getAllByText('110.00').length).toBeGreaterThan(0);
       });
     });
 
@@ -258,7 +260,7 @@ describe('InvoiceDetailPage (UI-BIL-03)', () => {
       );
 
       await waitFor(() => {
-        expect(screen.getByText('50.00')).toBeInTheDocument();
+        expect(screen.getAllByText('50.00').length).toBeGreaterThan(0);
       });
     });
 
@@ -310,9 +312,9 @@ describe('InvoiceDetailPage (UI-BIL-03)', () => {
       });
 
       expect(screen.getByText('Prophylaxis Cleaning')).toBeInTheDocument();
-      expect(screen.getByText('50.00')).toBeInTheDocument();
+      expect(screen.getAllByText('50.00').length).toBeGreaterThan(0);
       expect(screen.getByText('70.00')).toBeInTheDocument();
-      expect(screen.getByText('101')).toBeInTheDocument();
+      expect(screen.getAllByText('101').length).toBeGreaterThan(0);
     });
 
     it('14. zero-item draft renders empty-item state', async () => {

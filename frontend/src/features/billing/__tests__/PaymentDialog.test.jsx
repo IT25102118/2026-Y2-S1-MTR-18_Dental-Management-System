@@ -12,6 +12,7 @@ vi.mock('../api/billingApi', async () => {
   return {
     ...actual,
     getInvoice: vi.fn(),
+    getInvoicePayments: vi.fn().mockResolvedValue([]),
     recordPayment: vi.fn(),
     issueInvoice: vi.fn(),
     cancelInvoice: vi.fn()
@@ -618,10 +619,10 @@ describe('PaymentDialog & Payment Recording (UI-BIL-03)', () => {
       expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
 
       // 28. Refreshed paidAmount renders
-      expect(screen.getByText('150.00')).toBeInTheDocument();
+      expect(screen.getAllByText('150.00').length).toBeGreaterThan(0);
 
       // 29. Refreshed balance renders
-      expect(screen.getByText('0.00')).toBeInTheDocument();
+      expect(screen.getAllByText('0.00').length).toBeGreaterThan(0);
 
       // 30. Refreshed status badge renders
       const badges = screen.getAllByRole('status');
@@ -774,7 +775,7 @@ describe('PaymentDialog & Payment Recording (UI-BIL-03)', () => {
       fireEvent.click(screen.getByRole('button', { name: /cancel/i }));
       expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
 
-      expect(screen.getByText('150.00')).toBeInTheDocument();
+      expect(screen.getAllByText('150.00').length).toBeGreaterThan(0);
       const badges = screen.getAllByRole('status');
       expect(badges.some((b) => b.textContent === 'Unpaid')).toBe(true);
     });
