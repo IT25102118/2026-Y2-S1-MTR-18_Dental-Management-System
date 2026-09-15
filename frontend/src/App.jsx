@@ -1,4 +1,4 @@
-import React from 'react';
+﻿import React from 'react';
 import { Routes, Route, Link } from 'react-router-dom';
 import InventoryItemsPage from './features/inventory/pages/InventoryItemsPage';
 import InventoryItemCreatePage from './features/inventory/pages/InventoryItemCreatePage';
@@ -11,19 +11,23 @@ import PatientRegistrationPage from './features/auth/pages/PatientRegistrationPa
 import LoginPage from './features/auth/pages/LoginPage';
 import AccountPage from './features/auth/pages/AccountPage';
 import StaffManagementPage from './features/auth/pages/StaffManagementPage';
+import AppHeader from './components/AppHeader';
 import InvoiceListPage from './features/billing/pages/InvoiceListPage';
 import InvoiceFormPage from './features/billing/pages/InvoiceFormPage';
 import InvoiceDetailPage from './features/billing/pages/InvoiceDetailPage';
 import ReceiptPage from './features/billing/pages/ReceiptPage';
 import IncomeReportsPage from './features/billing/pages/IncomeReportsPage';
 import ProtectedRoute from './features/auth/components/ProtectedRoute';
-import AppHeader from './components/AppHeader';
 import { AuthProvider, useAuth } from './features/auth/context/AuthContext';
 import ClinicalOverviewPage from './features/clinical/pages/ClinicalOverviewPage';
 import ExaminationsPage from './features/clinical/pages/ExaminationsPage';
 import ExaminationDetailPage from './features/clinical/pages/ExaminationDetailPage';
 import TreatmentPlansPage from './features/clinical/pages/TreatmentPlansPage';
 import TreatmentPlanDetailPage from './features/clinical/pages/TreatmentPlanDetailPage';
+import PrescriptionListPage from './features/prescription/pages/PrescriptionListPage';
+import PrescriptionCreatePage from './features/prescription/pages/PrescriptionCreatePage';
+import PrescriptionDetailPage from './features/prescription/pages/PrescriptionDetailPage';
+import PrescriptionEditPage from './features/prescription/pages/PrescriptionEditPage';
 
 function RootPage() {
   const { isAuthenticated, user } = useAuth();
@@ -45,15 +49,16 @@ function RootPage() {
           <li>
             <Link to="/clinical">Clinical Management</Link>
           </li>
+          <li>
+            <Link to="/prescriptions">Prescription Management</Link>
+          </li>
+          <li>
+            <Link to="/billing/invoices">Invoices &amp; Billing</Link>
+          </li>
           {isStaffBilling && (
-            <>
-              <li>
-                <Link to="/billing/invoices">Invoices &amp; Billing</Link>
-              </li>
-              <li>
-                <Link to="/billing/reports">Income Reports</Link>
-              </li>
-            </>
+            <li>
+              <Link to="/billing/reports">Income Reports</Link>
+            </li>
           )}
           {isAdmin && (
             <li>
@@ -255,6 +260,38 @@ export default function App() {
               element={
                 <ProtectedRoute>
                   <InventoryAlertsPage />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/prescriptions"
+              element={
+                <ProtectedRoute>
+                  <PrescriptionListPage />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/prescriptions/new"
+              element={
+                <ProtectedRoute>
+                  <PrescriptionCreatePage />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/prescriptions/:id"
+              element={
+                <ProtectedRoute>
+                  <PrescriptionDetailPage />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/prescriptions/:id/edit"
+              element={
+                <ProtectedRoute>
+                  <PrescriptionEditPage />
                 </ProtectedRoute>
               }
             />
