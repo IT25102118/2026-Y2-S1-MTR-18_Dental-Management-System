@@ -1033,4 +1033,53 @@
   margin-bottom: 1rem;
 }
 
+/* =============================================================================
+   Empty State Polish & Large Buttons
+   ============================================================================= */
+.empty-state {
+  background-color: #ffffff;
+  border: 2px dashed #cbd5e1;
+  border-radius: 12px;
+  padding: 3.5rem 2rem;
+  text-align: center;
+  margin: 2rem 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
+.empty-state-icon {
+  width: 72px;
+  height: 72px;
+  border-radius: 50%;
+  background-color: #f0f9ff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 1.25rem;
+}
+
+.empty-state h3 {
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: #0f172a;
+  margin: 0 0 0.5rem 0;
+}
+
+.empty-state p {
+  color: #64748b;
+  font-size: 0.95rem;
+  max-width: 480px;
+  margin: 0 0 1.5rem 0;
+  line-height: 1.5;
+}
+
+.btn-lg {
+  padding: 0.625rem 1.35rem;
+  font-size: 0.95rem;
+  font-weight: 600;
+}
+
+
 

@@ -95,4 +95,14 @@ public class AuthExceptionHandler {
         );
         return ResponseEntity.status(HttpStatus.FORBIDDEN).body(error);
     }
+
+    @ExceptionHandler(UserNotFoundException.class)
+    public ResponseEntity<AuthErrorResponse> handleUserNotFoundException(UserNotFoundException ex) {
+        AuthErrorResponse error = AuthErrorResponse.of(
+                HttpStatus.NOT_FOUND.value(),
+                "Not Found",
+                ex.getMessage()
+        );
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(error);
+    }
 }
