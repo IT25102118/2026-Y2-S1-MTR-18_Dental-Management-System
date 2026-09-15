@@ -39,6 +39,7 @@ import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.notNullValue;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
@@ -450,34 +451,128 @@ class AuthControllerIntegrationTest {
     }
 
     // =========================================================================
-    // Temporary Compatibility CSRF Exclusions
+    // CSRF Enforcement Matrix (PR-D4)
     // =========================================================================
 
     @Test
-    @DisplayName("POST /api/auth/register/patient without CSRF reaches controller")
-    void patientRegistration_withoutCsrf_permitted() throws Exception {
+    @DisplayName("POST /api/auth/register/patient without CSRF is rejected with 403 Forbidden")
+    void patientRegistration_withoutCsrf_rejected() throws Exception {
         mockMvc.perform(post("/api/auth/register/patient")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("{}"))
-                .andExpect(status().isBadRequest()); // 400 validation error proves request reached controller
+                .andExpect(status().isForbidden());
     }
 
     @Test
-    @DisplayName("POST /api/inventory/items without CSRF reaches controller")
-    void inventoryPost_withoutCsrf_permitted() throws Exception {
+    @DisplayName("POST /api/auth/register/patient with valid CSRF reaches controller (400 validation error proves entry past security)")
+    void patientRegistration_withCsrf_reachesController() throws Exception {
+        mockMvc.perform(post("/api/auth/register/patient")
+                        .with(csrf())
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{}"))
+                .andExpect(status().isBadRequest());
+    }
+
+    @Test
+    @DisplayName("POST /api/inventory/items without CSRF is rejected with 403 Forbidden")
+    void inventoryItemCreate_withoutCsrf_rejected() throws Exception {
         mockMvc.perform(post("/api/inventory/items")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("{}"))
-                .andExpect(status().isBadRequest()); // 400 validation error proves request reached controller
+                .andExpect(status().isForbidden());
     }
 
     @Test
-    @DisplayName("PUT /api/inventory/items/{id} without CSRF reaches controller")
-    void inventoryPut_withoutCsrf_permitted() throws Exception {
-        mockMvc.perform(put("/api/inventory/items/999")
+    @DisplayName("POST /api/inventory/items with valid CSRF reaches controller (400 validation error proves entry past security)")
+    void inventoryItemCreate_withCsrf_reachesController() throws Exception {
+        mockMvc.perform(post("/api/inventory/items")
+                        .with(csrf())
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("{}"))
-                .andExpect(result -> assertThat(result.getResponse().getStatus()).isNotEqualTo(403));
+                .andExpect(status().isBadRequest());
+    }
+
+    @Test
+    @DisplayName("PUT /api/inventory/items/{id} without CSRF is rejected with 403 Forbidden")
+    void inventoryItemUpdate_withoutCsrf_rejected() throws Exception {
+        mockMvc.perform(put("/api/inventory/items/1")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{}"))
+                .andExpect(status().isForbidden());
+    }
+
+    @Test
+    @DisplayName("PUT /api/inventory/items/{id} with valid CSRF reaches controller (400 validation error proves entry past security)")
+    void inventoryItemUpdate_withCsrf_reachesController() throws Exception {
+        mockMvc.perform(put("/api/inventory/items/1")
+                        .with(csrf())
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{}"))
+                .andExpect(status().isBadRequest());
+    }
+
+    @Test
+    @DisplayName("PATCH /api/inventory/items/{id}/status without CSRF is rejected with 403 Forbidden")
+    void inventoryItemStatus_withoutCsrf_rejected() throws Exception {
+        mockMvc.perform(patch("/api/inventory/items/1/status")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{}"))
+                .andExpect(status().isForbidden());
+    }
+
+    @Test
+    @DisplayName("PATCH /api/inventory/items/{id}/status with valid CSRF reaches controller (400 validation error proves entry past security)")
+    void inventoryItemStatus_withCsrf_reachesController() throws Exception {
+        mockMvc.perform(patch("/api/inventory/items/1/status")
+                        .with(csrf())
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{}"))
+                .andExpect(status().isBadRequest());
+    }
+
+    @Test
+    @DisplayName("POST /api/inventory/items/{itemId}/movements without CSRF is rejected with 403 Forbidden")
+    void stockMovement_withoutCsrf_rejected() throws Exception {
+        mockMvc.perform(post("/api/inventory/items/1/movements")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{}"))
+                .andExpect(status().isForbidden());
+    }
+
+    @Test
+    @DisplayName("POST /api/inventory/items/{itemId}/movements with valid CSRF reaches controller (400 validation error proves entry past security)")
+    void stockMovement_withCsrf_reachesController() throws Exception {
+        mockMvc.perform(post("/api/inventory/items/1/movements")
+                        .with(csrf())
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{}"))
+                .andExpect(status().isBadRequest());
+    }
+
+    @Test
+    @DisplayName("POST /api/inventory/items/{itemId}/movements/{movementId}/reverse without CSRF is rejected with 403 Forbidden")
+    void stockMovementReversal_withoutCsrf_rejected() throws Exception {
+        mockMvc.perform(post("/api/inventory/items/1/movements/1/reverse")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{}"))
+                .andExpect(status().isForbidden());
+    }
+
+    @Test
+    @DisplayName("POST /api/inventory/items/{itemId}/movements/{movementId}/reverse with valid CSRF reaches controller (400 validation error proves entry past security)")
+    void stockMovementReversal_withCsrf_reachesController() throws Exception {
+        mockMvc.perform(post("/api/inventory/items/1/movements/1/reverse")
+                        .with(csrf())
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{}"))
+                .andExpect(status().isBadRequest());
+    }
+
+    @Test
+    @DisplayName("GET /api/inventory/items remains unaffected without CSRF (safe method)")
+    void inventoryGet_withoutCsrf_permitted() throws Exception {
+        mockMvc.perform(get("/api/inventory/items"))
+                .andExpect(status().isOk());
     }
 
     // =========================================================================

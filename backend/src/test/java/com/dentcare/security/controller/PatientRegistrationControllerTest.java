@@ -23,6 +23,7 @@ import static org.hamcrest.Matchers.*;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
+import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -65,6 +66,7 @@ class PatientRegistrationControllerTest {
         when(patientRegistrationService.registerPatient(any(PatientRegistrationRequest.class))).thenReturn(response);
 
         mockMvc.perform(post("/api/auth/register/patient")
+                        .with(csrf())
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isCreated())
@@ -107,6 +109,7 @@ class PatientRegistrationControllerTest {
         when(patientRegistrationService.registerPatient(any(PatientRegistrationRequest.class))).thenReturn(response);
 
         mockMvc.perform(post("/api/auth/register/patient")
+                        .with(csrf())
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(payloadWithAdminRole))
                 .andExpect(status().isCreated())
@@ -131,6 +134,7 @@ class PatientRegistrationControllerTest {
         );
 
         mockMvc.perform(post("/api/auth/register/patient")
+                        .with(csrf())
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(invalid)))
                 .andExpect(status().isBadRequest())
@@ -153,6 +157,7 @@ class PatientRegistrationControllerTest {
         );
 
         mockMvc.perform(post("/api/auth/register/patient")
+                        .with(csrf())
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(invalid)))
                 .andExpect(status().isBadRequest())
@@ -172,6 +177,7 @@ class PatientRegistrationControllerTest {
         );
 
         mockMvc.perform(post("/api/auth/register/patient")
+                        .with(csrf())
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(invalid)))
                 .andExpect(status().isBadRequest())
@@ -191,6 +197,7 @@ class PatientRegistrationControllerTest {
         );
 
         mockMvc.perform(post("/api/auth/register/patient")
+                        .with(csrf())
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(invalid)))
                 .andExpect(status().isBadRequest())
@@ -210,6 +217,7 @@ class PatientRegistrationControllerTest {
         );
 
         mockMvc.perform(post("/api/auth/register/patient")
+                        .with(csrf())
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(invalid)))
                 .andExpect(status().isBadRequest())
@@ -232,6 +240,7 @@ class PatientRegistrationControllerTest {
                 .thenThrow(new DuplicateEmailException("A user with email existing@example.com already exists."));
 
         mockMvc.perform(post("/api/auth/register/patient")
+                        .with(csrf())
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isConflict())

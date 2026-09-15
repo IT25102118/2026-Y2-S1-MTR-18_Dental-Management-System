@@ -23,6 +23,7 @@ import com.dentcare.clinical.repository.TreatmentProcedureRepository;
 import com.dentcare.clinical.security.CurrentDentistProvider;
 import com.dentcare.clinical.security.Dentist;
 import com.dentcare.clinical.validation.FdiToothNumberValidator;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -46,7 +47,9 @@ public class TreatmentProcedureServiceImpl implements TreatmentProcedureService 
     private final DentistLookupPort dentistLookupPort;
     private final CurrentDentistProvider currentDentistProvider;
 
+    @Autowired
     public TreatmentProcedureServiceImpl(TreatmentProcedureRepository treatmentProcedureRepository,
+
                                          TreatmentPlanRepository treatmentPlanRepository,
                                          ClinicalProgressNoteRepository clinicalProgressNoteRepository,
                                          DentistLookupPort dentistLookupPort,

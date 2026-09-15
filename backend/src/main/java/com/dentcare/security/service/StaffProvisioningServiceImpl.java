@@ -93,6 +93,64 @@ public class StaffProvisioningServiceImpl implements StaffProvisioningService {
         }
     }
 
+    @Override
+    @Transactional(readOnly = true)
+    public java.util.List<StaffProvisioningResponse> getAllStaff() {
+        return userRepository.findAll().stream()
+                .filter(user -> ALLOWED_STAFF_ROLES.contains(user.getRole()))
+                .map(StaffProvisioningResponse::fromEntity)
+                .toList();
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public StaffProvisioningResponse getStaffById(Long id) {
+        User user = userRepository.findById(id)
+                .filter(u -> ALLOWED_STAFF_ROLES.contains(u.getRole()))
+                .orElseThrow(() -> new com.dentcare.security.exception.UserNotFoundException("Staff member not found with ID: " + id));
+        return StaffProvisioningResponse.fromEntity(user);
+    }
+
+    @Override
+    @Transactional
+    public StaffProvisioningResponse updateStaff(Long id, com.dentcare.security.dto.UpdateStaffRequest request) {
+        User user = userRepository.findById(id)
+                .filter(u -> ALLOWED_STAFF_ROLES.contains(u.getRole()))
+                .orElseThrow(() -> new com.dentcare.security.exception.UserNotFoundException("Staff member not found with ID: " + id));
+
+        Role newRole = request.getRole();
+        if (newRole == null || !ALLOWED_STAFF_ROLES.contains(newRole)) {
+            if (newRole == Role.PATIENT) {
+                throw new InvalidStaffRoleException("Role PATIENT is not permitted for staff account");
+            }
+            throw new InvalidStaffRoleException("Invalid staff role: " + newRole);
+        }
+
+        user.setFirstName(request.getFirstName().trim());
+        user.setLastName(request.getLastName().trim());
+        String phone = request.getPhone() != null ? request.getPhone().trim() : null;
+        if (phone != null && phone.isBlank()) {
+            phone = null;
+        }
+        user.setPhone(phone);
+        user.setRole(newRole);
+
+        User updated = userRepository.save(user);
+        return StaffProvisioningResponse.fromEntity(updated);
+    }
+
+    @Override
+    @Transactional
+    public StaffProvisioningResponse updateStaffStatus(Long id, com.dentcare.security.dto.UpdateStaffStatusRequest request) {
+        User user = userRepository.findById(id)
+                .filter(u -> ALLOWED_STAFF_ROLES.contains(u.getRole()))
+                .orElseThrow(() -> new com.dentcare.security.exception.UserNotFoundException("Staff member not found with ID: " + id));
+
+        user.setActive(request.getActive());
+        User updated = userRepository.save(user);
+        return StaffProvisioningResponse.fromEntity(updated);
+    }
+
     /**
      * Inspects the exception cause chain to determine if the violation was specifically caused
      * by the email unique constraint (uk_users_email).

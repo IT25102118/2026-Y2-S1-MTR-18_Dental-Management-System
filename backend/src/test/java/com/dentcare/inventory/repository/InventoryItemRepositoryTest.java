@@ -91,6 +91,31 @@ class InventoryItemRepositoryTest {
     }
 
     @Test
+    @DisplayName("AC-2: existsByItemCodeIgnoreCase and findByItemCodeIgnoreCase match ignoring case")
+    void testCaseInsensitiveQueries() {
+        InventoryItem item = new InventoryItem(
+                "ITM-CASE-001",
+                "Root Canal Sealer",
+                "Endodontics",
+                "tube",
+                2,
+                10,
+                "EndoSupply"
+        );
+        inventoryItemRepository.save(item);
+        entityManager.flush();
+        entityManager.clear();
+
+        assertThat(inventoryItemRepository.existsByItemCodeIgnoreCase("itm-case-001")).isTrue();
+        assertThat(inventoryItemRepository.existsByItemCodeIgnoreCase("ITM-CASE-001")).isTrue();
+        assertThat(inventoryItemRepository.existsByItemCodeIgnoreCase("non-existent")).isFalse();
+
+        Optional<InventoryItem> found = inventoryItemRepository.findByItemCodeIgnoreCase("itm-case-001");
+        assertThat(found).isPresent();
+        assertThat(found.get().getName()).isEqualTo("Root Canal Sealer");
+    }
+
+    @Test
     @DisplayName("AC-8: Active/inactive state persists and active-item repository querying works")
     void testActiveStateAndQuery() {
         InventoryItem activeItem = new InventoryItem(

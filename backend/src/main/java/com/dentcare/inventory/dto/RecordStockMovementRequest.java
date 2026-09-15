@@ -25,7 +25,6 @@ public class RecordStockMovementRequest {
     @Size(max = 255, message = "Reason must not exceed 255 characters")
     private String reason;
 
-    @NotNull(message = "Responsible user ID is required")
     private Long responsibleUserId;
 
     @Size(max = 100, message = "Batch number must not exceed 100 characters")

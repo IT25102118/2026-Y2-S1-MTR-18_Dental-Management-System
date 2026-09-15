@@ -1,9 +1,11 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { Link, useParams } from 'react-router-dom';
 import { getItemById, updateItemStatus, InventoryApiError } from '../api/inventoryApi';
 import { StockStatusBadge, ActiveStatusBadge } from '../components/InventoryStatusBadge';
 import StockMovementHistoryTable from '../components/StockMovementHistoryTable';
+import StockMovementForm from '../components/StockMovementForm';
 import ItemBatchesTable from '../components/ItemBatchesTable';
+import { useAuth } from '../../auth/context/AuthContext';
 import '../inventory.css';
 
 /**
@@ -26,11 +28,22 @@ function formatDateTime(isoString) {
   }
 }
 
+function useOptionalAuth() {
+  try {
+    return useAuth();
+  } catch {
+    return { user: null, isAuthenticated: false };
+  }
+}
+
 /**
  * Detail page displaying master data, current quantity, and lifecycle controls for an inventory item.
  */
 export default function InventoryItemDetailPage() {
   const { id } = useParams();
+  const { user, isAuthenticated } = useOptionalAuth();
+  const isStaff = isAuthenticated && user && user.role !== 'PATIENT';
+
   const [item, setItem] = useState(null);
   const [loading, setLoading] = useState(true);
   const [loadError, setLoadError] = useState(null);
@@ -40,6 +53,9 @@ export default function InventoryItemDetailPage() {
   const [statusSubmitting, setStatusSubmitting] = useState(false);
   const [actionError, setActionError] = useState(null);
   const [activeTab, setActiveTab] = useState('movements');
+
+  const [showMovementForm, setShowMovementForm] = useState(false);
+  const [historyRefreshTrigger, setHistoryRefreshTrigger] = useState(0);
 
   useEffect(() => {
     let isMounted = true;
@@ -135,6 +151,31 @@ export default function InventoryItemDetailPage() {
     return null;
   }
 
+  const handleMovementSuccess = async (response) => {
+    try {
+      const fresh = await getItemById(id);
+      setItem(fresh);
+    } catch {
+      if (response?.resultingQuantity != null) {
+        setItem((prev) => ({ ...prev, currentQuantity: response.resultingQuantity }));
+      }
+    }
+    setHistoryRefreshTrigger((prev) => prev + 1);
+    setShowMovementForm(false);
+  };
+
+  const handleReversalSuccess = async (response) => {
+    try {
+      const fresh = await getItemById(id);
+      setItem(fresh);
+    } catch {
+      if (response?.resultingQuantity != null) {
+        setItem((prev) => ({ ...prev, currentQuantity: response.resultingQuantity }));
+      }
+    }
+    setHistoryRefreshTrigger((prev) => prev + 1);
+  };
+
   return (
     <div className="inventory-container">
       <nav className="inventory-nav" aria-label="Breadcrumb">
@@ -213,6 +254,17 @@ export default function InventoryItemDetailPage() {
             Edit Item
           </Link>
 
+          {item.active && isStaff && (
+            <button
+              type="button"
+              className={`btn ${showMovementForm ? 'btn-secondary' : 'btn-primary'}`}
+              onClick={() => setShowMovementForm(!showMovementForm)}
+              data-testid="toggle-movement-form-button"
+            >
+              {showMovementForm ? 'Hide Movement Form' : '+ Record Stock Movement'}
+            </button>
+          )}
+
           {item.active ? (
             <button
               type="button"
@@ -266,6 +318,16 @@ export default function InventoryItemDetailPage() {
         )}
       </div>
 
+      {showMovementForm && item.active && isStaff && (
+        <div style={{ marginTop: '1.5rem' }}>
+          <StockMovementForm
+            item={item}
+            onSuccess={handleMovementSuccess}
+            onCancel={() => setShowMovementForm(false)}
+          />
+        </div>
+      )}
+
       <div className="detail-card tabs-card">
         <div className="tab-navigation" role="tablist" aria-label="Item activity tabs">
           <button
@@ -298,7 +360,13 @@ export default function InventoryItemDetailPage() {
           aria-labelledby="tab-movements"
           hidden={activeTab !== 'movements'}
         >
-          {activeTab === 'movements' && <StockMovementHistoryTable itemId={item.id} />}
+          {activeTab === 'movements' && (
+            <StockMovementHistoryTable
+              itemId={item.id}
+              onReversalSuccess={handleReversalSuccess}
+              refreshTrigger={historyRefreshTrigger}
+            />
+          )}
         </div>
 
         <div
@@ -307,9 +375,12 @@ export default function InventoryItemDetailPage() {
           aria-labelledby="tab-batches"
           hidden={activeTab !== 'batches'}
         >
-          {activeTab === 'batches' && <ItemBatchesTable itemId={item.id} />}
+          {activeTab === 'batches' && (
+            <ItemBatchesTable itemId={item.id} refreshTrigger={historyRefreshTrigger} />
+          )}
         </div>
       </div>
     </div>
   );
 }
+
