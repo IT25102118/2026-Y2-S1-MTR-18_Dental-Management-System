@@ -91,6 +91,27 @@ export default function AppHeader() {
               >
                 Alerts
               </NavLink>
+              <NavLink
+                to="/billing/invoices"
+                className={({ isActive }) => `app-nav-link ${isActive ? 'active' : ''}`}
+                onClick={() => setMenuOpen(false)}
+              >
+                Invoices &amp; Billing
+              </NavLink>
+              <NavLink
+                to="/prescriptions"
+                className={({ isActive }) => `app-nav-link ${isActive ? 'active' : ''}`}
+                onClick={() => setMenuOpen(false)}
+              >
+                Prescriptions
+              </NavLink>
+              <NavLink
+                to="/clinical"
+                className={({ isActive }) => `app-nav-link ${isActive ? 'active' : ''}`}
+                onClick={() => setMenuOpen(false)}
+              >
+                Clinical
+              </NavLink>
               {isAdmin && (
                 <NavLink
                   to="/admin/staff"
