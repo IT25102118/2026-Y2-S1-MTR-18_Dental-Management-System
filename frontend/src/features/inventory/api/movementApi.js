@@ -1,4 +1,5 @@
 import { InventoryApiError, normalizePage } from './inventoryApi';
+import { getCsrfToken, clearCsrfToken } from '../../../shared/security/csrfClient';
 
 /**
  * Fetch stock movement history for a specific inventory item.
@@ -214,3 +215,171 @@ export async function searchBatches({
   const data = await response.json();
   return normalizePage(data);
 }
+
+/**
+ * Record a new stock movement for an inventory item.
+ * Endpoint: POST /api/inventory/items/{itemId}/movements
+ *
+ * Payload does NOT send responsibleUserId; the backend authoritatively
+ * associates the movement with the authenticated session context.
+ *
+ * @param {number|string} itemId
+ * @param {Object} movementData
+ * @param {string} movementData.movementType - 'RECEIVED' | 'USED' | 'DAMAGED' | 'ADJUSTED' | 'EXPIRED'
+ * @param {number} movementData.quantity - Strictly positive integer
+ * @param {string} [movementData.adjustmentDirection] - 'INCREASE' | 'DECREASE' (required if ADJUSTED)
+ * @param {string} [movementData.reason] - Required if ADJUSTED, optional otherwise
+ * @param {string} [movementData.batchNumber]
+ * @param {string} [movementData.expiryDate]
+ * @param {number} [movementData.batchId]
+ * @param {string} [movementData.receivedDate]
+ * @param {string} [movementData.supplierReference]
+ * @param {number} [movementData.treatmentProcedureId]
+ * @returns {Promise<Object>} StockMovementResponse
+ */
+export async function recordStockMovement(itemId, movementData = {}) {
+  const payload = {
+    movementType: movementData.movementType,
+    quantity: Number(movementData.quantity)
+  };
+
+  if (movementData.adjustmentDirection) {
+    payload.adjustmentDirection = movementData.adjustmentDirection;
+  }
+
+  if (typeof movementData.reason === 'string' && movementData.reason.trim() !== '') {
+    payload.reason = movementData.reason.trim();
+  }
+
+  if (typeof movementData.batchNumber === 'string' && movementData.batchNumber.trim() !== '') {
+    payload.batchNumber = movementData.batchNumber.trim();
+  }
+
+  if (movementData.expiryDate) {
+    payload.expiryDate = movementData.expiryDate;
+  }
+
+  if (movementData.batchId !== undefined && movementData.batchId !== null && movementData.batchId !== '') {
+    payload.batchId = Number(movementData.batchId);
+  }
+
+  if (movementData.receivedDate) {
+    payload.receivedDate = movementData.receivedDate;
+  }
+
+  if (typeof movementData.supplierReference === 'string' && movementData.supplierReference.trim() !== '') {
+    payload.supplierReference = movementData.supplierReference.trim();
+  }
+
+  if (movementData.treatmentProcedureId !== undefined && movementData.treatmentProcedureId !== null && movementData.treatmentProcedureId !== '') {
+    payload.treatmentProcedureId = Number(movementData.treatmentProcedureId);
+  }
+
+  const csrf = await getCsrfToken();
+
+  let response;
+  try {
+    response = await fetch(`/api/inventory/items/${itemId}/movements`, {
+      method: 'POST',
+      credentials: 'same-origin',
+      headers: {
+        'Content-Type': 'application/json',
+        'Accept': 'application/json',
+        [csrf.headerName]: csrf.token
+      },
+      body: JSON.stringify(payload)
+    });
+  } catch (err) {
+    throw new InventoryApiError(
+      0,
+      err.message || 'Unable to record stock movement. Please check your connection.',
+      {},
+      'NetworkError'
+    );
+  }
+
+  if (response.status === 403) {
+    clearCsrfToken();
+  }
+
+  let data = null;
+  const contentType = response.headers.get('content-type') || '';
+  if (contentType.includes('application/json')) {
+    try {
+      data = await response.json();
+    } catch {
+      data = null;
+    }
+  }
+
+  if (!response.ok) {
+    const message = data?.message || response.statusText || 'Failed to record stock movement';
+    throw new InventoryApiError(response.status, message, data?.fieldErrors || {}, data?.error || 'Error', data);
+  }
+
+  return data;
+}
+
+/**
+ * Reverse a historical stock movement.
+ * Endpoint: POST /api/inventory/items/{itemId}/movements/{movementId}/reverse
+ *
+ * Payload does NOT send responsibleUserId; the backend authoritatively
+ * associates the reversal with the authenticated session context.
+ *
+ * @param {number|string} itemId
+ * @param {number|string} movementId
+ * @param {Object} reversalData
+ * @param {string} reversalData.reason - Mandatory explanation for reversal
+ * @returns {Promise<Object>} StockMovementResponse
+ */
+export async function reverseStockMovement(itemId, movementId, reversalData = {}) {
+  const payload = {
+    reason: typeof reversalData.reason === 'string' ? reversalData.reason.trim() : ''
+  };
+
+  const csrf = await getCsrfToken();
+
+  let response;
+  try {
+    response = await fetch(`/api/inventory/items/${itemId}/movements/${movementId}/reverse`, {
+      method: 'POST',
+      credentials: 'same-origin',
+      headers: {
+        'Content-Type': 'application/json',
+        'Accept': 'application/json',
+        [csrf.headerName]: csrf.token
+      },
+      body: JSON.stringify(payload)
+    });
+  } catch (err) {
+    throw new InventoryApiError(
+      0,
+      err.message || 'Unable to reverse stock movement. Please check your connection.',
+      {},
+      'NetworkError'
+    );
+  }
+
+  if (response.status === 403) {
+    clearCsrfToken();
+  }
+
+  let data = null;
+  const contentType = response.headers.get('content-type') || '';
+  if (contentType.includes('application/json')) {
+    try {
+      data = await response.json();
+    } catch {
+      data = null;
+    }
+  }
+
+  if (!response.ok) {
+    const message = data?.message || response.statusText || 'Failed to reverse stock movement';
+    throw new InventoryApiError(response.status, message, data?.fieldErrors || {}, data?.error || 'Error', data);
+  }
+
+  return data;
+}
+

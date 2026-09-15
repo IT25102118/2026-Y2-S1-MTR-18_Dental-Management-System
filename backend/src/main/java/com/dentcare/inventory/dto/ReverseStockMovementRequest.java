@@ -13,7 +13,6 @@ public class ReverseStockMovementRequest {
     @Size(max = 255, message = "Reason must not exceed 255 characters")
     private String reason;
 
-    @NotNull(message = "Responsible user ID is required")
     private Long responsibleUserId;
 
     public ReverseStockMovementRequest() {

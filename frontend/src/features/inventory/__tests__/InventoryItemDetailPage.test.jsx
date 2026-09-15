@@ -4,6 +4,8 @@ import { MemoryRouter, Routes, Route } from 'react-router-dom';
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import InventoryItemDetailPage from '../pages/InventoryItemDetailPage';
 import * as inventoryApi from '../api/inventoryApi';
+import * as movementApi from '../api/movementApi';
+import { useAuth } from '../../auth/context/AuthContext';
 
 vi.mock('../api/inventoryApi', async (importOriginal) => {
   const actual = await importOriginal();
@@ -13,6 +15,25 @@ vi.mock('../api/inventoryApi', async (importOriginal) => {
     updateItemStatus: vi.fn()
   };
 });
+
+vi.mock('../api/movementApi', () => ({
+  getItemMovements: vi.fn().mockResolvedValue({
+    content: [],
+    number: 0,
+    size: 20,
+    totalPages: 0,
+    totalElements: 0,
+    first: true,
+    last: true,
+    empty: true
+  }),
+  recordStockMovement: vi.fn(),
+  reverseStockMovement: vi.fn()
+}));
+
+vi.mock('../../auth/context/AuthContext', () => ({
+  useAuth: vi.fn()
+}));
 
 describe('InventoryItemDetailPage', () => {
   const sampleItem = {
@@ -32,6 +53,20 @@ describe('InventoryItemDetailPage', () => {
 
   beforeEach(() => {
     vi.resetAllMocks();
+    useAuth.mockReturnValue({
+      user: null,
+      isAuthenticated: false
+    });
+    movementApi.getItemMovements.mockResolvedValue({
+      content: [],
+      number: 0,
+      size: 20,
+      totalPages: 0,
+      totalElements: 0,
+      first: true,
+      last: true,
+      empty: true
+    });
   });
 
   it('renders loading state initially', () => {
@@ -195,5 +230,126 @@ describe('InventoryItemDetailPage', () => {
 
     // Original state is preserved
     expect(screen.getByText('Active')).toBeInTheDocument();
+  });
+
+  describe('Staff Stock Movement Workflow', () => {
+    it('hides "+ Record Stock Movement" button for unauthenticated users', async () => {
+      inventoryApi.getItemById.mockResolvedValueOnce(sampleItem);
+      useAuth.mockReturnValue({
+        user: null,
+        isAuthenticated: false
+      });
+
+      render(
+        <MemoryRouter initialEntries={['/inventory/items/1']}>
+          <Routes>
+            <Route path="/inventory/items/:id" element={<InventoryItemDetailPage />} />
+          </Routes>
+        </MemoryRouter>
+      );
+
+      await waitFor(() => {
+        expect(screen.getByRole('heading', { level: 1 })).toHaveTextContent('Dental Mirror #4');
+      });
+
+      expect(screen.queryByRole('button', { name: /\+ record stock movement/i })).not.toBeInTheDocument();
+    });
+
+    it('displays "+ Record Stock Movement" toggle button for staff and toggles form open and closed', async () => {
+      inventoryApi.getItemById.mockResolvedValueOnce(sampleItem);
+      useAuth.mockReturnValue({
+        user: { id: 5, role: 'RECEPTIONIST', email: 'receptionist@dentcare.com' },
+        isAuthenticated: true
+      });
+
+      render(
+        <MemoryRouter initialEntries={['/inventory/items/1']}>
+          <Routes>
+            <Route path="/inventory/items/:id" element={<InventoryItemDetailPage />} />
+          </Routes>
+        </MemoryRouter>
+      );
+
+      await waitFor(() => {
+        expect(screen.getByRole('heading', { level: 1 })).toHaveTextContent('Dental Mirror #4');
+      });
+
+      // Toggle button should be visible
+      const toggleBtn = screen.getByTestId('toggle-movement-form-button');
+      expect(toggleBtn).toBeInTheDocument();
+      expect(toggleBtn).toHaveTextContent(/\+ record stock movement/i);
+
+      // Click to open movement form
+      fireEvent.click(toggleBtn);
+
+      expect(screen.getByRole('heading', { name: /record stock movement/i })).toBeInTheDocument();
+      expect(screen.getByRole('button', { name: /hide movement form/i })).toBeInTheDocument();
+
+      // Click again to close form
+      fireEvent.click(screen.getByRole('button', { name: /hide movement form/i }));
+      expect(screen.queryByRole('heading', { name: /record stock movement/i })).not.toBeInTheDocument();
+    });
+
+    it('refreshes item details and updates currentQuantity when movement is successfully recorded', async () => {
+      inventoryApi.getItemById.mockResolvedValueOnce(sampleItem);
+      useAuth.mockReturnValue({
+        user: { id: 5, role: 'ADMINISTRATOR', email: 'admin@dentcare.com' },
+        isAuthenticated: true
+      });
+
+      movementApi.recordStockMovement.mockResolvedValueOnce({
+        id: 101,
+        inventoryItemId: 1,
+        itemCode: 'ITM-001',
+        itemName: 'Dental Mirror #4',
+        movementType: 'RECEIVED',
+        quantity: 15,
+        quantityDelta: 15,
+        resultingQuantity: 40,
+        occurredAt: '2026-09-15T10:00:00',
+        responsibleUserId: 5
+      });
+
+      // Second getItemById call after movement success
+      const updatedItem = { ...sampleItem, currentQuantity: 40 };
+      inventoryApi.getItemById.mockResolvedValueOnce(updatedItem);
+
+      render(
+        <MemoryRouter initialEntries={['/inventory/items/1']}>
+          <Routes>
+            <Route path="/inventory/items/:id" element={<InventoryItemDetailPage />} />
+          </Routes>
+        </MemoryRouter>
+      );
+
+      await waitFor(() => {
+        expect(screen.getByText('25')).toBeInTheDocument();
+      });
+
+      // Open movement form
+      fireEvent.click(screen.getByRole('button', { name: /\+ record stock movement/i }));
+
+      // Fill in quantity
+      const qtyInput = screen.getByLabelText(/quantity \*/i);
+      fireEvent.change(qtyInput, { target: { value: '15' } });
+
+      // Submit movement form
+      const submitBtn = screen.getByTestId('submit-movement-button');
+      fireEvent.click(submitBtn);
+
+      // Verify recordStockMovement was called
+      await waitFor(() => {
+        expect(movementApi.recordStockMovement).toHaveBeenCalledWith('1', expect.objectContaining({
+          movementType: 'RECEIVED',
+          quantity: 15
+        }));
+      });
+
+      // Verify getItemById called to refresh quantity, and updated quantity is displayed
+      await waitFor(() => {
+        expect(inventoryApi.getItemById).toHaveBeenCalledTimes(2);
+        expect(screen.getByText('40')).toBeInTheDocument();
+      });
+    });
   });
 });
