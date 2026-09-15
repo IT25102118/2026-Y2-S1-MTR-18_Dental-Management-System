@@ -17,6 +17,11 @@ import ReceiptPage from './features/billing/pages/ReceiptPage';
 import IncomeReportsPage from './features/billing/pages/IncomeReportsPage';
 import ProtectedRoute from './features/auth/components/ProtectedRoute';
 import { AuthProvider, useAuth } from './features/auth/context/AuthContext';
+import ClinicalOverviewPage from './features/clinical/pages/ClinicalOverviewPage';
+import ExaminationsPage from './features/clinical/pages/ExaminationsPage';
+import ExaminationDetailPage from './features/clinical/pages/ExaminationDetailPage';
+import TreatmentPlansPage from './features/clinical/pages/TreatmentPlansPage';
+import TreatmentPlanDetailPage from './features/clinical/pages/TreatmentPlanDetailPage';
 
 function RootPage() {
   const { isAuthenticated, user } = useAuth();
@@ -33,6 +38,9 @@ function RootPage() {
         <ul>
           <li>
             <Link to="/inventory">Inventory Management</Link>
+          </li>
+          <li>
+            <Link to="/clinical">Clinical Management</Link>
           </li>
           {isStaffBilling && (
             <>
@@ -182,6 +190,46 @@ export default function App() {
         <Route path="/inventory/items/:id/edit" element={<InventoryItemEditPage />} />
         <Route path="/inventory/batches" element={<InventoryBatchesPage />} />
         <Route path="/inventory/alerts" element={<InventoryAlertsPage />} />
+        <Route
+          path="/clinical"
+          element={
+            <ProtectedRoute>
+              <ClinicalOverviewPage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/clinical/examinations"
+          element={
+            <ProtectedRoute>
+              <ExaminationsPage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/clinical/examinations/:id"
+          element={
+            <ProtectedRoute>
+              <ExaminationDetailPage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/clinical/treatment-plans"
+          element={
+            <ProtectedRoute>
+              <TreatmentPlansPage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/clinical/treatment-plans/:id"
+          element={
+            <ProtectedRoute>
+              <TreatmentPlanDetailPage />
+            </ProtectedRoute>
+          }
+        />
       </Routes>
     </AuthProvider>
   );
