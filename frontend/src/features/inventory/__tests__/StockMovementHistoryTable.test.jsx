@@ -3,9 +3,16 @@ import { render, screen, fireEvent, waitFor, within } from '@testing-library/rea
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import StockMovementHistoryTable from '../components/StockMovementHistoryTable';
 import * as movementApi from '../api/movementApi';
+import { InventoryApiError } from '../api/inventoryApi';
+import { useAuth } from '../../auth/context/AuthContext';
 
 vi.mock('../api/movementApi', () => ({
-  getItemMovements: vi.fn()
+  getItemMovements: vi.fn(),
+  reverseStockMovement: vi.fn()
+}));
+
+vi.mock('../../auth/context/AuthContext', () => ({
+  useAuth: vi.fn()
 }));
 
 describe('StockMovementHistoryTable', () => {
@@ -68,6 +75,10 @@ describe('StockMovementHistoryTable', () => {
 
   beforeEach(() => {
     vi.resetAllMocks();
+    useAuth.mockReturnValue({
+      user: null,
+      isAuthenticated: false
+    });
   });
 
   it('renders loading state initially', () => {
@@ -199,6 +210,212 @@ describe('StockMovementHistoryTable', () => {
 
     await waitFor(() => {
       expect(screen.getByRole('table')).toBeInTheDocument();
+    });
+  });
+
+  describe('Staff Reversal Workflow', () => {
+    beforeEach(() => {
+      useAuth.mockReturnValue({
+        user: { id: 12, name: 'Dr. Test', role: 'DENTIST', email: 'dentist@dentcare.com' },
+        isAuthenticated: true
+      });
+    });
+
+    it('renders reversal action buttons and badges according to eligibility when user is staff', async () => {
+      movementApi.getItemMovements.mockResolvedValueOnce({
+        content: sampleMovements,
+        number: 0,
+        size: 20,
+        totalPages: 1,
+        totalElements: 3,
+        first: true,
+        last: true,
+        empty: false
+      });
+
+      render(<StockMovementHistoryTable itemId={42} />);
+
+      await waitFor(() => {
+        expect(screen.getByRole('table')).toBeInTheDocument();
+      });
+
+      // Movement 1 is normal and not reversed: should have "Reverse Movement" button
+      const reverseBtn = screen.getByTestId('reverse-movement-btn-1');
+      expect(reverseBtn).toBeInTheDocument();
+      expect(reverseBtn).toHaveTextContent(/reverse movement/i);
+
+      // Movement 2 was reversed by Movement 3: should have "Reversed" badge
+      const reversedBadge = screen.getByTestId('badge-reversed-2');
+      expect(reversedBadge).toBeInTheDocument();
+      expect(reversedBadge).toHaveTextContent(/reversed/i);
+      expect(screen.queryByTestId('reverse-movement-btn-2')).not.toBeInTheDocument();
+
+      // Movement 3 is itself a compensating reversal: should have "Compensating Reversal" badge
+      const reversalBadge = screen.getByTestId('badge-reversal-3');
+      expect(reversalBadge).toBeInTheDocument();
+      expect(reversalBadge).toHaveTextContent(/compensating reversal/i);
+      expect(screen.queryByTestId('reverse-movement-btn-3')).not.toBeInTheDocument();
+    });
+
+    it('opens reversal confirmation modal, validates mandatory reason, and allows cancel', async () => {
+      movementApi.getItemMovements.mockResolvedValueOnce({
+        content: sampleMovements,
+        number: 0,
+        size: 20,
+        totalPages: 1,
+        totalElements: 3,
+        first: true,
+        last: true,
+        empty: false
+      });
+
+      render(<StockMovementHistoryTable itemId={42} />);
+
+      await waitFor(() => {
+        expect(screen.getByTestId('reverse-movement-btn-1')).toBeInTheDocument();
+      });
+
+      // Open reversal modal
+      fireEvent.click(screen.getByTestId('reverse-movement-btn-1'));
+
+      const modal = screen.getByTestId('reversal-modal');
+      expect(modal).toBeInTheDocument();
+      expect(screen.getByRole('heading', { name: /confirm movement reversal/i })).toBeInTheDocument();
+      expect(within(modal).getByText(/Target Movement:/i)).toBeInTheDocument();
+      expect(within(modal).getByText(/#1/i)).toBeInTheDocument();
+
+      // Check confirm button is initially disabled because reason is empty
+      const confirmBtn = screen.getByTestId('confirm-reversal-button');
+      expect(confirmBtn).toBeDisabled();
+
+      // Click Cancel
+      const cancelBtn = screen.getByTestId('cancel-reversal-button');
+      fireEvent.click(cancelBtn);
+
+      expect(screen.queryByTestId('reversal-modal')).not.toBeInTheDocument();
+    });
+
+    it('successfully submits reversal with reason, shows success message, calls onReversalSuccess, and refreshes list', async () => {
+      movementApi.getItemMovements.mockResolvedValueOnce({
+        content: sampleMovements,
+        number: 0,
+        size: 20,
+        totalPages: 1,
+        totalElements: 3,
+        first: true,
+        last: true,
+        empty: false
+      });
+
+      const onReversalSuccess = vi.fn();
+      render(<StockMovementHistoryTable itemId={42} onReversalSuccess={onReversalSuccess} />);
+
+      await waitFor(() => {
+        expect(screen.getByTestId('reverse-movement-btn-1')).toBeInTheDocument();
+      });
+
+      fireEvent.click(screen.getByTestId('reverse-movement-btn-1'));
+
+      const reasonInput = screen.getByTestId('reversal-reason-input');
+      fireEvent.change(reasonInput, { target: { value: 'Supplier recalled damaged shipment' } });
+
+      const confirmBtn = screen.getByTestId('confirm-reversal-button');
+      expect(confirmBtn).not.toBeDisabled();
+
+      movementApi.reverseStockMovement.mockResolvedValueOnce({
+        id: 99,
+        inventoryItemId: 42,
+        itemCode: 'ITM-042',
+        itemName: 'Surgical Gloves',
+        movementType: 'ADJUSTED',
+        quantity: 50,
+        quantityDelta: -50,
+        resultingQuantity: 0,
+        reversalOfMovementId: 1,
+        reason: 'REVERSAL of Movement #1: Supplier recalled damaged shipment',
+        occurredAt: '2026-09-15T12:00:00'
+      });
+
+      // Reload call after reversal
+      movementApi.getItemMovements.mockResolvedValueOnce({
+        content: [
+          ...sampleMovements,
+          {
+            id: 99,
+            inventoryItemId: 42,
+            itemCode: 'ITM-042',
+            movementType: 'ADJUSTED',
+            quantity: 50,
+            quantityDelta: -50,
+            resultingQuantity: 0,
+            reversalOfMovementId: 1,
+            occurredAt: '2026-09-15T12:00:00'
+          }
+        ],
+        number: 0,
+        size: 20,
+        totalPages: 1,
+        totalElements: 4,
+        first: true,
+        last: true,
+        empty: false
+      });
+
+      fireEvent.click(confirmBtn);
+
+      await waitFor(() => {
+        expect(movementApi.reverseStockMovement).toHaveBeenCalledWith(42, 1, {
+          reason: 'Supplier recalled damaged shipment'
+        });
+      });
+
+      await waitFor(() => {
+        expect(onReversalSuccess).toHaveBeenCalledWith(expect.objectContaining({ id: 99 }));
+      });
+
+      // Modal is closed, success message shown
+      expect(screen.queryByTestId('reversal-modal')).not.toBeInTheDocument();
+      expect(screen.getByTestId('movement-table-success')).toBeInTheDocument();
+      expect(screen.getByText(/successfully reversed/i)).toBeInTheDocument();
+    });
+
+    it('surfaces reversal API errors in modal without closing it', async () => {
+      movementApi.getItemMovements.mockResolvedValueOnce({
+        content: sampleMovements,
+        number: 0,
+        size: 20,
+        totalPages: 1,
+        totalElements: 3,
+        first: true,
+        last: true,
+        empty: false
+      });
+
+      render(<StockMovementHistoryTable itemId={42} />);
+
+      await waitFor(() => {
+        expect(screen.getByTestId('reverse-movement-btn-1')).toBeInTheDocument();
+      });
+
+      fireEvent.click(screen.getByTestId('reverse-movement-btn-1'));
+
+      const reasonInput = screen.getByTestId('reversal-reason-input');
+      fireEvent.change(reasonInput, { target: { value: 'Already reversed by another staff' } });
+
+      movementApi.reverseStockMovement.mockRejectedValueOnce(
+        new InventoryApiError(409, 'Movement #1 has already been reversed by movement #99.')
+      );
+
+      const confirmBtn = screen.getByTestId('confirm-reversal-button');
+      fireEvent.click(confirmBtn);
+
+      await waitFor(() => {
+        expect(screen.getByTestId('reversal-error-alert')).toBeInTheDocument();
+      });
+
+      expect(screen.getByText(/already been reversed/i)).toBeInTheDocument();
+      // Modal remains open
+      expect(screen.getByTestId('reversal-modal')).toBeInTheDocument();
     });
   });
 });

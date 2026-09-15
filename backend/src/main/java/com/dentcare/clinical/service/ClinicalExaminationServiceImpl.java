@@ -41,6 +41,7 @@ public class ClinicalExaminationServiceImpl implements ClinicalExaminationServic
 
     @Autowired
     public ClinicalExaminationServiceImpl(ClinicalExaminationRepository examinationRepository,
+
                                           PatientLookupPort patientLookupPort,
                                           DentistLookupPort dentistLookupPort,
                                           CurrentDentistProvider currentDentistProvider) {

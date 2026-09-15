@@ -40,6 +40,10 @@ export default function InventoryItemsPage() {
         size: 20,
         sort: 'name,asc'
       });
+      if (data.totalPages > 0 && pageNum >= data.totalPages) {
+        fetchItems(currentFilters, data.totalPages - 1);
+        return;
+      }
       setItems(data.content);
       setPageInfo({
         number: data.number,
@@ -122,9 +126,17 @@ export default function InventoryItemsPage() {
           Loading inventory items...
         </div>
       ) : items.length === 0 ? (
-        <div className="empty-state">
+        <div className="empty-state" data-testid="empty-catalog-state">
           {hasActiveFilters ? (
             <>
+              <div className="empty-state-icon" aria-hidden="true">
+                <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="#94a3b8" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+                  <circle cx="11" cy="11" r="8" />
+                  <line x1="21" y1="21" x2="16.65" y2="16.65" />
+                  <line x1="8" y1="11" x2="14" y2="11" />
+                </svg>
+              </div>
+              <h3>No Matching Inventory Items</h3>
               <p>No inventory items match your search or filter criteria.</p>
               <button type="button" className="btn btn-secondary" onClick={handleResetFilters}>
                 Clear Filters
@@ -132,8 +144,16 @@ export default function InventoryItemsPage() {
             </>
           ) : (
             <>
-              <p>No inventory items have been registered yet.</p>
-              <Link to="/inventory/items/new" className="btn btn-primary">
+              <div className="empty-state-icon" aria-hidden="true">
+                <svg width="52" height="52" viewBox="0 0 24 24" fill="none" stroke="#0284c7" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z" />
+                  <polyline points="3.27 6.96 12 12.01 20.73 6.96" />
+                  <line x1="12" y1="22.08" x2="12" y2="12" />
+                </svg>
+              </div>
+              <h3>Inventory Catalog is Empty</h3>
+              <p>No inventory items have been registered yet. Get started by registering clinical supplies, pharmaceuticals, or dental materials.</p>
+              <Link to="/inventory/items/new" className="btn btn-primary btn-lg" style={{ marginTop: '0.5rem' }}>
                 Register New Item
               </Link>
             </>

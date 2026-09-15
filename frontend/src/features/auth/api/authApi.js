@@ -13,14 +13,14 @@ export class AuthApiError extends Error {
   }
 }
 
-let cachedCsrfToken = null;
+import {
+  getCsrfToken as sharedGetCsrfToken,
+  clearCsrfToken,
+  getCachedCsrfToken,
+  CsrfError
+} from '../../../shared/security/csrfClient';
 
-/**
- * Clears the in-memory CSRF token cache.
- */
-export function clearCsrfToken() {
-  cachedCsrfToken = null;
-}
+export { clearCsrfToken, getCachedCsrfToken };
 
 /**
  * Safely parses response body as JSON if content-type indicates JSON or if parsing succeeds.
@@ -48,44 +48,15 @@ async function parseResponseBody(response) {
  * @param {boolean} [options.forceRefresh=false] If true, bypasses the cache and issues a network request.
  * @returns {Promise<{token: string, headerName: string, parameterName: string}>}
  */
-export async function getCsrfToken({ forceRefresh = false } = {}) {
-  if (!forceRefresh && cachedCsrfToken !== null) {
-    return cachedCsrfToken;
-  }
-
-  let response;
+export async function getCsrfToken(options) {
   try {
-    response = await fetch('/api/auth/csrf', {
-      method: 'GET',
-      credentials: 'same-origin',
-      headers: {
-        Accept: 'application/json'
-      }
-    });
+    return await sharedGetCsrfToken(options);
   } catch (err) {
-    throw new AuthApiError(
-      0,
-      err.message || 'Unable to communicate with the authentication service. Please check your network connection.',
-      {},
-      'NetworkError'
-    );
+    if (err instanceof CsrfError) {
+      throw new AuthApiError(err.status, err.message, err.fieldErrors, err.error);
+    }
+    throw err;
   }
-
-  const data = await parseResponseBody(response);
-
-  if (!response.ok || !data?.token) {
-    const status = response.status;
-    const message = data?.message || `Failed to obtain CSRF token (${status})`;
-    throw new AuthApiError(status, message, data?.fieldErrors, data?.error || 'CsrfError');
-  }
-
-  cachedCsrfToken = {
-    token: data.token,
-    headerName: data.headerName || 'X-XSRF-TOKEN',
-    parameterName: data.parameterName || '_csrf'
-  };
-
-  return cachedCsrfToken;
 }
 
 /**
@@ -283,12 +254,16 @@ export async function registerPatient(registrationData) {
     payload.phone = registrationData.phone.trim();
   }
 
+  const csrf = await getCsrfToken();
+
   let response;
   try {
     response = await fetch('/api/auth/register/patient', {
       method: 'POST',
+      credentials: 'same-origin',
       headers: {
-        'Content-Type': 'application/json'
+        'Content-Type': 'application/json',
+        [csrf.headerName]: csrf.token
       },
       body: JSON.stringify(payload)
     });
@@ -299,6 +274,10 @@ export async function registerPatient(registrationData) {
       {},
       'NetworkError'
     );
+  }
+
+  if (response.status === 403) {
+    clearCsrfToken();
   }
 
   let data = null;

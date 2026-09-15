@@ -58,6 +58,7 @@ public class TreatmentPlanServiceImpl implements TreatmentPlanService {
 
     @Autowired
     public TreatmentPlanServiceImpl(TreatmentPlanRepository treatmentPlanRepository,
+
                                     TreatmentProcedureRepository treatmentProcedureRepository,
                                     ClinicalExaminationRepository clinicalExaminationRepository,
                                     ClinicalProgressNoteRepository clinicalProgressNoteRepository,

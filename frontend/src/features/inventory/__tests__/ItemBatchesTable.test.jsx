@@ -149,4 +149,64 @@ describe('ItemBatchesTable', () => {
       expect(screen.getByRole('table')).toBeInTheDocument();
     });
   });
+
+  it('renders derived status badges accurately for valid, expiring soon, expired, and depleted batches', async () => {
+    const today = new Date();
+    const expiredDate = new Date(today.getFullYear(), today.getMonth() - 2, 1).toISOString().split('T')[0];
+    const expiringDate = new Date(today.getFullYear(), today.getMonth(), today.getDate() + 15).toISOString().split('T')[0];
+    const futureDate = new Date(today.getFullYear() + 2, 0, 1).toISOString().split('T')[0];
+
+    const testBatches = [
+      { id: 201, batchNumber: 'LOT-VALID', quantityOnHand: 50, expiryDate: futureDate },
+      { id: 202, batchNumber: 'LOT-EXPIRING', quantityOnHand: 20, expiryDate: expiringDate },
+      { id: 203, batchNumber: 'LOT-EXPIRED', quantityOnHand: 10, expiryDate: expiredDate },
+      { id: 204, batchNumber: 'LOT-DEPLETED', quantityOnHand: 0, expiryDate: futureDate }
+    ];
+
+    movementApi.getItemBatches.mockResolvedValueOnce({
+      content: testBatches,
+      number: 0,
+      size: 50,
+      totalPages: 1,
+      totalElements: 4,
+      first: true,
+      last: true,
+      empty: false
+    });
+
+    render(<ItemBatchesTable itemId={7} />);
+
+    await waitFor(() => {
+      expect(screen.getByTestId('batch-status-201')).toHaveTextContent('Valid');
+      expect(screen.getByTestId('batch-status-202')).toHaveTextContent('Expiring Soon');
+      expect(screen.getByTestId('batch-status-203')).toHaveTextContent('Expired');
+      expect(screen.getByTestId('batch-status-204')).toHaveTextContent('Depleted');
+    });
+  });
+
+  it('reloads batches when refreshTrigger changes', async () => {
+    movementApi.getItemBatches.mockResolvedValue({
+      content: sampleBatches,
+      number: 0,
+      size: 50,
+      totalPages: 1,
+      totalElements: 2,
+      first: true,
+      last: true,
+      empty: false
+    });
+
+    const { rerender } = render(<ItemBatchesTable itemId={7} refreshTrigger={0} />);
+
+    await waitFor(() => {
+      expect(movementApi.getItemBatches).toHaveBeenCalledTimes(1);
+    });
+
+    rerender(<ItemBatchesTable itemId={7} refreshTrigger={1} />);
+
+    await waitFor(() => {
+      expect(movementApi.getItemBatches).toHaveBeenCalledTimes(2);
+    });
+  });
 });
+

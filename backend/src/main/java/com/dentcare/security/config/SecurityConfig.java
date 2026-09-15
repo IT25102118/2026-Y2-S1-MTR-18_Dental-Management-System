@@ -73,11 +73,6 @@ public class SecurityConfig {
             .csrf(csrf -> csrf
                 .csrfTokenRepository(csrfTokenRepository)
                 .csrfTokenRequestHandler(requestHandler)
-                // Temporary compatibility debt (removed in PR-D4): allow unmigrated frontend mutations to succeed
-                .ignoringRequestMatchers(
-                    "/api/auth/register/patient",
-                    "/api/inventory/**"
-                )
             )
             .cors(Customizer.withDefaults())
             .sessionManagement(session -> session

@@ -49,6 +49,7 @@ public class TreatmentProcedureServiceImpl implements TreatmentProcedureService 
 
     @Autowired
     public TreatmentProcedureServiceImpl(TreatmentProcedureRepository treatmentProcedureRepository,
+
                                          TreatmentPlanRepository treatmentPlanRepository,
                                          ClinicalProgressNoteRepository clinicalProgressNoteRepository,
                                          DentistLookupPort dentistLookupPort,

@@ -186,6 +186,11 @@ public class StockMovementServiceImpl implements StockMovementService {
                     if (!batch.getInventoryItem().getId().equals(itemId)) {
                         throw new InvalidMovementException("Batch ID " + request.getBatchId() + " does not belong to item ID " + itemId);
                     }
+                    if (request.getBatchNumber() != null && !request.getBatchNumber().trim().isEmpty()
+                            && batch.getBatchNumber() != null
+                            && !request.getBatchNumber().trim().equalsIgnoreCase(batch.getBatchNumber())) {
+                        throw new InvalidMovementException("Conflicting batch number for batch ID " + request.getBatchId());
+                    }
                     if (batch.getQuantityOnHand() < quantity) {
                         throw new InsufficientStockException(itemId, quantity, batch.getQuantityOnHand());
                     }
@@ -211,6 +216,13 @@ public class StockMovementServiceImpl implements StockMovementService {
                         targetBatch = unbatched;
                     } else {
                         throw new InvalidMovementException("Batch selection is required for this stock movement");
+                    }
+                }
+
+                if (type == StockMovementType.USED && targetBatch.getExpiryDate() != null) {
+                    if (targetBatch.getExpiryDate().isBefore(LocalDate.now())) {
+                        String batchLabel = targetBatch.getBatchNumber() != null ? targetBatch.getBatchNumber() : "Unbatched";
+                        throw new InvalidMovementException("Cannot consume expired batch [" + batchLabel + "] with expiry date " + targetBatch.getExpiryDate());
                     }
                 }
 

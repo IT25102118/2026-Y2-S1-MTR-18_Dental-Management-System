@@ -9,18 +9,283 @@ body {
   color: #1e293b;
   background-color: #f8fafc;
   line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
 }
 
 a {
-  color: #2563eb;
+  color: #0284c7;
   text-decoration: none;
+  transition: color 0.15s ease;
 }
 
 a:hover {
   text-decoration: underline;
+  color: #0369a1;
 }
 
-a:focus-visible, button:focus-visible {
-  outline: 2px solid #2563eb;
+a:focus-visible, button:focus-visible, input:focus-visible, select:focus-visible {
+  outline: 2px solid #0284c7;
   outline-offset: 2px;
+}
+
+/* =============================================================================
+   App Shell & Header Layout
+   ============================================================================= */
+.app-layout {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+}
+
+.app-header {
+  background-color: #ffffff;
+  border-bottom: 1px solid #e2e8f0;
+  position: sticky;
+  top: 0;
+  z-index: 50;
+  box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.05);
+}
+
+.app-header-inner {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 1.25rem;
+  height: 64px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1.5rem;
+}
+
+.app-header-brand {
+  display: flex;
+  align-items: center;
+}
+
+.brand-logo-link {
+  display: flex;
+  align-items: center;
+  gap: 0.625rem;
+  text-decoration: none;
+  color: #0f172a;
+}
+
+.brand-logo-link:hover {
+  text-decoration: none;
+}
+
+.brand-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  background: linear-gradient(135deg, #0284c7 0%, #0369a1 100%);
+  color: #ffffff;
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(2, 132, 199, 0.25);
+}
+
+.brand-name {
+  font-size: 1.25rem;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  color: #0f172a;
+}
+
+.mobile-nav-toggle {
+  display: none;
+  background: none;
+  border: 1px solid #e2e8f0;
+  border-radius: 6px;
+  padding: 0.5rem;
+  cursor: pointer;
+  color: #475569;
+}
+
+.app-header-nav {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.app-nav-link {
+  padding: 0.5rem 0.875rem;
+  border-radius: 6px;
+  font-size: 0.9rem;
+  font-weight: 500;
+  color: #475569;
+  text-decoration: none;
+  transition: all 0.15s ease;
+}
+
+.app-nav-link:hover {
+  color: #0284c7;
+  background-color: #f0f9ff;
+  text-decoration: none;
+}
+
+.app-nav-link.active {
+  color: #0284c7;
+  background-color: #e0f2fe;
+  font-weight: 600;
+}
+
+.app-header-user {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.user-profile-widget {
+  display: flex;
+  align-items: center;
+  gap: 0.875rem;
+}
+
+.user-profile-link {
+  display: flex;
+  align-items: center;
+  gap: 0.625rem;
+  padding: 0.35rem 0.625rem;
+  border-radius: 6px;
+  text-decoration: none;
+  transition: background-color 0.15s ease;
+}
+
+.user-profile-link:hover {
+  background-color: #f1f5f9;
+  text-decoration: none;
+}
+
+.user-display-name {
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: #1e293b;
+}
+
+.user-role-badge {
+  font-size: 0.7rem;
+  font-weight: 700;
+  padding: 0.2rem 0.5rem;
+  border-radius: 9999px;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.badge-role-administrator {
+  background-color: #f3e8ff;
+  color: #6b21a8;
+  border: 1px solid #d8b4fe;
+}
+
+.badge-role-dentist {
+  background-color: #ccfbf1;
+  color: #0f766e;
+  border: 1px solid #5eead4;
+}
+
+.badge-role-receptionist {
+  background-color: #e0f2fe;
+  color: #0369a1;
+  border: 1px solid #7dd3fc;
+}
+
+.badge-role-dental_assistant {
+  background-color: #fef3c7;
+  color: #92400e;
+  border: 1px solid #fde68a;
+}
+
+.badge-role-patient {
+  background-color: #f1f5f9;
+  color: #475569;
+  border: 1px solid #cbd5e1;
+}
+
+.badge-role-default {
+  background-color: #f1f5f9;
+  color: #475569;
+}
+
+.btn-header-logout {
+  background-color: transparent;
+  color: #dc2626;
+  border: 1px solid #fecaca;
+  padding: 0.35rem 0.75rem;
+  border-radius: 6px;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.btn-header-logout:hover:not(:disabled) {
+  background-color: #fef2f2;
+  border-color: #f87171;
+}
+
+.btn-header-logout:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.auth-action-buttons {
+  display: flex;
+  align-items: center;
+  gap: 0.625rem;
+}
+
+.btn-sm {
+  padding: 0.35rem 0.75rem;
+  font-size: 0.8125rem;
+}
+
+.btn-outline-primary {
+  background-color: transparent;
+  color: #0284c7;
+  border: 1px solid #0284c7;
+  border-radius: 6px;
+  font-weight: 600;
+}
+
+.btn-outline-primary:hover {
+  background-color: #f0f9ff;
+  text-decoration: none;
+}
+
+.app-content-wrapper {
+  flex: 1;
+  width: 100%;
+}
+
+/* =============================================================================
+   Responsive Adjustments
+   ============================================================================= */
+@media (max-width: 768px) {
+  .mobile-nav-toggle {
+    display: inline-flex;
+  }
+
+  .app-header-nav {
+    display: none;
+    position: absolute;
+    top: 64px;
+    left: 0;
+    right: 0;
+    background-color: #ffffff;
+    border-bottom: 1px solid #e2e8f0;
+    padding: 1rem 1.25rem;
+    flex-direction: column;
+    align-items: stretch;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+  }
+
+  .app-header-nav.nav-open {
+    display: flex;
+  }
+
+  .user-display-name {
+    display: none;
+  }
 }

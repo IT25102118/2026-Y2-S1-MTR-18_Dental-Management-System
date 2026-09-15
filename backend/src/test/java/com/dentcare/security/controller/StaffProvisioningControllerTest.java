@@ -312,4 +312,78 @@ class StaffProvisioningControllerTest {
 
         verify(staffProvisioningService, never()).provisionStaff(any());
     }
+
+    @Test
+    @WithMockUser(roles = "ADMINISTRATOR")
+    @DisplayName("Administrator can retrieve staff list via GET /api/admin/staff")
+    void getAllStaff_adminMock_returns200() throws Exception {
+        var staffList = java.util.List.of(
+                new StaffProvisioningResponse(1L, "admin@dentcare.com", "Admin", "User", null, Role.ADMINISTRATOR, true, LocalDateTime.now()),
+                new StaffProvisioningResponse(2L, "dentist@dentcare.com", "Sarah", "Connor", "+1 555-0199", Role.DENTIST, true, LocalDateTime.now())
+        );
+        when(staffProvisioningService.getAllStaff()).thenReturn(staffList);
+
+        mockMvc.perform(org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get("/api/admin/staff"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.length()", is(2)))
+                .andExpect(jsonPath("$[0].email", is("admin@dentcare.com")))
+                .andExpect(jsonPath("$[1].role", is("DENTIST")));
+
+        verify(staffProvisioningService).getAllStaff();
+    }
+
+    @Test
+    @WithMockUser(roles = "ADMINISTRATOR")
+    @DisplayName("Administrator can update staff member via PUT /api/admin/staff/{id}")
+    void updateStaff_adminMock_returns200() throws Exception {
+        var request = new com.dentcare.security.dto.UpdateStaffRequest("Sarah", "Smith", "+1 555-9999", Role.DENTIST);
+        var response = new StaffProvisioningResponse(2L, "dentist@dentcare.com", "Sarah", "Smith", "+1 555-9999", Role.DENTIST, true, LocalDateTime.now());
+
+        when(staffProvisioningService.updateStaff(eq(2L), any())).thenReturn(response);
+
+        mockMvc.perform(org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put("/api/admin/staff/2")
+                        .with(csrf())
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(request)))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.id", is(2)))
+                .andExpect(jsonPath("$.lastName", is("Smith")))
+                .andExpect(jsonPath("$.phone", is("+1 555-9999")));
+
+        verify(staffProvisioningService).updateStaff(eq(2L), any());
+    }
+
+    @Test
+    @WithMockUser(roles = "ADMINISTRATOR")
+    @DisplayName("Administrator can update staff status via PATCH /api/admin/staff/{id}/status")
+    void updateStaffStatus_adminMock_returns200() throws Exception {
+        var request = new com.dentcare.security.dto.UpdateStaffStatusRequest(false);
+        var response = new StaffProvisioningResponse(2L, "dentist@dentcare.com", "Sarah", "Connor", null, Role.DENTIST, false, LocalDateTime.now());
+
+        when(staffProvisioningService.updateStaffStatus(eq(2L), any())).thenReturn(response);
+
+        mockMvc.perform(org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch("/api/admin/staff/2/status")
+                        .with(csrf())
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(request)))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.id", is(2)))
+                .andExpect(jsonPath("$.active", is(false)));
+
+        verify(staffProvisioningService).updateStaffStatus(eq(2L), any());
+    }
+
+    @Test
+    @DisplayName("Unauthenticated request to GET /api/admin/staff is rejected with 401/403")
+    void getAllStaff_unauthenticated_rejected() throws Exception {
+        mockMvc.perform(org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get("/api/admin/staff"))
+                .andExpect(result -> {
+                    int status = result.getResponse().getStatus();
+                    if (status != 401 && status != 403) {
+                        throw new AssertionError("Expected 401 or 403 for anonymous request, got: " + status);
+                    }
+                });
+
+        verify(staffProvisioningService, never()).getAllStaff();
+    }
 }

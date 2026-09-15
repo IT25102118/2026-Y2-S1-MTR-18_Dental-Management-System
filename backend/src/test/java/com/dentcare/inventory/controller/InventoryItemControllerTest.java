@@ -12,6 +12,7 @@ import com.dentcare.inventory.service.InventoryItemService;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.context.annotation.Import;
@@ -31,6 +32,7 @@ import static org.hamcrest.Matchers.is;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.when;
+import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
@@ -83,6 +85,7 @@ class InventoryItemControllerTest {
                 .thenReturn(sampleResponse);
 
         mockMvc.perform(post("/api/inventory/items")
+                        .with(csrf())
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isCreated())
@@ -107,6 +110,7 @@ class InventoryItemControllerTest {
         );
 
         mockMvc.perform(post("/api/inventory/items")
+                        .with(csrf())
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(invalidRequest)))
                 .andExpect(status().isBadRequest())
@@ -133,6 +137,7 @@ class InventoryItemControllerTest {
                 .thenThrow(new DuplicateItemCodeException("ITM-DUP"));
 
         mockMvc.perform(post("/api/inventory/items")
+                        .with(csrf())
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isConflict())
@@ -196,6 +201,7 @@ class InventoryItemControllerTest {
                 .thenReturn(updatedResponse);
 
         mockMvc.perform(put("/api/inventory/items/1")
+                        .with(csrf())
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isOk())
@@ -228,6 +234,7 @@ class InventoryItemControllerTest {
                 .thenReturn(deactivatedResponse);
 
         mockMvc.perform(patch("/api/inventory/items/1/status")
+                        .with(csrf())
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isOk())
@@ -241,6 +248,7 @@ class InventoryItemControllerTest {
         UpdateInventoryItemStatusRequest request = new UpdateInventoryItemStatusRequest(null);
 
         mockMvc.perform(patch("/api/inventory/items/1/status")
+                        .with(csrf())
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isBadRequest())
@@ -277,4 +285,52 @@ class InventoryItemControllerTest {
                 .andExpect(jsonPath("$.content[0].itemCode", is("ITM-001")))
                 .andExpect(jsonPath("$.totalElements", is(1)));
     }
+
+    @Test
+    @DisplayName("AC-2: POST /api/inventory/items on database unique constraint collision returns 409 Conflict")
+    void testCreateItemDataIntegrityViolationConflict() throws Exception {
+        CreateInventoryItemRequest request = new CreateInventoryItemRequest(
+                "ITM-DUP",
+                "Composite Syringe",
+                "Restorative",
+                "syringe",
+                5,
+                null
+        );
+
+        when(inventoryItemService.createItem(any(CreateInventoryItemRequest.class)))
+                .thenThrow(new DataIntegrityViolationException("Unique index or primary key violation: item_code"));
+
+        mockMvc.perform(post("/api/inventory/items")
+                        .with(csrf())
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(request)))
+                .andExpect(status().isConflict())
+                .andExpect(jsonPath("$.status", is(409)))
+                .andExpect(jsonPath("$.error", is("Conflict")))
+                .andExpect(jsonPath("$.message", containsString("already exists")));
+    }
+
+    @Test
+    @DisplayName("AC-2: POST /api/inventory/items with malformed JSON body returns 400 Bad Request")
+    void testCreateItemMalformedJsonReturns400() throws Exception {
+        mockMvc.perform(post("/api/inventory/items")
+                        .with(csrf())
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{invalid-json-body"))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.status", is(400)))
+                .andExpect(jsonPath("$.error", is("Bad Request")));
+    }
+
+    @Test
+    @DisplayName("AC-3: GET /api/inventory/items with invalid stockStatus returns 400 Bad Request")
+    void testSearchItemsInvalidStockStatusReturns400() throws Exception {
+        mockMvc.perform(get("/api/inventory/items")
+                        .param("stockStatus", "NOT_A_VALID_STATUS"))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.status", is(400)))
+                .andExpect(jsonPath("$.error", is("Bad Request")));
+    }
 }
+
