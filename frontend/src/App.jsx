@@ -13,6 +13,7 @@ import AccountPage from './features/auth/pages/AccountPage';
 import InvoiceListPage from './features/billing/pages/InvoiceListPage';
 import InvoiceFormPage from './features/billing/pages/InvoiceFormPage';
 import InvoiceDetailPage from './features/billing/pages/InvoiceDetailPage';
+import ReceiptPage from './features/billing/pages/ReceiptPage';
 import ProtectedRoute from './features/auth/components/ProtectedRoute';
 import { AuthProvider, useAuth } from './features/auth/context/AuthContext';
 
@@ -101,6 +102,22 @@ export default function App() {
           element={
             <ProtectedRoute allowedRoles={['ADMINISTRATOR', 'RECEPTIONIST']}>
               <InvoiceDetailPage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/billing/payments/:paymentId/receipt"
+          element={
+            <ProtectedRoute allowedRoles={['ADMINISTRATOR', 'RECEPTIONIST']}>
+              <ReceiptPage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/payments/:paymentId/receipt"
+          element={
+            <ProtectedRoute allowedRoles={['ADMINISTRATOR', 'RECEPTIONIST']}>
+              <ReceiptPage />
             </ProtectedRoute>
           }
         />

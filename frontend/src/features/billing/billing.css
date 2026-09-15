@@ -430,3 +430,98 @@
 .btn-link:hover:not(:disabled) {
   color: #1d4ed8;
 }
+
+/* Receipt Specific Styles (UI-BIL-04) */
+.receipt-banner {
+  border-bottom: 1px solid #e2e8f0;
+  padding-bottom: 1rem;
+  margin-bottom: 1.5rem;
+}
+
+.receipt-banner-content {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  flex-wrap: wrap;
+  gap: 1rem;
+}
+
+.receipt-title {
+  margin: 0;
+  font-size: 1.25rem;
+  color: #0f172a;
+}
+
+.receipt-subtitle {
+  font-size: 0.85rem;
+  color: #64748b;
+}
+
+.receipt-number-block {
+  text-align: right;
+}
+
+.receipt-number-value {
+  font-size: 1.15rem;
+  font-weight: 700;
+  color: #0f172a;
+}
+
+.receipt-section {
+  margin-bottom: 1.5rem;
+}
+
+.receipt-section:last-child {
+  margin-bottom: 0;
+}
+
+.receipt-section-heading {
+  font-size: 1rem;
+  color: #334155;
+  margin: 0 0 0.75rem 0;
+  border-bottom: 1px solid #f1f5f9;
+  padding-bottom: 0.25rem;
+}
+
+/* Print Styles for Receipt & Invoices (UI-BIL-04) */
+@media print {
+  .no-print,
+  .billing-nav,
+  .billing-actions,
+  button,
+  nav,
+  header {
+    display: none !important;
+  }
+
+  body {
+    background: #ffffff !important;
+    color: #000000 !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    font-size: 11pt !important;
+  }
+
+  .billing-container {
+    max-width: 100% !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    color: #000000 !important;
+  }
+
+  .receipt-card,
+  .detail-card {
+    border: 1px solid #94a3b8 !important;
+    box-shadow: none !important;
+    padding: 1.5rem !important;
+    margin: 0 !important;
+    page-break-inside: avoid;
+  }
+
+  .financial-stat-card {
+    background-color: #f8fafc !important;
+    border: 1px solid #cbd5e1 !important;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+}

@@ -488,19 +488,26 @@ export default function InvoiceDetailPage() {
                       )}
                     </td>
                     <td>
-                      {p.status === 'RECORDED' ? (
-                        <button
-                          type="button"
-                          className="btn btn-danger btn-sm"
-                          onClick={() => setSelectedPaymentToReverse(p)}
-                          disabled={actionSubmitting}
-                          aria-label={`Reverse payment ${p.paymentNumber}`}
+                      <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center', flexWrap: 'wrap' }}>
+                        <Link
+                          to={`/billing/payments/${p.id}/receipt`}
+                          className="btn btn-secondary btn-sm"
+                          aria-label={`View receipt for payment ${p.paymentNumber}`}
                         >
-                          Reverse Payment
-                        </button>
-                      ) : (
-                        <span className="text-muted">—</span>
-                      )}
+                          View Receipt
+                        </Link>
+                        {p.status === 'RECORDED' && (
+                          <button
+                            type="button"
+                            className="btn btn-danger btn-sm"
+                            onClick={() => setSelectedPaymentToReverse(p)}
+                            disabled={actionSubmitting}
+                            aria-label={`Reverse payment ${p.paymentNumber}`}
+                          >
+                            Reverse Payment
+                          </button>
+                        )}
+                      </div>
                     </td>
                   </tr>
                 ))}
