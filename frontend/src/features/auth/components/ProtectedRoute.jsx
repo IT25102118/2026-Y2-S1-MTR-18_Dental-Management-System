@@ -6,8 +6,8 @@ import { useAuth } from '../context/AuthContext';
  * Route guard component protecting authenticated routes.
  * Handles loading, error with retry, and unauthenticated redirects with full URI preservation.
  */
-export default function ProtectedRoute({ children }) {
-  const { isAuthenticated, isLoading, isError, error, retryHydration } = useAuth();
+export default function ProtectedRoute({ children, allowedRoles }) {
+  const { isAuthenticated, isLoading, isError, error, retryHydration, user } = useAuth();
   const location = useLocation();
 
   if (isLoading) {
@@ -43,6 +43,17 @@ export default function ProtectedRoute({ children }) {
   if (!isAuthenticated) {
     const destination = location.pathname + location.search + location.hash;
     return <Navigate to="/login" state={{ from: destination }} replace />;
+  }
+
+  if (allowedRoles && allowedRoles.length > 0 && user && !allowedRoles.includes(user.role)) {
+    return (
+      <div className="auth-error-container" data-testid="auth-forbidden-state">
+        <div className="auth-error-card">
+          <h2>Access Denied</h2>
+          <p>You do not have the required permissions to access this page.</p>
+        </div>
+      </div>
+    );
   }
 
   return children ? children : <Outlet />;
