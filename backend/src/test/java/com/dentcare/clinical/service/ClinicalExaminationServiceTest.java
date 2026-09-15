@@ -220,7 +220,6 @@ class ClinicalExaminationServiceTest {
         @DisplayName("Test 13, 21, 22: Active Dentist can confirm diagnosis; stores dentist and timestamp")
         void confirmDiagnosis_validActiveDentist_confirmsSuccessfully() {
             when(examinationRepository.findById(EXAM_ID)).thenReturn(Optional.of(draftExam));
-            when(dentistLookupPort.existsActiveDentist(DENTIST_ID)).thenReturn(true);
             when(examinationRepository.save(any(ClinicalExamination.class))).thenAnswer(invocation -> invocation.getArgument(0));
 
             ConfirmDiagnosisRequest request = new ConfirmDiagnosisRequest("Irreversible pulpitis on tooth 36");

@@ -110,7 +110,6 @@ class TreatmentProcedureServiceTest {
         @DisplayName("Valid procedure creation starts in PLANNED status")
         void addTreatmentProcedure_validRequest_createsProcedureInPlannedStatus() {
             when(treatmentPlanRepository.findById(PLAN_ID)).thenReturn(Optional.of(approvedPlan));
-            when(treatmentProcedureRepository.countByTreatmentPlanId(PLAN_ID)).thenReturn(0L);
             when(treatmentProcedureRepository.save(any(TreatmentProcedure.class))).thenAnswer(invocation -> {
                 TreatmentProcedure p = invocation.getArgument(0);
                 p.setId(PROC_ID);
@@ -144,7 +143,6 @@ class TreatmentProcedureServiceTest {
         @DisplayName("Procedure creation auto-calculates estimated cost from quantity and unitCost")
         void addTreatmentProcedure_withQuantityAndUnitCost_calculatesEstimatedCost() {
             when(treatmentPlanRepository.findById(PLAN_ID)).thenReturn(Optional.of(approvedPlan));
-            when(treatmentProcedureRepository.countByTreatmentPlanId(PLAN_ID)).thenReturn(0L);
             when(treatmentProcedureRepository.save(any(TreatmentProcedure.class))).thenAnswer(invocation -> {
                 TreatmentProcedure p = invocation.getArgument(0);
                 p.setId(PROC_ID);
@@ -272,7 +270,6 @@ class TreatmentProcedureServiceTest {
         @DisplayName("Null tooth number is allowed for full-mouth/general procedures")
         void addTreatmentProcedure_nullToothNumber_createsGeneralProcedure() {
             when(treatmentPlanRepository.findById(PLAN_ID)).thenReturn(Optional.of(approvedPlan));
-            when(treatmentProcedureRepository.countByTreatmentPlanId(PLAN_ID)).thenReturn(0L);
             when(treatmentProcedureRepository.save(any(TreatmentProcedure.class))).thenAnswer(i -> i.getArgument(0));
 
             AddTreatmentProcedureRequest request = new AddTreatmentProcedureRequest(
@@ -358,8 +355,6 @@ class TreatmentProcedureServiceTest {
         @Test
         @DisplayName("Start procedure by unauthenticated caller throws UnauthorizedClinicalOperationException")
         void startTreatmentProcedure_unauthenticatedCaller_throwsUnauthorizedException() {
-            when(treatmentProcedureRepository.findById(PROC_ID)).thenReturn(Optional.of(plannedProcedure));
-            when(treatmentPlanRepository.findById(PLAN_ID)).thenReturn(Optional.of(approvedPlan));
             when(currentDentistProvider.getCurrentDentist())
                     .thenThrow(new UnauthorizedClinicalOperationException("No authenticated user in security context"));
 
