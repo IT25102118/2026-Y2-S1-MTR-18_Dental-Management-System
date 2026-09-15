@@ -7,6 +7,10 @@ import InventoryItemEditPage from './features/inventory/pages/InventoryItemEditP
 import InventoryBatchesPage from './features/inventory/pages/InventoryBatchesPage';
 import InventoryAlertsPage from './features/inventory/pages/InventoryAlertsPage';
 import InventoryOverviewPage from './features/inventory/pages/InventoryOverviewPage';
+import PatientListPage from './features/patient/pages/PatientListPage';
+import PatientCreatePage from './features/patient/pages/PatientCreatePage';
+import PatientDetailPage from './features/patient/pages/PatientDetailPage';
+import PatientEditPage from './features/patient/pages/PatientEditPage';
 import PatientRegistrationPage from './features/auth/pages/PatientRegistrationPage';
 import LoginPage from './features/auth/pages/LoginPage';
 import AccountPage from './features/auth/pages/AccountPage';
@@ -27,6 +31,9 @@ function RootPage() {
         <ul>
           <li>
             <Link to="/inventory">Inventory Management</Link>
+          </li>
+          <li>
+            <Link to="/patients">Patient Records</Link>
           </li>
           {isAuthenticated ? (
             <li>
@@ -63,6 +70,10 @@ export default function App() {
             </ProtectedRoute>
           }
         />
+        <Route path="/patients" element={<PatientListPage />} />
+        <Route path="/patients/new" element={<PatientCreatePage />} />
+        <Route path="/patients/:id" element={<PatientDetailPage />} />
+        <Route path="/patients/:id/edit" element={<PatientEditPage />} />
         <Route path="/inventory" element={<InventoryOverviewPage />} />
         <Route path="/inventory/items" element={<InventoryItemsPage />} />
         <Route path="/inventory/items/new" element={<InventoryItemCreatePage />} />
