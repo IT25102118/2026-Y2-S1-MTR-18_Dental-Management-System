@@ -483,6 +483,14 @@
   padding-bottom: 0.25rem;
 }
 
+/* Report Mode Switcher Styles (UI-BIL-05) */
+.report-mode-toggle {
+  display: flex;
+  gap: 0.5rem;
+  margin-bottom: 1rem;
+}
+
+
 /* Print Styles for Receipt & Invoices (UI-BIL-04) */
 @media print {
   .no-print,

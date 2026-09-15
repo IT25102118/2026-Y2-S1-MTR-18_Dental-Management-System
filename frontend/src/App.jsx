@@ -14,6 +14,7 @@ import InvoiceListPage from './features/billing/pages/InvoiceListPage';
 import InvoiceFormPage from './features/billing/pages/InvoiceFormPage';
 import InvoiceDetailPage from './features/billing/pages/InvoiceDetailPage';
 import ReceiptPage from './features/billing/pages/ReceiptPage';
+import IncomeReportsPage from './features/billing/pages/IncomeReportsPage';
 import ProtectedRoute from './features/auth/components/ProtectedRoute';
 import { AuthProvider, useAuth } from './features/auth/context/AuthContext';
 
@@ -34,9 +35,14 @@ function RootPage() {
             <Link to="/inventory">Inventory Management</Link>
           </li>
           {isStaffBilling && (
-            <li>
-              <Link to="/billing/invoices">Invoices &amp; Billing</Link>
-            </li>
+            <>
+              <li>
+                <Link to="/billing/invoices">Invoices &amp; Billing</Link>
+              </li>
+              <li>
+                <Link to="/billing/reports">Income Reports</Link>
+              </li>
+            </>
           )}
           {isAuthenticated ? (
             <li>
@@ -118,6 +124,22 @@ export default function App() {
           element={
             <ProtectedRoute allowedRoles={['ADMINISTRATOR', 'RECEPTIONIST']}>
               <ReceiptPage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/billing/reports"
+          element={
+            <ProtectedRoute allowedRoles={['ADMINISTRATOR', 'RECEPTIONIST']}>
+              <IncomeReportsPage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/reports/income"
+          element={
+            <ProtectedRoute allowedRoles={['ADMINISTRATOR', 'RECEPTIONIST']}>
+              <IncomeReportsPage />
             </ProtectedRoute>
           }
         />
