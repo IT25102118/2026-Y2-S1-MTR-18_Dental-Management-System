@@ -19,6 +19,7 @@ import org.springframework.context.ApplicationContext;
 import org.springframework.http.MediaType;
 import org.springframework.mock.web.MockHttpSession;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors;
 import org.springframework.security.web.authentication.session.ChangeSessionIdAuthenticationStrategy;
 import org.springframework.security.web.authentication.session.CompositeSessionAuthenticationStrategy;
@@ -474,6 +475,7 @@ class AuthControllerIntegrationTest {
     }
 
     @Test
+    @WithMockUser(roles = "ADMINISTRATOR")
     @DisplayName("POST /api/inventory/items without CSRF is rejected with 403 Forbidden")
     void inventoryItemCreate_withoutCsrf_rejected() throws Exception {
         mockMvc.perform(post("/api/inventory/items")
@@ -483,6 +485,7 @@ class AuthControllerIntegrationTest {
     }
 
     @Test
+    @WithMockUser(roles = "ADMINISTRATOR")
     @DisplayName("POST /api/inventory/items with valid CSRF reaches controller (400 validation error proves entry past security)")
     void inventoryItemCreate_withCsrf_reachesController() throws Exception {
         mockMvc.perform(post("/api/inventory/items")
@@ -493,6 +496,7 @@ class AuthControllerIntegrationTest {
     }
 
     @Test
+    @WithMockUser(roles = "ADMINISTRATOR")
     @DisplayName("PUT /api/inventory/items/{id} without CSRF is rejected with 403 Forbidden")
     void inventoryItemUpdate_withoutCsrf_rejected() throws Exception {
         mockMvc.perform(put("/api/inventory/items/1")
@@ -502,6 +506,7 @@ class AuthControllerIntegrationTest {
     }
 
     @Test
+    @WithMockUser(roles = "ADMINISTRATOR")
     @DisplayName("PUT /api/inventory/items/{id} with valid CSRF reaches controller (400 validation error proves entry past security)")
     void inventoryItemUpdate_withCsrf_reachesController() throws Exception {
         mockMvc.perform(put("/api/inventory/items/1")
@@ -512,6 +517,7 @@ class AuthControllerIntegrationTest {
     }
 
     @Test
+    @WithMockUser(roles = "ADMINISTRATOR")
     @DisplayName("PATCH /api/inventory/items/{id}/status without CSRF is rejected with 403 Forbidden")
     void inventoryItemStatus_withoutCsrf_rejected() throws Exception {
         mockMvc.perform(patch("/api/inventory/items/1/status")
@@ -521,6 +527,7 @@ class AuthControllerIntegrationTest {
     }
 
     @Test
+    @WithMockUser(roles = "ADMINISTRATOR")
     @DisplayName("PATCH /api/inventory/items/{id}/status with valid CSRF reaches controller (400 validation error proves entry past security)")
     void inventoryItemStatus_withCsrf_reachesController() throws Exception {
         mockMvc.perform(patch("/api/inventory/items/1/status")
@@ -531,6 +538,7 @@ class AuthControllerIntegrationTest {
     }
 
     @Test
+    @WithMockUser(roles = "ADMINISTRATOR")
     @DisplayName("POST /api/inventory/items/{itemId}/movements without CSRF is rejected with 403 Forbidden")
     void stockMovement_withoutCsrf_rejected() throws Exception {
         mockMvc.perform(post("/api/inventory/items/1/movements")
@@ -540,6 +548,7 @@ class AuthControllerIntegrationTest {
     }
 
     @Test
+    @WithMockUser(roles = "ADMINISTRATOR")
     @DisplayName("POST /api/inventory/items/{itemId}/movements with valid CSRF reaches controller (400 validation error proves entry past security)")
     void stockMovement_withCsrf_reachesController() throws Exception {
         mockMvc.perform(post("/api/inventory/items/1/movements")
@@ -550,6 +559,7 @@ class AuthControllerIntegrationTest {
     }
 
     @Test
+    @WithMockUser(roles = "ADMINISTRATOR")
     @DisplayName("POST /api/inventory/items/{itemId}/movements/{movementId}/reverse without CSRF is rejected with 403 Forbidden")
     void stockMovementReversal_withoutCsrf_rejected() throws Exception {
         mockMvc.perform(post("/api/inventory/items/1/movements/1/reverse")
@@ -559,6 +569,7 @@ class AuthControllerIntegrationTest {
     }
 
     @Test
+    @WithMockUser(roles = "ADMINISTRATOR")
     @DisplayName("POST /api/inventory/items/{itemId}/movements/{movementId}/reverse with valid CSRF reaches controller (400 validation error proves entry past security)")
     void stockMovementReversal_withCsrf_reachesController() throws Exception {
         mockMvc.perform(post("/api/inventory/items/1/movements/1/reverse")
@@ -569,10 +580,18 @@ class AuthControllerIntegrationTest {
     }
 
     @Test
-    @DisplayName("GET /api/inventory/items remains unaffected without CSRF (safe method)")
+    @WithMockUser(roles = "ADMINISTRATOR")
+    @DisplayName("GET /api/inventory/items remains unaffected without CSRF for authenticated staff (safe method)")
     void inventoryGet_withoutCsrf_permitted() throws Exception {
         mockMvc.perform(get("/api/inventory/items"))
                 .andExpect(status().isOk());
+    }
+
+    @Test
+    @DisplayName("GET /api/inventory/items without authentication is rejected with 401 Unauthorized")
+    void inventoryGet_unauthenticated_rejected() throws Exception {
+        mockMvc.perform(get("/api/inventory/items"))
+                .andExpect(status().isUnauthorized());
     }
 
     // =========================================================================

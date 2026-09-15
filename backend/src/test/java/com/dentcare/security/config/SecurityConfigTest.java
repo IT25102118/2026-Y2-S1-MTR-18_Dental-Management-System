@@ -8,6 +8,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.web.servlet.MockMvc;
 
@@ -59,13 +60,14 @@ class SecurityConfigTest {
     }
 
     @Test
-    @DisplayName("Baseline permit-all security configuration allows unauthenticated access to existing endpoints")
-    void testBaselinePermitAllAllowsAccess() throws Exception {
+    @DisplayName("Inventory endpoint rejects unauthenticated access with 401 Unauthorized")
+    void testInventoryEndpointRequiresAuthentication() throws Exception {
         mockMvc.perform(get("/api/inventory/items"))
-                .andExpect(status().isOk());
+                .andExpect(status().isUnauthorized());
     }
 
     @Test
+    @WithMockUser(roles = "ADMINISTRATOR")
     @DisplayName("POST /api/inventory/items without CSRF token is rejected with 403 Forbidden")
     void testInventoryPostWithoutCsrfRejected() throws Exception {
         mockMvc.perform(post("/api/inventory/items")
@@ -75,6 +77,7 @@ class SecurityConfigTest {
     }
 
     @Test
+    @WithMockUser(roles = "ADMINISTRATOR")
     @DisplayName("POST /api/inventory/items with valid CSRF token reaches controller past security")
     void testInventoryPostWithCsrfReachesController() throws Exception {
         mockMvc.perform(post("/api/inventory/items")

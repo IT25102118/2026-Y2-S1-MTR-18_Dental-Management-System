@@ -32,6 +32,7 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.when;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
+import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.user;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.header;
@@ -50,6 +51,11 @@ class StockMovementControllerTest {
 
     @MockitoBean
     private StockMovementService stockMovementService;
+
+    private final com.dentcare.security.model.DentCareUserDetails staffUser = new com.dentcare.security.model.DentCareUserDetails(
+            101L, "staff@dentcare.com", "hash", "Staff", "User", null,
+            com.dentcare.security.entity.Role.ADMINISTRATOR, true
+    );
 
     private final StockMovementResponse sampleResponse = new StockMovementResponse(
             10L,
@@ -89,6 +95,7 @@ class StockMovementControllerTest {
 
         mockMvc.perform(post("/api/inventory/items/1/movements")
                         .with(csrf())
+                        .with(user(staffUser))
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isCreated())
@@ -115,6 +122,7 @@ class StockMovementControllerTest {
 
         mockMvc.perform(post("/api/inventory/items/1/movements")
                         .with(csrf())
+                        .with(user(staffUser))
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(invalidRequest)))
                 .andExpect(status().isBadRequest())
@@ -140,6 +148,7 @@ class StockMovementControllerTest {
 
         mockMvc.perform(post("/api/inventory/items/1/movements")
                         .with(csrf())
+                        .with(user(staffUser))
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isConflict())
@@ -167,6 +176,7 @@ class StockMovementControllerTest {
 
         mockMvc.perform(post("/api/inventory/items/1/movements")
                         .with(csrf())
+                        .with(user(staffUser))
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isConflict())
@@ -193,6 +203,7 @@ class StockMovementControllerTest {
 
         mockMvc.perform(post("/api/inventory/items/1/movements")
                         .with(csrf())
+                        .with(user(staffUser))
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isBadRequest())
@@ -219,6 +230,7 @@ class StockMovementControllerTest {
 
         mockMvc.perform(post("/api/inventory/items/999/movements")
                         .with(csrf())
+                        .with(user(staffUser))
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isNotFound())
@@ -238,6 +250,7 @@ class StockMovementControllerTest {
                 .thenReturn(page);
 
         mockMvc.perform(get("/api/inventory/items/1/movements")
+                        .with(user(staffUser))
                         .param("page", "0")
                         .param("size", "20"))
                 .andExpect(status().isOk())
@@ -276,6 +289,7 @@ class StockMovementControllerTest {
 
         mockMvc.perform(post("/api/inventory/items/1/movements/10/reverse")
                         .with(csrf())
+                        .with(user(staffUser))
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isCreated())
@@ -296,6 +310,7 @@ class StockMovementControllerTest {
 
         mockMvc.perform(post("/api/inventory/items/1/movements/10/reverse")
                         .with(csrf())
+                        .with(user(staffUser))
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isConflict())
@@ -314,6 +329,7 @@ class StockMovementControllerTest {
 
         mockMvc.perform(post("/api/inventory/items/1/movements/999/reverse")
                         .with(csrf())
+                        .with(user(staffUser))
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isNotFound())
@@ -328,6 +344,7 @@ class StockMovementControllerTest {
 
         mockMvc.perform(post("/api/inventory/items/1/movements/10/reverse")
                         .with(csrf())
+                        .with(user(staffUser))
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isBadRequest())
