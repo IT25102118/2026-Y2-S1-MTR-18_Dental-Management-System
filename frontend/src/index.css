@@ -236,6 +236,12 @@ a:focus-visible, button:focus-visible, input:focus-visible, select:focus-visible
   gap: 0.625rem;
 }
 
+.app-session-status {
+  color: #64748b;
+  font-size: 0.8125rem;
+  font-weight: 600;
+}
+
 .btn-sm {
   padding: 0.35rem 0.75rem;
   font-size: 0.8125rem;

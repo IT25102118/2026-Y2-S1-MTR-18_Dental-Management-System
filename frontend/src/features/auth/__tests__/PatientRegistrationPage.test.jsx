@@ -1,6 +1,6 @@
 import React from 'react';
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
-import { MemoryRouter } from 'react-router-dom';
+import { MemoryRouter, Route, Routes, useLocation } from 'react-router-dom';
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import PatientRegistrationPage from '../pages/PatientRegistrationPage';
 import * as authApi from '../api/authApi';
@@ -79,7 +79,7 @@ describe('PatientRegistrationPage', () => {
     expect(authApi.registerPatient).not.toHaveBeenCalled();
   });
 
-  it('submits valid registration, excludes confirmPassword, and renders success view', async () => {
+  it('submits valid registration and offers a password-free Sign in now transition', async () => {
     authApi.registerPatient.mockResolvedValueOnce({
       id: 42,
       email: 'john.doe@example.com',
@@ -91,9 +91,17 @@ describe('PatientRegistrationPage', () => {
       createdAt: '2026-09-06T10:00:00'
     });
 
+    function LoginDestination() {
+      const location = useLocation();
+      return <div data-testid="login-destination-state">{JSON.stringify(location.state)}</div>;
+    }
+
     const { container } = render(
-      <MemoryRouter>
-        <PatientRegistrationPage />
+      <MemoryRouter initialEntries={['/register']}>
+        <Routes>
+          <Route path="/register" element={<PatientRegistrationPage />} />
+          <Route path="/login" element={<LoginDestination />} />
+        </Routes>
       </MemoryRouter>
     );
 
@@ -124,8 +132,14 @@ describe('PatientRegistrationPage', () => {
     expect(await screen.findByRole('heading', { name: /registration successful/i, level: 2 })).toBeInTheDocument();
     expect(screen.getByText(/john\.doe@example\.com/i)).toBeInTheDocument();
     expect(screen.getByRole('link', { name: /return to home/i })).toBeInTheDocument();
-    // Does NOT navigate to nonexistent /login
-    expect(screen.queryByRole('link', { name: /login/i })).not.toBeInTheDocument();
+    expect(screen.queryByText(/upcoming authentication release/i)).not.toBeInTheDocument();
+
+    const signInLink = screen.getByRole('link', { name: /sign in now/i });
+    expect(signInLink).toHaveAttribute('href', '/login');
+    expect(signInLink).not.toHaveAttribute('href', expect.stringContaining('Password123'));
+    fireEvent.click(signInLink);
+    expect(screen.getByTestId('login-destination-state')).toHaveTextContent('john.doe@example.com');
+    expect(screen.getByTestId('login-destination-state')).not.toHaveTextContent('Password123');
   });
 
   it('handles duplicate email (409 Conflict) from API and displays error message', async () => {

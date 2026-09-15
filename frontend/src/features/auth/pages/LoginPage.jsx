@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
+import { canRoleAccessPath, getDashboardPath, isSafeInternalPath } from '../roleAccess';
 import '../auth.css';
 
 /**
@@ -9,14 +10,16 @@ import '../auth.css';
  * and classifies backend errors without leaking internals.
  */
 export default function LoginPage() {
-  const [email, setEmail] = useState('');
+  const location = useLocation();
+  const [email, setEmail] = useState(() => (
+    typeof location.state?.prefillEmail === 'string' ? location.state.prefillEmail : ''
+  ));
   const [password, setPassword] = useState('');
   const [errorMessage, setErrorMessage] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const { login } = useAuth();
   const navigate = useNavigate();
-  const location = useLocation();
 
   const [showPassword, setShowPassword] = useState(false);
 
@@ -33,14 +36,13 @@ export default function LoginPage() {
     setIsSubmitting(true);
 
     try {
-      await login({ email: trimmedEmail, password });
+      const loggedInUser = await login({ email: trimmedEmail, password });
 
-      // Determine safe internal destination
       const target = location.state?.from;
       const safeDestination =
-        typeof target === 'string' && target.startsWith('/') && !target.startsWith('//')
+        isSafeInternalPath(target) && canRoleAccessPath(loggedInUser?.role, target)
           ? target
-          : '/account';
+          : getDashboardPath(loggedInUser?.role);
 
       navigate(safeDestination, { replace: true });
     } catch (err) {
@@ -129,6 +131,7 @@ export default function LoginPage() {
                 className="password-toggle-btn"
                 onClick={() => setShowPassword(!showPassword)}
                 aria-label={showPassword ? 'Hide password' : 'Show password'}
+                disabled={isSubmitting}
                 tabIndex={0}
               >
                 {showPassword ? (

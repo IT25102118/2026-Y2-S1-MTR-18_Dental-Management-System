@@ -94,6 +94,7 @@ export default function PatientRegistrationPage() {
         password: formData.password
       });
 
+      setFormData((prev) => ({ ...prev, password: '', confirmPassword: '' }));
       setRegisteredAccount(response);
     } catch (err) {
       if (err.status === 409) {
@@ -131,10 +132,17 @@ export default function PatientRegistrationPage() {
           </div>
 
           <p style={{ fontSize: '0.875rem', color: '#64748b' }}>
-            Patient login capabilities will become available in the upcoming authentication release.
+            Your patient login is ready. Sign in with the email address you registered.
           </p>
 
-          <div style={{ marginTop: '1.5rem' }}>
+          <div className="auth-success-actions">
+            <Link
+              to="/login"
+              state={{ prefillEmail: registeredAccount.email }}
+              className="btn btn-primary"
+            >
+              Sign in now
+            </Link>
             <Link to="/" className="auth-home-link">Return to Home</Link>
           </div>
         </div>

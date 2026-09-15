@@ -483,13 +483,13 @@ class AuthControllerIntegrationTest {
     }
 
     @Test
-    @DisplayName("POST /api/inventory/items with valid CSRF reaches controller (400 validation error proves entry past security)")
-    void inventoryItemCreate_withCsrf_reachesController() throws Exception {
+    @DisplayName("POST /api/inventory/items with valid CSRF still rejects anonymous users")
+    void inventoryItemCreate_withCsrf_rejectsAnonymous() throws Exception {
         mockMvc.perform(post("/api/inventory/items")
                         .with(csrf())
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("{}"))
-                .andExpect(status().isBadRequest());
+                .andExpect(status().isUnauthorized());
     }
 
     @Test
@@ -502,13 +502,13 @@ class AuthControllerIntegrationTest {
     }
 
     @Test
-    @DisplayName("PUT /api/inventory/items/{id} with valid CSRF reaches controller (400 validation error proves entry past security)")
-    void inventoryItemUpdate_withCsrf_reachesController() throws Exception {
+    @DisplayName("PUT /api/inventory/items/{id} with valid CSRF still rejects anonymous users")
+    void inventoryItemUpdate_withCsrf_rejectsAnonymous() throws Exception {
         mockMvc.perform(put("/api/inventory/items/1")
                         .with(csrf())
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("{}"))
-                .andExpect(status().isBadRequest());
+                .andExpect(status().isUnauthorized());
     }
 
     @Test
@@ -521,13 +521,13 @@ class AuthControllerIntegrationTest {
     }
 
     @Test
-    @DisplayName("PATCH /api/inventory/items/{id}/status with valid CSRF reaches controller (400 validation error proves entry past security)")
-    void inventoryItemStatus_withCsrf_reachesController() throws Exception {
+    @DisplayName("PATCH /api/inventory/items/{id}/status with valid CSRF still rejects anonymous users")
+    void inventoryItemStatus_withCsrf_rejectsAnonymous() throws Exception {
         mockMvc.perform(patch("/api/inventory/items/1/status")
                         .with(csrf())
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("{}"))
-                .andExpect(status().isBadRequest());
+                .andExpect(status().isUnauthorized());
     }
 
     @Test
@@ -540,13 +540,13 @@ class AuthControllerIntegrationTest {
     }
 
     @Test
-    @DisplayName("POST /api/inventory/items/{itemId}/movements with valid CSRF reaches controller (400 validation error proves entry past security)")
-    void stockMovement_withCsrf_reachesController() throws Exception {
+    @DisplayName("POST /api/inventory/items/{itemId}/movements with valid CSRF still rejects anonymous users")
+    void stockMovement_withCsrf_rejectsAnonymous() throws Exception {
         mockMvc.perform(post("/api/inventory/items/1/movements")
                         .with(csrf())
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("{}"))
-                .andExpect(status().isBadRequest());
+                .andExpect(status().isUnauthorized());
     }
 
     @Test
@@ -559,20 +559,20 @@ class AuthControllerIntegrationTest {
     }
 
     @Test
-    @DisplayName("POST /api/inventory/items/{itemId}/movements/{movementId}/reverse with valid CSRF reaches controller (400 validation error proves entry past security)")
-    void stockMovementReversal_withCsrf_reachesController() throws Exception {
+    @DisplayName("POST /api/inventory/items/{itemId}/movements/{movementId}/reverse with valid CSRF still rejects anonymous users")
+    void stockMovementReversal_withCsrf_rejectsAnonymous() throws Exception {
         mockMvc.perform(post("/api/inventory/items/1/movements/1/reverse")
                         .with(csrf())
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("{}"))
-                .andExpect(status().isBadRequest());
+                .andExpect(status().isUnauthorized());
     }
 
     @Test
-    @DisplayName("GET /api/inventory/items remains unaffected without CSRF (safe method)")
-    void inventoryGet_withoutCsrf_permitted() throws Exception {
+    @DisplayName("GET /api/inventory/items requires authentication")
+    void inventoryGet_requiresAuthentication() throws Exception {
         mockMvc.perform(get("/api/inventory/items"))
-                .andExpect(status().isOk());
+                .andExpect(status().isUnauthorized());
     }
 
     // =========================================================================

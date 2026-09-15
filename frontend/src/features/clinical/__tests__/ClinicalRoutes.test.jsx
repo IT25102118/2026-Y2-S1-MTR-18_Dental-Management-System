@@ -121,7 +121,7 @@ describe('Clinical Module Route Integration Tests', () => {
     expect(screen.getByTestId('treatment-plan-detail-placeholder')).toBeInTheDocument();
   });
 
-  it('renders root page with Clinical Management navigation link', async () => {
+  it('does not expose Clinical Management from the public landing page', async () => {
     authApi.getCurrentUser.mockResolvedValueOnce(null);
 
     render(
@@ -130,8 +130,7 @@ describe('Clinical Module Route Integration Tests', () => {
       </MemoryRouter>
     );
 
-    const clinicalLink = await screen.findByRole('link', { name: /Clinical Management/i });
-    expect(clinicalLink).toBeInTheDocument();
-    expect(clinicalLink).toHaveAttribute('href', '/clinical');
+    expect(await screen.findByTestId('public-landing-page')).toBeInTheDocument();
+    expect(screen.queryByRole('link', { name: /Clinical Management/i })).not.toBeInTheDocument();
   });
 });

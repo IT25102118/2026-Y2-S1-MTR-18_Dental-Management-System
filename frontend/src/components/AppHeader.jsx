@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Link, NavLink, useNavigate } from 'react-router-dom';
 import { useAuth } from '../features/auth/context/AuthContext';
+import { BILLING_ROLES, isStaffRole } from '../features/auth/roleAccess';
 
 /**
  * DentCare Authenticated Application Shell Header.
@@ -8,7 +9,7 @@ import { useAuth } from '../features/auth/context/AuthContext';
  * role badge, responsive navigation, and direct logout action.
  */
 export default function AppHeader() {
-  const { isAuthenticated, user, logout } = useAuth();
+  const { isAuthenticated, isLoading, user, logout } = useAuth();
   const [isLoggingOut, setIsLoggingOut] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
   const navigate = useNavigate();
@@ -27,6 +28,9 @@ export default function AppHeader() {
 
   const fullName = [user?.firstName, user?.lastName].filter(Boolean).join(' ') || 'DentCare User';
   const isAdmin = user?.role === 'ADMINISTRATOR';
+  const isPatient = user?.role === 'PATIENT';
+  const isStaff = isStaffRole(user?.role);
+  const canUseBilling = BILLING_ROLES.includes(user?.role);
 
   return (
     <header className="app-header">
@@ -60,50 +64,40 @@ export default function AppHeader() {
         </button>
 
         <nav className={`app-header-nav ${menuOpen ? 'nav-open' : ''}`} aria-label="Main navigation">
-          {isAuthenticated ? (
+          {isAuthenticated && isPatient ? (
             <>
               <NavLink
-                to="/inventory"
+                to="/patient/dashboard"
                 end
                 className={({ isActive }) => `app-nav-link ${isActive ? 'active' : ''}`}
                 onClick={() => setMenuOpen(false)}
               >
-                Overview
+                Patient Dashboard
               </NavLink>
               <NavLink
-                to="/inventory/items"
+                to="/account"
                 className={({ isActive }) => `app-nav-link ${isActive ? 'active' : ''}`}
                 onClick={() => setMenuOpen(false)}
               >
-                Catalog Items
+                My Account
               </NavLink>
+            </>
+          ) : isAuthenticated && isStaff ? (
+            <>
               <NavLink
-                to="/inventory/batches"
+                to="/staff/dashboard"
+                end
                 className={({ isActive }) => `app-nav-link ${isActive ? 'active' : ''}`}
                 onClick={() => setMenuOpen(false)}
               >
-                Batches
+                Staff Dashboard
               </NavLink>
               <NavLink
-                to="/inventory/alerts"
+                to="/inventory"
                 className={({ isActive }) => `app-nav-link ${isActive ? 'active' : ''}`}
                 onClick={() => setMenuOpen(false)}
               >
-                Alerts
-              </NavLink>
-              <NavLink
-                to="/billing/invoices"
-                className={({ isActive }) => `app-nav-link ${isActive ? 'active' : ''}`}
-                onClick={() => setMenuOpen(false)}
-              >
-                Invoices &amp; Billing
-              </NavLink>
-              <NavLink
-                to="/prescriptions"
-                className={({ isActive }) => `app-nav-link ${isActive ? 'active' : ''}`}
-                onClick={() => setMenuOpen(false)}
-              >
-                Prescriptions
+                Inventory
               </NavLink>
               <NavLink
                 to="/clinical"
@@ -112,6 +106,22 @@ export default function AppHeader() {
               >
                 Clinical
               </NavLink>
+              <NavLink
+                to="/prescriptions"
+                className={({ isActive }) => `app-nav-link ${isActive ? 'active' : ''}`}
+                onClick={() => setMenuOpen(false)}
+              >
+                Prescriptions
+              </NavLink>
+              {canUseBilling && (
+                <NavLink
+                  to="/billing/invoices"
+                  className={({ isActive }) => `app-nav-link ${isActive ? 'active' : ''}`}
+                  onClick={() => setMenuOpen(false)}
+                >
+                  Billing
+                </NavLink>
+              )}
               {isAdmin && (
                 <NavLink
                   to="/admin/staff"
@@ -121,6 +131,13 @@ export default function AppHeader() {
                   Staff Management
                 </NavLink>
               )}
+              <NavLink
+                to="/account"
+                className={({ isActive }) => `app-nav-link ${isActive ? 'active' : ''}`}
+                onClick={() => setMenuOpen(false)}
+              >
+                Account
+              </NavLink>
             </>
           ) : (
             <NavLink
@@ -135,7 +152,9 @@ export default function AppHeader() {
         </nav>
 
         <div className="app-header-user">
-          {isAuthenticated ? (
+          {isLoading ? (
+            <span className="app-session-status" role="status">Checking session...</span>
+          ) : isAuthenticated ? (
             <div className="user-profile-widget" data-testid="user-header-widget">
               <Link to="/account" className="user-profile-link" title="View Account Profile">
                 <span className="user-display-name">{fullName}</span>
