@@ -333,4 +333,152 @@ class StockMovementControllerTest {
                 .andExpect(status().isBadRequest())
                 .andExpect(jsonPath("$.status", is(400)));
     }
+
+    @Test
+    @DisplayName("AC-5: POST movement with authenticated staff user binds user ID from session context")
+    void testRecordMovementAuthenticatedStaffBindsUserId() throws Exception {
+        com.dentcare.security.model.DentCareUserDetails staff = new com.dentcare.security.model.DentCareUserDetails(
+                55L, "assistant@dentcare.com", "hash", "Dental", "Assistant", null,
+                com.dentcare.security.entity.Role.DENTAL_ASSISTANT, true
+        );
+
+        RecordStockMovementRequest request = new RecordStockMovementRequest(
+                StockMovementType.RECEIVED,
+                null,
+                10,
+                "Restock delivery",
+                null, // client does NOT send user ID
+                "LOT-B",
+                null,
+                null
+        );
+
+        org.mockito.ArgumentCaptor<RecordStockMovementRequest> captor =
+                org.mockito.ArgumentCaptor.forClass(RecordStockMovementRequest.class);
+        when(stockMovementService.recordMovement(eq(1L), captor.capture()))
+                .thenReturn(sampleResponse);
+
+        mockMvc.perform(post("/api/inventory/items/1/movements")
+                        .with(csrf())
+                        .with(org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.user(staff))
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(request)))
+                .andExpect(status().isCreated());
+
+        org.assertj.core.api.Assertions.assertThat(captor.getValue().getResponsibleUserId()).isEqualTo(55L);
+    }
+
+    @Test
+    @DisplayName("AC-10: POST movement unauthenticated without user ID returns 401 Unauthorized")
+    void testRecordMovementUnauthenticatedReturns401() throws Exception {
+        RecordStockMovementRequest request = new RecordStockMovementRequest(
+                StockMovementType.RECEIVED,
+                null,
+                10,
+                "Anonymous attempt",
+                null, // no user ID
+                null,
+                null,
+                null
+        );
+
+        mockMvc.perform(post("/api/inventory/items/1/movements")
+                        .with(csrf())
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(request)))
+                .andExpect(status().isUnauthorized())
+                .andExpect(jsonPath("$.status", is(401)))
+                .andExpect(jsonPath("$.error", is("Unauthorized")));
+    }
+
+    @Test
+    @DisplayName("AC-10: POST movement with PATIENT role returns 403 Forbidden")
+    void testRecordMovementPatientRoleReturns403() throws Exception {
+        com.dentcare.security.model.DentCareUserDetails patient = new com.dentcare.security.model.DentCareUserDetails(
+                99L, "patient@example.com", "hash", "John", "Doe", null,
+                com.dentcare.security.entity.Role.PATIENT, true
+        );
+
+        RecordStockMovementRequest request = new RecordStockMovementRequest(
+                StockMovementType.RECEIVED,
+                null,
+                10,
+                "Patient attempt",
+                null,
+                null,
+                null,
+                null
+        );
+
+        mockMvc.perform(post("/api/inventory/items/1/movements")
+                        .with(csrf())
+                        .with(org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.user(patient))
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(request)))
+                .andExpect(status().isForbidden())
+                .andExpect(jsonPath("$.status", is(403)))
+                .andExpect(jsonPath("$.error", is("Forbidden")));
+    }
+
+    @Test
+    @DisplayName("AC-5 & AC-6: POST reverse with authenticated staff user binds user ID from session context")
+    void testReverseMovementAuthenticatedStaffBindsUserId() throws Exception {
+        com.dentcare.security.model.DentCareUserDetails dentist = new com.dentcare.security.model.DentCareUserDetails(
+                77L, "dentist@dentcare.com", "hash", "Doc", "Smith", null,
+                com.dentcare.security.entity.Role.DENTIST, true
+        );
+
+        com.dentcare.inventory.dto.ReverseStockMovementRequest request =
+                new com.dentcare.inventory.dto.ReverseStockMovementRequest("Damaged on arrival", null);
+
+        org.mockito.ArgumentCaptor<com.dentcare.inventory.dto.ReverseStockMovementRequest> captor =
+                org.mockito.ArgumentCaptor.forClass(com.dentcare.inventory.dto.ReverseStockMovementRequest.class);
+        when(stockMovementService.reverseMovement(eq(1L), eq(10L), captor.capture()))
+                .thenReturn(sampleResponse);
+
+        mockMvc.perform(post("/api/inventory/items/1/movements/10/reverse")
+                        .with(csrf())
+                        .with(org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.user(dentist))
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(request)))
+                .andExpect(status().isCreated());
+
+        org.assertj.core.api.Assertions.assertThat(captor.getValue().getResponsibleUserId()).isEqualTo(77L);
+    }
+
+    @Test
+    @DisplayName("AC-10: POST reverse unauthenticated without user ID returns 401 Unauthorized")
+    void testReverseMovementUnauthenticatedReturns401() throws Exception {
+        com.dentcare.inventory.dto.ReverseStockMovementRequest request =
+                new com.dentcare.inventory.dto.ReverseStockMovementRequest("Reversal reason", null);
+
+        mockMvc.perform(post("/api/inventory/items/1/movements/10/reverse")
+                        .with(csrf())
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(request)))
+                .andExpect(status().isUnauthorized())
+                .andExpect(jsonPath("$.status", is(401)))
+                .andExpect(jsonPath("$.error", is("Unauthorized")));
+    }
+
+    @Test
+    @DisplayName("AC-10: POST reverse with PATIENT role returns 403 Forbidden")
+    void testReverseMovementPatientRoleReturns403() throws Exception {
+        com.dentcare.security.model.DentCareUserDetails patient = new com.dentcare.security.model.DentCareUserDetails(
+                99L, "patient@example.com", "hash", "John", "Doe", null,
+                com.dentcare.security.entity.Role.PATIENT, true
+        );
+
+        com.dentcare.inventory.dto.ReverseStockMovementRequest request =
+                new com.dentcare.inventory.dto.ReverseStockMovementRequest("Patient reversal", null);
+
+        mockMvc.perform(post("/api/inventory/items/1/movements/10/reverse")
+                        .with(csrf())
+                        .with(org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.user(patient))
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(request)))
+                .andExpect(status().isForbidden())
+                .andExpect(jsonPath("$.status", is(403)))
+                .andExpect(jsonPath("$.error", is("Forbidden")));
+    }
 }

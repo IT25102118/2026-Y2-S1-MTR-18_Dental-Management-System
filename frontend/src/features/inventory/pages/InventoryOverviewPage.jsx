@@ -169,8 +169,7 @@ export default function InventoryOverviewPage() {
             <strong>Initial Balance:</strong> Newly created catalog items begin with an initial stock of 0.
           </li>
           <li>
-            <strong>Stock Mutations:</strong> Stock movement and reversal submissions remain deferred pending
-            shared authentication/current-user integration.
+            <strong>Stock Mutations:</strong> Stock movement and reversal workflows are active and integrated with shared authentication/current-user integration.
           </li>
           <li>
             <strong>Batch Integrity:</strong> Unbatched stock is explicitly tracked without synthetic batch numbers,
