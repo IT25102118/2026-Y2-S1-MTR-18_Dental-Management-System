@@ -508,6 +508,26 @@
   font-style: italic;
 }
 
+.badge-batch-valid {
+  background-color: #dcfce7;
+  color: #15803d;
+}
+
+.badge-batch-expiring {
+  background-color: #fef3c7;
+  color: #b45309;
+}
+
+.badge-batch-expired {
+  background-color: #fee2e2;
+  color: #b91c1c;
+}
+
+.badge-batch-depleted {
+  background-color: #f1f5f9;
+  color: #64748b;
+}
+
 .reversal-ref {
   font-size: 0.75rem;
   color: #7c3aed;

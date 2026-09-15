@@ -1,5 +1,5 @@
-import React, { useState, useEffect } from 'react';
-import { recordStockMovement } from '../api/movementApi';
+import React, { useState, useEffect, useCallback } from 'react';
+import { recordStockMovement, getItemBatches } from '../api/movementApi';
 import { getItems, InventoryApiError } from '../api/inventoryApi';
 import { useAuth } from '../../auth/context/AuthContext';
 
@@ -26,10 +26,38 @@ export default function StockMovementForm({ item: propItem, onSuccess, onCancel 
   const [expiryDate, setExpiryDate] = useState('');
   const [supplierReference, setSupplierReference] = useState('');
 
+  const [availableBatches, setAvailableBatches] = useState([]);
+  const [loadingBatches, setLoadingBatches] = useState(false);
+  const [selectedBatchId, setSelectedBatchId] = useState('');
+
   const [submitting, setSubmitting] = useState(false);
   const [clientErrors, setClientErrors] = useState({});
   const [backendError, setBackendError] = useState(null);
   const [successMessage, setSuccessMessage] = useState(null);
+
+  const isStockOut =
+    movementType === 'USED' ||
+    movementType === 'DAMAGED' ||
+    movementType === 'EXPIRED' ||
+    (movementType === 'ADJUSTED' && adjustmentDirection === 'DECREASE');
+
+  const loadItemBatches = useCallback(async (itemId) => {
+    if (!itemId) {
+      setAvailableBatches([]);
+      setSelectedBatchId('');
+      return;
+    }
+    if (typeof getItemBatches !== 'function') return;
+    setLoadingBatches(true);
+    try {
+      const data = await getItemBatches(itemId, { positiveStockOnly: true, size: 100 });
+      setAvailableBatches(data?.content || []);
+    } catch {
+      setAvailableBatches([]);
+    } finally {
+      setLoadingBatches(false);
+    }
+  }, []);
 
   // Load items if not provided via prop
   useEffect(() => {
@@ -67,12 +95,18 @@ export default function StockMovementForm({ item: propItem, onSuccess, onCancel 
     }
   }, [propItem]);
 
+  // Load positive batches whenever selected item changes
+  useEffect(() => {
+    loadItemBatches(selectedItemId);
+  }, [selectedItemId, loadItemBatches]);
+
   const handleItemSelectChange = (e) => {
     const id = e.target.value;
     setSelectedItemId(id);
     const found = items.find((it) => String(it.id) === String(id));
     setSelectedItem(found || null);
-    setClientErrors((prev) => ({ ...prev, item: null }));
+    setSelectedBatchId('');
+    setClientErrors((prev) => ({ ...prev, item: null, batchId: null }));
   };
 
   const isStaff = isAuthenticated && user && user.role !== 'PATIENT';
@@ -95,6 +129,26 @@ export default function StockMovementForm({ item: propItem, onSuccess, onCancel 
       }
       if (!reason || reason.trim() === '') {
         errors.reason = 'A detailed reason is required for stock adjustments.';
+      }
+    }
+
+    if (isStockOut) {
+      if (availableBatches.length > 1 && !selectedBatchId) {
+        errors.batchId = 'Batch selection is required when multiple positive batches exist.';
+      }
+      if (movementType === 'USED' && selectedBatchId) {
+        const chosen = availableBatches.find((b) => String(b.id) === String(selectedBatchId));
+        if (chosen?.expiryDate) {
+          const parts = chosen.expiryDate.split('-');
+          if (parts.length === 3) {
+            const expDate = new Date(parseInt(parts[0], 10), parseInt(parts[1], 10) - 1, parseInt(parts[2], 10));
+            const todayMidnight = new Date();
+            todayMidnight.setHours(0, 0, 0, 0);
+            if (expDate < todayMidnight) {
+              errors.batchId = 'Expired batches cannot be consumed for USED movements. Please record as EXPIRED stock out.';
+            }
+          }
+        }
       }
     }
 
@@ -129,16 +183,26 @@ export default function StockMovementForm({ item: propItem, onSuccess, onCancel 
         payload.reason = reason.trim();
       }
 
-      if (batchNumber && batchNumber.trim()) {
-        payload.batchNumber = batchNumber.trim();
-      }
-
-      if (expiryDate) {
-        payload.expiryDate = expiryDate;
-      }
-
-      if (supplierReference && supplierReference.trim()) {
-        payload.supplierReference = supplierReference.trim();
+      if (isStockOut) {
+        if (selectedBatchId) {
+          payload.batchId = Number(selectedBatchId);
+          const chosen = availableBatches.find((b) => String(b.id) === String(selectedBatchId));
+          if (chosen?.batchNumber) {
+            payload.batchNumber = chosen.batchNumber;
+          }
+        } else if (batchNumber && batchNumber.trim()) {
+          payload.batchNumber = batchNumber.trim();
+        }
+      } else {
+        if (batchNumber && batchNumber.trim()) {
+          payload.batchNumber = batchNumber.trim();
+        }
+        if (expiryDate) {
+          payload.expiryDate = expiryDate;
+        }
+        if (supplierReference && supplierReference.trim()) {
+          payload.supplierReference = supplierReference.trim();
+        }
       }
 
       const response = await recordStockMovement(selectedItemId, payload);
@@ -151,6 +215,8 @@ export default function StockMovementForm({ item: propItem, onSuccess, onCancel 
       setBatchNumber('');
       setExpiryDate('');
       setSupplierReference('');
+      setSelectedBatchId('');
+      loadItemBatches(selectedItemId);
 
       if (onSuccess) {
         onSuccess(response);
@@ -256,7 +322,10 @@ export default function StockMovementForm({ item: propItem, onSuccess, onCancel 
           <select
             id="movement-type-select"
             value={movementType}
-            onChange={(e) => setMovementType(e.target.value)}
+            onChange={(e) => {
+              setMovementType(e.target.value);
+              setClientErrors((prev) => ({ ...prev, batchId: null }));
+            }}
             disabled={submitting}
             className="form-control"
           >
@@ -359,49 +428,120 @@ export default function StockMovementForm({ item: propItem, onSuccess, onCancel 
           )}
         </div>
 
-        {/* Batch details (Optional / Tracking) */}
-        <div className="form-row-2">
-          <div className="form-group">
-            <label htmlFor="movement-batch-number">Batch / Lot Number (Optional)</label>
-            <input
-              id="movement-batch-number"
-              type="text"
-              maxLength="100"
-              value={batchNumber}
-              onChange={(e) => setBatchNumber(e.target.value)}
-              disabled={submitting}
-              placeholder="e.g. LOT-2026-A"
-              className="form-control"
-            />
+        {/* Batch Allocation (Stock Out) or Registration (Stock In) */}
+        {isStockOut ? (
+          <div className="form-group" data-testid="stock-out-batch-section">
+            {availableBatches.length > 0 ? (
+              <>
+                <label htmlFor="movement-batch-select">
+                  Allocate From Batch {availableBatches.length > 1 ? <span className="required-star">*</span> : '(Optional)'}
+                </label>
+                <select
+                  id="movement-batch-select"
+                  value={selectedBatchId}
+                  onChange={(e) => {
+                    setSelectedBatchId(e.target.value);
+                    setClientErrors((prev) => ({ ...prev, batchId: null }));
+                  }}
+                  disabled={submitting || loadingBatches}
+                  className={`form-control ${clientErrors.batchId ? 'is-invalid' : ''}`}
+                  data-testid="movement-batch-select"
+                >
+                  <option value="">
+                    {availableBatches.length > 1
+                      ? '-- Select Batch (Required: Multiple Batches Available) --'
+                      : '-- Select Batch (Optional) --'}
+                  </option>
+                  {availableBatches.map((b) => {
+                    let isExpired = false;
+                    if (b.expiryDate) {
+                      const parts = b.expiryDate.split('-');
+                      if (parts.length === 3) {
+                        const expDate = new Date(parseInt(parts[0], 10), parseInt(parts[1], 10) - 1, parseInt(parts[2], 10));
+                        const todayMidnight = new Date();
+                        todayMidnight.setHours(0, 0, 0, 0);
+                        isExpired = expDate < todayMidnight;
+                      }
+                    }
+                    const disableOption = movementType === 'USED' && isExpired;
+                    return (
+                      <option key={b.id} value={b.id} disabled={disableOption}>
+                        {b.batchNumber ? b.batchNumber : 'Unbatched Stock'} (Qty: {b.quantityOnHand}, Exp: {b.expiryDate || 'No expiry'}{isExpired ? ' - EXPIRED' : ''}){disableOption ? ' [Expired - Cannot Use]' : ''}
+                      </option>
+                    );
+                  })}
+                </select>
+                {clientErrors.batchId && (
+                  <span className="field-error" data-testid="batch-error">{clientErrors.batchId}</span>
+                )}
+                {availableBatches.length > 1 && (
+                  <span className="subtext" style={{ marginTop: '0.25rem' }}>
+                    Staff must select the specific physical batch lot used in clinic operatory.
+                  </span>
+                )}
+              </>
+            ) : (
+              <>
+                <label htmlFor="movement-batch-number">Batch / Lot Number (Optional)</label>
+                <input
+                  id="movement-batch-number"
+                  type="text"
+                  maxLength="100"
+                  value={batchNumber}
+                  onChange={(e) => setBatchNumber(e.target.value)}
+                  disabled={submitting}
+                  placeholder="e.g. LOT-2026-A"
+                  className="form-control"
+                />
+              </>
+            )}
           </div>
+        ) : (
+          <>
+            <div className="form-row-2">
+              <div className="form-group">
+                <label htmlFor="movement-batch-number">Batch / Lot Number (Optional)</label>
+                <input
+                  id="movement-batch-number"
+                  type="text"
+                  maxLength="100"
+                  value={batchNumber}
+                  onChange={(e) => setBatchNumber(e.target.value)}
+                  disabled={submitting}
+                  placeholder="e.g. LOT-2026-A"
+                  className="form-control"
+                />
+              </div>
 
-          <div className="form-group">
-            <label htmlFor="movement-expiry-date">Expiry Date (Optional)</label>
-            <input
-              id="movement-expiry-date"
-              type="date"
-              value={expiryDate}
-              onChange={(e) => setExpiryDate(e.target.value)}
-              disabled={submitting}
-              className="form-control"
-            />
-          </div>
-        </div>
+              <div className="form-group">
+                <label htmlFor="movement-expiry-date">Expiry Date (Optional)</label>
+                <input
+                  id="movement-expiry-date"
+                  type="date"
+                  value={expiryDate}
+                  onChange={(e) => setExpiryDate(e.target.value)}
+                  disabled={submitting}
+                  className="form-control"
+                />
+              </div>
+            </div>
 
-        {movementType === 'RECEIVED' && (
-          <div className="form-group">
-            <label htmlFor="movement-supplier-ref">Supplier Reference (Optional)</label>
-            <input
-              id="movement-supplier-ref"
-              type="text"
-              maxLength="150"
-              value={supplierReference}
-              onChange={(e) => setSupplierReference(e.target.value)}
-              disabled={submitting}
-              placeholder="e.g. Invoice #INV-90412"
-              className="form-control"
-            />
-          </div>
+            {movementType === 'RECEIVED' && (
+              <div className="form-group">
+                <label htmlFor="movement-supplier-ref">Supplier Reference (Optional)</label>
+                <input
+                  id="movement-supplier-ref"
+                  type="text"
+                  maxLength="150"
+                  value={supplierReference}
+                  onChange={(e) => setSupplierReference(e.target.value)}
+                  disabled={submitting}
+                  placeholder="e.g. Invoice #INV-90412"
+                  className="form-control"
+                />
+              </div>
+            )}
+          </>
         )}
 
         {/* Actions */}
@@ -429,3 +569,4 @@ export default function StockMovementForm({ item: propItem, onSuccess, onCancel 
     </div>
   );
 }
+

@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import { searchBatches } from '../api/movementApi';
 import InventoryPagination from '../components/InventoryPagination';
 import InventoryNav from '../components/InventoryNav';
+import { getBatchDerivedStatus } from '../components/ItemBatchesTable';
 import '../inventory.css';
 
 export default function InventoryBatchesPage() {
@@ -229,35 +230,44 @@ export default function InventoryBatchesPage() {
                   <th scope="col">Item</th>
                   <th scope="col">Quantity On Hand</th>
                   <th scope="col">Expiry Date</th>
+                  <th scope="col">Status</th>
                   <th scope="col">Received Date</th>
                   <th scope="col">Supplier Reference</th>
                 </tr>
               </thead>
               <tbody>
-                {batches.map((b) => (
-                  <tr key={b.id}>
-                    <td>
-                      {b.batchNumber ? (
-                        <strong>{b.batchNumber}</strong>
-                      ) : (
-                        <span className="unbatched-badge">Unbatched Stock</span>
-                      )}
-                    </td>
-                    <td>
-                      {b.inventoryItemId ? (
-                        <Link to={`/inventory/items/${b.inventoryItemId}`} className="item-link">
-                          {b.itemName} ({b.itemCode})
-                        </Link>
-                      ) : (
-                        `${b.itemName || '—'} (${b.itemCode || '—'})`
-                      )}
-                    </td>
-                    <td style={{ fontWeight: 600 }}>{b.quantityOnHand}</td>
-                    <td>{b.expiryDate || 'No expiry'}</td>
-                    <td>{b.receivedDate || '—'}</td>
-                    <td>{b.supplierReference || '—'}</td>
-                  </tr>
-                ))}
+                {batches.map((b) => {
+                  const status = getBatchDerivedStatus(b);
+                  return (
+                    <tr key={b.id}>
+                      <td>
+                        {b.batchNumber ? (
+                          <strong>{b.batchNumber}</strong>
+                        ) : (
+                          <span className="unbatched-badge">Unbatched Stock</span>
+                        )}
+                      </td>
+                      <td>
+                        {b.inventoryItemId ? (
+                          <Link to={`/inventory/items/${b.inventoryItemId}`} className="item-link">
+                            {b.itemName} ({b.itemCode})
+                          </Link>
+                        ) : (
+                          `${b.itemName || '—'} (${b.itemCode || '—'})`
+                        )}
+                      </td>
+                      <td style={{ fontWeight: 600 }}>{b.quantityOnHand}</td>
+                      <td>{b.expiryDate || 'No expiry'}</td>
+                      <td>
+                        <span className={`badge ${status.className}`} data-testid={`batch-status-${b.id}`}>
+                          {status.label}
+                        </span>
+                      </td>
+                      <td>{b.receivedDate || '—'}</td>
+                      <td>{b.supplierReference || '—'}</td>
+                    </tr>
+                  );
+                })}
               </tbody>
             </table>
           </div>

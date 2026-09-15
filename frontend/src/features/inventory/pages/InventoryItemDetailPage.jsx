@@ -375,7 +375,9 @@ export default function InventoryItemDetailPage() {
           aria-labelledby="tab-batches"
           hidden={activeTab !== 'batches'}
         >
-          {activeTab === 'batches' && <ItemBatchesTable itemId={item.id} />}
+          {activeTab === 'batches' && (
+            <ItemBatchesTable itemId={item.id} refreshTrigger={historyRefreshTrigger} />
+          )}
         </div>
       </div>
     </div>

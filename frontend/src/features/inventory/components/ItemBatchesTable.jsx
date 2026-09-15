@@ -2,7 +2,41 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { getItemBatches } from '../api/movementApi';
 import InventoryPagination from './InventoryPagination';
 
-export default function ItemBatchesTable({ itemId }) {
+export function getBatchDerivedStatus(batch, today = new Date()) {
+  if (!batch) return { label: '—', key: 'unknown', className: '' };
+  if (batch.quantityOnHand <= 0) {
+    return { label: 'Depleted', key: 'depleted', className: 'badge-batch-depleted' };
+  }
+  if (!batch.expiryDate) {
+    return { label: 'Valid', key: 'valid', className: 'badge-batch-valid' };
+  }
+  try {
+    const parts = batch.expiryDate.split('-');
+    if (parts.length === 3) {
+      const expYear = parseInt(parts[0], 10);
+      const expMonth = parseInt(parts[1], 10) - 1;
+      const expDay = parseInt(parts[2], 10);
+      const expDate = new Date(expYear, expMonth, expDay);
+
+      const todayMidnight = new Date(today.getFullYear(), today.getMonth(), today.getDate());
+
+      if (expDate < todayMidnight) {
+        return { label: 'Expired', key: 'expired', className: 'badge-batch-expired' };
+      }
+
+      const diffDays = Math.ceil((expDate.getTime() - todayMidnight.getTime()) / (1000 * 60 * 60 * 24));
+      if (diffDays <= 30) {
+        return { label: 'Expiring Soon', key: 'expiring', className: 'badge-batch-expiring' };
+      }
+      return { label: 'Valid', key: 'valid', className: 'badge-batch-valid' };
+    }
+  } catch {
+    // Fall through
+  }
+  return { label: 'Valid', key: 'valid', className: 'badge-batch-valid' };
+}
+
+export default function ItemBatchesTable({ itemId, refreshTrigger }) {
   const [batches, setBatches] = useState([]);
   const [pageInfo, setPageInfo] = useState({
     number: 0,
@@ -46,7 +80,7 @@ export default function ItemBatchesTable({ itemId }) {
 
   useEffect(() => {
     loadBatches(positiveStockOnly, 0);
-  }, [loadBatches, positiveStockOnly]);
+  }, [loadBatches, positiveStockOnly, refreshTrigger]);
 
   const handleTogglePositive = (e) => {
     setPositiveStockOnly(e.target.checked);
@@ -114,26 +148,35 @@ export default function ItemBatchesTable({ itemId }) {
                   <th scope="col">Batch Number</th>
                   <th scope="col">Quantity On Hand</th>
                   <th scope="col">Expiry Date</th>
+                  <th scope="col">Status</th>
                   <th scope="col">Received Date</th>
                   <th scope="col">Supplier Reference</th>
                 </tr>
               </thead>
               <tbody>
-                {batches.map((b) => (
-                  <tr key={b.id}>
-                    <td>
-                      {b.batchNumber ? (
-                        <strong>{b.batchNumber}</strong>
-                      ) : (
-                        <span className="unbatched-badge">Unbatched Stock</span>
-                      )}
-                    </td>
-                    <td style={{ fontWeight: 600 }}>{b.quantityOnHand}</td>
-                    <td>{b.expiryDate || 'No expiry'}</td>
-                    <td>{b.receivedDate || '—'}</td>
-                    <td>{b.supplierReference || '—'}</td>
-                  </tr>
-                ))}
+                {batches.map((b) => {
+                  const status = getBatchDerivedStatus(b);
+                  return (
+                    <tr key={b.id}>
+                      <td>
+                        {b.batchNumber ? (
+                          <strong>{b.batchNumber}</strong>
+                        ) : (
+                          <span className="unbatched-badge">Unbatched Stock</span>
+                        )}
+                      </td>
+                      <td style={{ fontWeight: 600 }}>{b.quantityOnHand}</td>
+                      <td>{b.expiryDate || 'No expiry'}</td>
+                      <td>
+                        <span className={`badge ${status.className}`} data-testid={`batch-status-${b.id}`}>
+                          {status.label}
+                        </span>
+                      </td>
+                      <td>{b.receivedDate || '—'}</td>
+                      <td>{b.supplierReference || '—'}</td>
+                    </tr>
+                  );
+                })}
               </tbody>
             </table>
           </div>
