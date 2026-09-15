@@ -200,4 +200,29 @@ describe('InventoryBatchesPage', () => {
       expect(screen.getByText('LOT-DM-01')).toBeInTheDocument();
     });
   });
+
+  it('renders status badges in batches table', async () => {
+    movementApi.searchBatches.mockResolvedValueOnce({
+      content: sampleBatches,
+      number: 0,
+      size: 20,
+      totalPages: 1,
+      totalElements: 2,
+      first: true,
+      last: true,
+      empty: false
+    });
+
+    render(
+      <MemoryRouter>
+        <InventoryBatchesPage />
+      </MemoryRouter>
+    );
+
+    await waitFor(() => {
+      expect(screen.getByTestId('batch-status-101')).toHaveTextContent('Valid');
+      expect(screen.getByTestId('batch-status-102')).toHaveTextContent('Valid');
+    });
+  });
 });
+
