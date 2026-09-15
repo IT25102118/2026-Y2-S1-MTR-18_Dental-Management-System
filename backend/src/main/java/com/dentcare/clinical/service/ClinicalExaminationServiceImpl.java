@@ -18,6 +18,7 @@ import com.dentcare.clinical.integration.PatientLookupPort;
 import com.dentcare.clinical.repository.ClinicalExaminationRepository;
 import com.dentcare.clinical.security.CurrentDentistProvider;
 import com.dentcare.clinical.security.Dentist;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -38,6 +39,7 @@ public class ClinicalExaminationServiceImpl implements ClinicalExaminationServic
     private final DentistLookupPort dentistLookupPort;
     private final CurrentDentistProvider currentDentistProvider;
 
+    @Autowired
     public ClinicalExaminationServiceImpl(ClinicalExaminationRepository examinationRepository,
                                           PatientLookupPort patientLookupPort,
                                           DentistLookupPort dentistLookupPort,
