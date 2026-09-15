@@ -52,13 +52,15 @@ function RootPage() {
           <li>
             <Link to="/prescriptions">Prescription Management</Link>
           </li>
-          <li>
-            <Link to="/billing/invoices">Invoices &amp; Billing</Link>
-          </li>
           {isStaffBilling && (
-            <li>
-              <Link to="/billing/reports">Income Reports</Link>
-            </li>
+            <>
+              <li>
+                <Link to="/billing/invoices">Invoices &amp; Billing</Link>
+              </li>
+              <li>
+                <Link to="/billing/reports">Income Reports</Link>
+              </li>
+            </>
           )}
           {isAdmin && (
             <li>
