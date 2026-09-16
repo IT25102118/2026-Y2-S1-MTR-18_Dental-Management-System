@@ -116,4 +116,25 @@ class InventoryAlertControllerTest {
                 .andExpect(jsonPath("$.status", is(400)))
                 .andExpect(jsonPath("$.message", is("through date must not be in the past: " + pastDate)));
     }
+
+    @Test
+    @DisplayName("GET /api/inventory/alerts/expiry without required through parameter returns 400 with InventoryErrorResponse")
+    void testGetExpiryAlertsMissingThroughReturns400() throws Exception {
+        mockMvc.perform(get("/api/inventory/alerts/expiry"))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.status", is(400)))
+                .andExpect(jsonPath("$.error", is("Bad Request")))
+                .andExpect(jsonPath("$.message", is("Required request parameter 'through' is missing")));
+    }
+
+    @Test
+    @DisplayName("GET /api/inventory/alerts/expiry with malformed through parameter returns 400 with InventoryErrorResponse")
+    void testGetExpiryAlertsMalformedThroughReturns400() throws Exception {
+        mockMvc.perform(get("/api/inventory/alerts/expiry")
+                        .param("through", "not-a-date"))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.status", is(400)))
+                .andExpect(jsonPath("$.error", is("Bad Request")))
+                .andExpect(jsonPath("$.message", is("Invalid parameter value 'not-a-date' for 'through'")));
+    }
 }
