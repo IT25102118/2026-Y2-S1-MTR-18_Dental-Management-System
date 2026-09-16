@@ -19,6 +19,7 @@ import java.util.List;
 import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 @DataJpaTest
 @TestPropertySource(properties = "spring.sql.init.schema-locations=classpath:schema-billing.sql")
@@ -209,6 +210,33 @@ class PaymentRepositoryTest {
         assertThat(foundReversal).isPresent();
         assertThat(foundReversal.get().getPaymentNumber()).isEqualTo("REC-REV-01");
         assertThat(foundReversal.get().getReversalReason()).isEqualTo("Full refund authorized");
+    }
+
+    @Test
+    @DisplayName("database rejects a second reversal referencing the same original payment")
+    void testUniqueReversalOfPaymentConstraint() {
+        Invoice invoice = new Invoice("INV-REV-UNIQUE", 409L, LocalDate.now());
+        Invoice savedInvoice = entityManager.persistAndFlush(invoice);
+
+        Payment original = new Payment(savedInvoice, "REC-ORIGINAL-UNIQUE", new BigDecimal("25.00"),
+                PaymentMethod.CASH, null, LocalDateTime.now(), 1L);
+        Payment savedOriginal = entityManager.persistAndFlush(original);
+
+        Payment firstReversal = new Payment(savedInvoice, "REC-REV-UNIQUE-1", new BigDecimal("25.00"),
+                PaymentMethod.CASH, null, LocalDateTime.now(), 2L);
+        firstReversal.setStatus(PaymentStatus.REVERSED);
+        firstReversal.setReversalOfPaymentId(savedOriginal.getId());
+        firstReversal.setReversalReason("First reversal");
+        entityManager.persistAndFlush(firstReversal);
+
+        Payment duplicateReversal = new Payment(savedInvoice, "REC-REV-UNIQUE-2", new BigDecimal("25.00"),
+                PaymentMethod.CASH, null, LocalDateTime.now(), 3L);
+        duplicateReversal.setStatus(PaymentStatus.REVERSED);
+        duplicateReversal.setReversalOfPaymentId(savedOriginal.getId());
+        duplicateReversal.setReversalReason("Duplicate reversal");
+
+        assertThatThrownBy(() -> entityManager.persistAndFlush(duplicateReversal))
+                .isInstanceOf(Exception.class);
     }
 
     @Test

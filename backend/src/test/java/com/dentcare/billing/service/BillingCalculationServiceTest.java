@@ -293,4 +293,22 @@ class BillingCalculationServiceTest {
         assertThat(invoice.getPaidAmount()).isEqualByComparingTo(new BigDecimal("50.00"));
         assertThat(invoice.getBalanceAmount()).isEqualByComparingTo(new BigDecimal("70.00"));
     }
+
+    @Test
+    @DisplayName("monetary calculations normalize half-up to exactly two decimal places")
+    void testMonetaryCalculationsNormalizeToTwoDecimals() {
+        BigDecimal lineTotal = service.calculateLineTotal(3, new BigDecimal("0.999"));
+        BigDecimal subtotal = service.calculateSubtotalFromTotals(List.of(lineTotal, new BigDecimal("1.005")));
+        BigDecimal total = service.calculateTotal(subtotal, new BigDecimal("0.555"));
+        BigDecimal paid = service.normalizePaidAmount(new BigDecimal("1.235"));
+        BigDecimal balance = service.calculateBalance(total, paid);
+
+        assertThat(lineTotal).isEqualByComparingTo(new BigDecimal("3.00"));
+        assertThat(subtotal).isEqualByComparingTo(new BigDecimal("4.01"));
+        assertThat(total).isEqualByComparingTo(new BigDecimal("3.45"));
+        assertThat(paid).isEqualByComparingTo(new BigDecimal("1.24"));
+        assertThat(balance).isEqualByComparingTo(new BigDecimal("2.21"));
+        assertThat(List.of(lineTotal, subtotal, total, paid, balance))
+                .allMatch(amount -> amount.scale() == 2);
+    }
 }

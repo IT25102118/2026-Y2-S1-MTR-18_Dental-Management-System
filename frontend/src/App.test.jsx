@@ -79,7 +79,7 @@ describe('Frontend Runtime Smoke Tests', () => {
       </MemoryRouter>
     );
 
-    expect(await screen.findByRole('heading', { name: /Care begins with a clear, secure connection/i, level: 1 })).toBeInTheDocument();
+    expect(await screen.findByRole('heading', { name: /A clear, secure way to access dental care/i, level: 1 })).toBeInTheDocument();
     expect(screen.queryByRole('link', { name: /Inventory Management/i })).not.toBeInTheDocument();
     expect(screen.queryByRole('link', { name: /Clinical Management/i })).not.toBeInTheDocument();
     expect(screen.queryByRole('link', { name: /Invoices & Billing/i })).not.toBeInTheDocument();
@@ -91,6 +91,29 @@ describe('Frontend Runtime Smoke Tests', () => {
     const loginLinks = screen.getAllByRole('link', { name: /Sign In/i });
     expect(loginLinks.length).toBeGreaterThanOrEqual(1);
     expect(loginLinks[0]).toHaveAttribute('href', '/login');
+  });
+
+  it('renders enhanced product capabilities, security architecture, and FAQ sections on the landing page', async () => {
+    render(
+      <MemoryRouter initialEntries={['/']}>
+        <App />
+      </MemoryRouter>
+    );
+
+    expect(await screen.findByRole('heading', { name: /Integrated tools built for dental practices/i, level: 2 })).toBeInTheDocument();
+    expect(screen.getByRole('heading', { name: /Access designed around verified roles/i, level: 2 })).toBeInTheDocument();
+    expect(screen.getByRole('heading', { name: /Frequently asked questions/i, level: 2 })).toBeInTheDocument();
+
+    expect(screen.getByText(/Examinations, Tooth Charting & Treatment Plans/i)).toBeInTheDocument();
+    expect(screen.getByText(/Prescription Authoring/i)).toBeInTheDocument();
+    expect(screen.getByText(/Inventory & Batch Tracking/i)).toBeInTheDocument();
+    expect(screen.getByText(/Invoices & Payment Receipts/i)).toBeInTheDocument();
+
+    // Verify operational module routes remain inaccessible via navigation links
+    expect(screen.queryByRole('link', { name: /^Inventory$/i })).not.toBeInTheDocument();
+    expect(screen.queryByRole('link', { name: /^Clinical$/i })).not.toBeInTheDocument();
+    expect(screen.queryByRole('link', { name: /^Prescriptions$/i })).not.toBeInTheDocument();
+    expect(screen.queryByRole('link', { name: /^Billing$/i })).not.toBeInTheDocument();
   });
 
   it('redirects an authenticated administrator from root to the staff dashboard', async () => {

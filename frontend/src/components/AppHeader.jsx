@@ -33,7 +33,7 @@ export default function AppHeader() {
   const canUseBilling = BILLING_ROLES.includes(user?.role);
 
   return (
-    <header className="app-header">
+    <header className={`app-header ${!isLoading && !isAuthenticated ? 'app-header-public' : ''}`}>
       <div className="app-header-inner">
         <div className="app-header-brand">
           <Link to="/" className="brand-logo-link" aria-label="DentCare Home">
@@ -179,7 +179,8 @@ export default function AppHeader() {
                 Sign In
               </Link>
               <Link to="/register" className="btn btn-sm btn-primary" data-testid="header-register-link">
-                Register
+                <span className="header-register-label-full">Patient Registration</span>
+                <span className="header-register-label-short">Register</span>
               </Link>
             </div>
           )}
