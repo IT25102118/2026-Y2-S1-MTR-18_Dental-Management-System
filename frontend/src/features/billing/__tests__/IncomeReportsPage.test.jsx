@@ -159,7 +159,7 @@ describe('Staff Daily & Monthly Income Reports UI (UI-BIL-05)', () => {
       );
 
       await waitFor(() => {
-        expect(screen.getByText(/Dental Practice Management System/i)).toBeInTheDocument();
+        expect(screen.getByTestId('patient-dashboard')).toBeInTheDocument();
       });
       expect(screen.queryByTestId('income-reports-page')).not.toBeInTheDocument();
     });

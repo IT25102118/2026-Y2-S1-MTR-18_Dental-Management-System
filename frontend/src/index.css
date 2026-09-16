@@ -236,6 +236,12 @@ a:focus-visible, button:focus-visible, input:focus-visible, select:focus-visible
   gap: 0.625rem;
 }
 
+.app-session-status {
+  color: #64748b;
+  font-size: 0.8125rem;
+  font-weight: 600;
+}
+
 .btn-sm {
   padding: 0.35rem 0.75rem;
   font-size: 0.8125rem;
@@ -253,6 +259,55 @@ a:focus-visible, button:focus-visible, input:focus-visible, select:focus-visible
   background-color: #f0f9ff;
   text-decoration: none;
 }
+
+.app-header-public .btn-primary {
+  color: #ffffff;
+  background-color: #1769aa;
+}
+
+.app-header-public .btn-primary:hover {
+  color: #ffffff;
+  background-color: #12578e;
+  text-decoration: none;
+}
+
+.app-header-public .app-header-inner {
+  max-width: 1228px;
+  height: 68px;
+}
+
+.app-header-public .brand-icon {
+  background: #1769aa;
+  border-radius: 7px;
+  box-shadow: none;
+}
+
+.app-header-public .brand-name {
+  color: #102a43;
+  font-size: 1.18rem;
+  font-weight: 720;
+}
+
+.app-header-public .app-header-nav {
+  margin-left: auto;
+}
+
+.app-header-public .app-nav-link {
+  color: #486581;
+  font-size: 0.875rem;
+  font-weight: 600;
+}
+
+.app-header-public .app-nav-link.active,
+.app-header-public .app-nav-link:hover {
+  color: #1769aa;
+  background: transparent;
+}
+
+.app-header-public .app-header-user { margin-left: 0.25rem; }
+.app-header-public .auth-action-buttons { gap: 0.5rem; }
+.app-header-public .auth-action-buttons .btn { min-height: 38px; padding: 0.45rem 0.85rem; border-radius: 6px; }
+.header-register-label-short { display: none; }
 
 .app-content-wrapper {
   flex: 1;
@@ -288,4 +343,26 @@ a:focus-visible, button:focus-visible, input:focus-visible, select:focus-visible
   .user-display-name {
     display: none;
   }
+
+  .app-header-public .mobile-nav-toggle,
+  .app-header-public .app-header-nav {
+    display: none;
+  }
+
+  .app-header-public .app-header-inner {
+    gap: 0.75rem;
+  }
+
+  .app-header-public .auth-action-buttons {
+    gap: 0.4rem;
+  }
+
+  .app-header-public .auth-action-buttons .btn {
+    min-height: 42px;
+    padding-inline: 0.7rem;
+    white-space: nowrap;
+  }
+
+  .header-register-label-full { display: none; }
+  .header-register-label-short { display: inline; }
 }

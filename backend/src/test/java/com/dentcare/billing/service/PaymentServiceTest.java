@@ -37,6 +37,7 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.inOrder;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -534,11 +535,11 @@ class PaymentServiceTest {
     // -------------------------------------------------------------------------
 
     @Test
-    @DisplayName("27. BigDecimal calculations preserve numeric precision without forced setScale/rounding")
+    @DisplayName("27. Payment amounts and balances are normalized to two decimal places")
     void testPrecisionPreservation() {
         BigDecimal total = new BigDecimal("100.555");
         BigDecimal paymentAmt = new BigDecimal("40.222");
-        BigDecimal expectedBalance = new BigDecimal("60.333");
+        BigDecimal expectedBalance = new BigDecimal("60.34");
 
         Invoice invoice = createTestInvoice(27L, InvoiceStatus.UNPAID, total, BigDecimal.ZERO, total);
         when(invoiceRepository.findByIdForUpdate(27L)).thenReturn(Optional.of(invoice));
@@ -550,9 +551,12 @@ class PaymentServiceTest {
 
         PaymentResponse response = paymentService.recordPayment(27L, new RecordPaymentRequest(paymentAmt, PaymentMethod.CASH), 1L);
 
-        assertThat(response.amount()).isEqualByComparingTo(paymentAmt);
-        assertThat(invoice.getPaidAmount()).isEqualByComparingTo(paymentAmt);
+        assertThat(response.amount()).isEqualByComparingTo(new BigDecimal("40.22"));
+        assertThat(response.amount().scale()).isEqualTo(2);
+        assertThat(invoice.getPaidAmount()).isEqualByComparingTo(new BigDecimal("40.22"));
+        assertThat(invoice.getPaidAmount().scale()).isEqualTo(2);
         assertThat(invoice.getBalanceAmount()).isEqualByComparingTo(expectedBalance);
+        assertThat(invoice.getBalanceAmount().scale()).isEqualTo(2);
     }
 
     // -------------------------------------------------------------------------
@@ -567,7 +571,7 @@ class PaymentServiceTest {
         originalPayment.setId(280L);
         originalPayment.setStatus(PaymentStatus.RECORDED);
 
-        when(paymentRepository.findById(280L)).thenReturn(Optional.of(originalPayment));
+        when(paymentRepository.findByIdForUpdate(280L)).thenReturn(Optional.of(originalPayment));
         when(paymentRepository.existsByReversalOfPaymentId(280L)).thenReturn(false);
         when(invoiceRepository.findByIdForUpdate(28L)).thenReturn(Optional.of(invoice));
         when(paymentNumberGenerator.generate()).thenReturn("REC-2026-00028-REV");
@@ -603,7 +607,7 @@ class PaymentServiceTest {
         originalPayment.setId(290L);
         originalPayment.setStatus(PaymentStatus.RECORDED);
 
-        when(paymentRepository.findById(290L)).thenReturn(Optional.of(originalPayment));
+        when(paymentRepository.findByIdForUpdate(290L)).thenReturn(Optional.of(originalPayment));
         when(paymentRepository.existsByReversalOfPaymentId(290L)).thenReturn(false);
         when(invoiceRepository.findByIdForUpdate(29L)).thenReturn(Optional.of(invoice));
         when(paymentNumberGenerator.generate()).thenReturn("REC-2026-00029-REV");
@@ -623,7 +627,7 @@ class PaymentServiceTest {
     @Test
     @DisplayName("30. Reversing nonexistent payment throws PaymentNotFoundException")
     void testReverseNonexistentPaymentThrowsNotFound() {
-        when(paymentRepository.findById(999L)).thenReturn(Optional.empty());
+        when(paymentRepository.findByIdForUpdate(999L)).thenReturn(Optional.empty());
 
         assertThatThrownBy(() -> paymentService.reversePayment(999L, "Reason", 1L))
                 .isInstanceOf(PaymentNotFoundException.class)
@@ -678,7 +682,7 @@ class PaymentServiceTest {
         alreadyReversed.setId(350L);
         alreadyReversed.setStatus(PaymentStatus.REVERSED);
 
-        when(paymentRepository.findById(350L)).thenReturn(Optional.of(alreadyReversed));
+        when(paymentRepository.findByIdForUpdate(350L)).thenReturn(Optional.of(alreadyReversed));
 
         assertThatThrownBy(() -> paymentService.reversePayment(350L, "Attempt another reversal", 1L))
                 .isInstanceOf(InvalidPaymentStatusException.class)
@@ -693,7 +697,7 @@ class PaymentServiceTest {
         payment.setId(360L);
         payment.setStatus(PaymentStatus.RECORDED);
 
-        when(paymentRepository.findById(360L)).thenReturn(Optional.of(payment));
+        when(paymentRepository.findByIdForUpdate(360L)).thenReturn(Optional.of(payment));
         when(paymentRepository.existsByReversalOfPaymentId(360L)).thenReturn(true);
 
         assertThatThrownBy(() -> paymentService.reversePayment(360L, "Duplicate attempt", 1L))
@@ -708,7 +712,7 @@ class PaymentServiceTest {
         payment.setId(370L);
         payment.setStatus(PaymentStatus.RECORDED);
 
-        when(paymentRepository.findById(370L)).thenReturn(Optional.of(payment));
+        when(paymentRepository.findByIdForUpdate(370L)).thenReturn(Optional.of(payment));
         when(paymentRepository.existsByReversalOfPaymentId(370L)).thenReturn(false);
 
         assertThatThrownBy(() -> paymentService.reversePayment(370L, "Valid reason", 1L))
@@ -724,7 +728,7 @@ class PaymentServiceTest {
         payment.setId(380L);
         payment.setStatus(PaymentStatus.RECORDED);
 
-        when(paymentRepository.findById(380L)).thenReturn(Optional.of(payment));
+        when(paymentRepository.findByIdForUpdate(380L)).thenReturn(Optional.of(payment));
         when(paymentRepository.existsByReversalOfPaymentId(380L)).thenReturn(false);
         when(invoiceRepository.findByIdForUpdate(38L)).thenReturn(Optional.empty());
 
@@ -742,7 +746,7 @@ class PaymentServiceTest {
         originalPayment.setId(390L);
         originalPayment.setStatus(PaymentStatus.RECORDED);
 
-        when(paymentRepository.findById(390L)).thenReturn(Optional.of(originalPayment));
+        when(paymentRepository.findByIdForUpdate(390L)).thenReturn(Optional.of(originalPayment));
         when(paymentRepository.existsByReversalOfPaymentId(390L)).thenReturn(false);
         when(invoiceRepository.findByIdForUpdate(39L)).thenReturn(Optional.of(invoice));
         when(paymentNumberGenerator.generate()).thenReturn("REC-2026-00039-REV");
@@ -785,7 +789,7 @@ class PaymentServiceTest {
         payment2.setId(402L);
         payment2.setStatus(PaymentStatus.RECORDED);
 
-        when(paymentRepository.findById(402L)).thenReturn(Optional.of(payment2));
+        when(paymentRepository.findByIdForUpdate(402L)).thenReturn(Optional.of(payment2));
         when(paymentRepository.existsByReversalOfPaymentId(402L)).thenReturn(false);
         when(invoiceRepository.findByIdForUpdate(40L)).thenReturn(Optional.of(invoice));
         when(paymentNumberGenerator.generate()).thenReturn("REC-40-REV");
@@ -812,7 +816,7 @@ class PaymentServiceTest {
         payment.setId(410L);
         payment.setStatus(PaymentStatus.RECORDED);
 
-        when(paymentRepository.findById(410L)).thenReturn(Optional.of(payment));
+        when(paymentRepository.findByIdForUpdate(410L)).thenReturn(Optional.of(payment));
         when(paymentRepository.existsByReversalOfPaymentId(410L)).thenReturn(false);
         when(invoiceRepository.findByIdForUpdate(41L)).thenReturn(Optional.of(invoice));
         when(paymentNumberGenerator.generate()).thenReturn("REC-41-REV");
@@ -839,7 +843,7 @@ class PaymentServiceTest {
         payment.setId(420L);
         payment.setStatus(PaymentStatus.RECORDED);
 
-        when(paymentRepository.findById(420L)).thenReturn(Optional.of(payment));
+        when(paymentRepository.findByIdForUpdate(420L)).thenReturn(Optional.of(payment));
         when(paymentRepository.existsByReversalOfPaymentId(420L)).thenReturn(false);
         when(invoiceRepository.findByIdForUpdate(42L)).thenReturn(Optional.of(invoice));
         when(paymentNumberGenerator.generate()).thenReturn("REC-42-REV");
@@ -863,7 +867,7 @@ class PaymentServiceTest {
         payment.setId(430L);
         payment.setStatus(PaymentStatus.RECORDED);
 
-        when(paymentRepository.findById(430L)).thenReturn(Optional.of(payment));
+        when(paymentRepository.findByIdForUpdate(430L)).thenReturn(Optional.of(payment));
         when(paymentRepository.existsByReversalOfPaymentId(430L)).thenReturn(false);
         when(invoiceRepository.findByIdForUpdate(43L)).thenReturn(Optional.of(invoice));
         when(paymentNumberGenerator.generate()).thenReturn("REC-43-REV");
@@ -874,7 +878,10 @@ class PaymentServiceTest {
 
         paymentService.reversePayment(430L, "Lock test", 1L);
 
-        verify(invoiceRepository).findByIdForUpdate(43L);
+        var lockOrder = inOrder(paymentRepository, invoiceRepository);
+        lockOrder.verify(paymentRepository).findByIdForUpdate(430L);
+        lockOrder.verify(paymentRepository).existsByReversalOfPaymentId(430L);
+        lockOrder.verify(invoiceRepository).findByIdForUpdate(43L);
     }
 
     @Test
@@ -885,7 +892,7 @@ class PaymentServiceTest {
         payment.setId(440L);
         payment.setStatus(PaymentStatus.RECORDED);
 
-        when(paymentRepository.findById(440L)).thenReturn(Optional.of(payment));
+        when(paymentRepository.findByIdForUpdate(440L)).thenReturn(Optional.of(payment));
         when(paymentRepository.existsByReversalOfPaymentId(440L)).thenReturn(false);
         when(invoiceRepository.findByIdForUpdate(44L)).thenReturn(Optional.of(invoice));
         when(paymentRepository.save(any(Payment.class))).thenThrow(new RuntimeException("Database write failure"));
@@ -896,7 +903,7 @@ class PaymentServiceTest {
     }
 
     @Test
-    @DisplayName("45. BigDecimal calculations preserve precision during payment reversal")
+    @DisplayName("45. Payment reversal normalizes recalculated invoice amounts to two decimals")
     void testReversePreservesBigDecimalPrecision() {
         BigDecimal total = new BigDecimal("150.333");
         BigDecimal pay1 = new BigDecimal("50.111");
@@ -907,7 +914,7 @@ class PaymentServiceTest {
         payment2.setId(452L);
         payment2.setStatus(PaymentStatus.RECORDED);
 
-        when(paymentRepository.findById(452L)).thenReturn(Optional.of(payment2));
+        when(paymentRepository.findByIdForUpdate(452L)).thenReturn(Optional.of(payment2));
         when(paymentRepository.existsByReversalOfPaymentId(452L)).thenReturn(false);
         when(invoiceRepository.findByIdForUpdate(45L)).thenReturn(Optional.of(invoice));
         when(paymentNumberGenerator.generate()).thenReturn("REC-45-REV");
@@ -919,8 +926,11 @@ class PaymentServiceTest {
 
         PaymentResponse response = paymentService.reversePayment(452L, "Precision test", 1L);
 
-        assertThat(response.amount()).isEqualByComparingTo(pay2);
-        assertThat(invoice.getPaidAmount()).isEqualByComparingTo(pay1);
-        assertThat(invoice.getBalanceAmount()).isEqualByComparingTo(pay2);
+        assertThat(response.amount()).isEqualByComparingTo(new BigDecimal("100.22"));
+        assertThat(response.amount().scale()).isEqualTo(2);
+        assertThat(invoice.getPaidAmount()).isEqualByComparingTo(new BigDecimal("50.11"));
+        assertThat(invoice.getPaidAmount().scale()).isEqualTo(2);
+        assertThat(invoice.getBalanceAmount()).isEqualByComparingTo(new BigDecimal("100.22"));
+        assertThat(invoice.getBalanceAmount().scale()).isEqualTo(2);
     }
 }

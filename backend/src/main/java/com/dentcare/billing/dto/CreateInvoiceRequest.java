@@ -2,6 +2,7 @@ package com.dentcare.billing.dto;
 
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.DecimalMin;
+import jakarta.validation.constraints.Digits;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 
@@ -27,6 +28,7 @@ public class CreateInvoiceRequest {
     private List<InvoiceItemRequest> items = new ArrayList<>();
 
     @DecimalMin(value = "0.00", message = "Discount amount must be non-negative")
+    @Digits(integer = 8, fraction = 2, message = "Discount amount must have at most 8 integer digits and 2 decimal places")
     private BigDecimal discountAmount;
 
     @Size(max = 500, message = "Notes must not exceed 500 characters")

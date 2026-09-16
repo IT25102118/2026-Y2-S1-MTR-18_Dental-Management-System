@@ -69,13 +69,14 @@ public class InvoiceServiceImpl implements InvoiceService {
         if (request.getItems() != null && !request.getItems().isEmpty()) {
             for (InvoiceItemRequest itemReq : request.getItems()) {
                 if (itemReq != null) {
-                    BigDecimal lineTotal = billingCalculationService.calculateLineTotal(itemReq.getQuantity(), itemReq.getUnitPrice());
+                    BigDecimal unitPrice = billingCalculationService.normalizeMoney(itemReq.getUnitPrice());
+                    BigDecimal lineTotal = billingCalculationService.calculateLineTotal(itemReq.getQuantity(), unitPrice);
                     InvoiceItem item = new InvoiceItem(
                             invoice,
                             itemReq.getTreatmentProcedureId(),
                             itemReq.getDescription(),
                             itemReq.getQuantity(),
-                            itemReq.getUnitPrice(),
+                            unitPrice,
                             lineTotal
                     );
                     invoice.addItem(item);
@@ -123,13 +124,14 @@ public class InvoiceServiceImpl implements InvoiceService {
             invoice.getItems().clear();
             for (InvoiceItemRequest itemReq : request.getItems()) {
                 if (itemReq != null) {
-                    BigDecimal lineTotal = billingCalculationService.calculateLineTotal(itemReq.getQuantity(), itemReq.getUnitPrice());
+                    BigDecimal unitPrice = billingCalculationService.normalizeMoney(itemReq.getUnitPrice());
+                    BigDecimal lineTotal = billingCalculationService.calculateLineTotal(itemReq.getQuantity(), unitPrice);
                     InvoiceItem item = new InvoiceItem(
                             invoice,
                             itemReq.getTreatmentProcedureId(),
                             itemReq.getDescription(),
                             itemReq.getQuantity(),
-                            itemReq.getUnitPrice(),
+                            unitPrice,
                             lineTotal
                     );
                     invoice.addItem(item);
@@ -229,11 +231,14 @@ public class InvoiceServiceImpl implements InvoiceService {
             );
         }
 
-        // Reconcile paidAmount and balanceAmount if stale
-        if (invoice.getPaidAmount() == null || invoice.getPaidAmount().compareTo(activePaidAmount) != 0) {
-            invoice.setPaidAmount(activePaidAmount);
-            invoice.setBalanceAmount(invoice.getTotalAmount());
-        }
+        // Reconcile and normalize all financial fields before persisting the terminal state.
+        invoice.setSubtotal(billingCalculationService.normalizeMoney(invoice.getSubtotal()));
+        invoice.setDiscountAmount(billingCalculationService.normalizeMoney(invoice.getDiscountAmount()));
+        invoice.setTotalAmount(billingCalculationService.normalizeMoney(invoice.getTotalAmount()));
+        invoice.setPaidAmount(activePaidAmount);
+        invoice.setBalanceAmount(
+                billingCalculationService.calculateBalance(invoice.getTotalAmount(), activePaidAmount)
+        );
 
         invoice.setStatus(InvoiceStatus.CANCELLED);
 

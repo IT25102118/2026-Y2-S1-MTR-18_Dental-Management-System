@@ -395,7 +395,7 @@ describe('InvoiceListPage (UI-BIL-01)', () => {
     expect(createLink).toHaveAttribute('href', '/billing/invoices/new');
   });
 
-  it('20a. role-aware navigation: ADMINISTRATOR sees Invoices & Billing link on home page', async () => {
+  it('20a. role-aware navigation: ADMINISTRATOR sees Invoices & Billing on the staff dashboard', async () => {
     authApi.getCurrentUser.mockResolvedValueOnce({
       id: 1,
       email: 'admin@dentcare.com',
@@ -410,12 +410,13 @@ describe('InvoiceListPage (UI-BIL-01)', () => {
       </MemoryRouter>
     );
 
-    await waitFor(() => {
-      expect(screen.getByText(/Invoices & Billing/i)).toBeInTheDocument();
-    });
+    expect(await screen.findByRole('link', { name: /open invoices & billing/i })).toHaveAttribute(
+      'href',
+      '/billing/invoices'
+    );
   });
 
-  it('20b. role-aware navigation: RECEPTIONIST sees Invoices & Billing link on home page', async () => {
+  it('20b. role-aware navigation: RECEPTIONIST sees Invoices & Billing on the staff dashboard', async () => {
     authApi.getCurrentUser.mockResolvedValueOnce({
       id: 2,
       email: 'reception@dentcare.com',
@@ -430,9 +431,10 @@ describe('InvoiceListPage (UI-BIL-01)', () => {
       </MemoryRouter>
     );
 
-    await waitFor(() => {
-      expect(screen.getByText(/Invoices & Billing/i)).toBeInTheDocument();
-    });
+    expect(await screen.findByRole('link', { name: /open invoices & billing/i })).toHaveAttribute(
+      'href',
+      '/billing/invoices'
+    );
   });
 
   it('20c. role-aware navigation: PATIENT does NOT see Invoices & Billing link', async () => {

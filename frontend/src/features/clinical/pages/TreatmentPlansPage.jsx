@@ -92,6 +92,8 @@ export default function TreatmentPlansPage() {
     }
   };
 
+  const isDentist = authUser?.role === 'DENTIST';
+
   return (
     <div className="clinical-container" data-testid="treatment-plans-page-placeholder">
       <nav className="clinical-nav" aria-label="Breadcrumb">
@@ -100,7 +102,7 @@ export default function TreatmentPlansPage() {
 
       <div className="clinical-header">
         <h1>Treatment Plans</h1>
-        {patientIdParam && (
+        {isDentist && patientIdParam && (
           <button
             type="button"
             className="btn btn-primary"
