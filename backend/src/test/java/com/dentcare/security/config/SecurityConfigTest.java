@@ -224,4 +224,22 @@ class SecurityConfigTest {
         mockMvc.perform(get("/api/auth/me"))
                 .andExpect(status().isUnauthorized());
     }
+
+    @Test
+    @DisplayName("H2 console is accessible without authentication, ignores CSRF, and allows sameOrigin frames")
+    void testH2ConsoleAccessibleWithoutAuthentication() throws Exception {
+        mockMvc.perform(get("/h2-console"))
+                .andExpect(result -> {
+                    int status = result.getResponse().getStatus();
+                    assertThat(status).isNotIn(401, 403);
+                })
+                .andExpect(org.springframework.test.web.servlet.result.MockMvcResultMatchers.header().string("X-Frame-Options", "SAMEORIGIN"));
+
+        mockMvc.perform(post("/h2-console/test")
+                        .contentType(MediaType.APPLICATION_FORM_URLENCODED))
+                .andExpect(result -> {
+                    int status = result.getResponse().getStatus();
+                    assertThat(status).isNotEqualTo(403);
+                });
+    }
 }
