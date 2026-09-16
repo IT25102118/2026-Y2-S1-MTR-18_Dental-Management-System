@@ -79,7 +79,7 @@ describe('Frontend Runtime Smoke Tests', () => {
       </MemoryRouter>
     );
 
-    expect(await screen.findByRole('heading', { name: /A clear, secure way to access dental care/i, level: 1 })).toBeInTheDocument();
+    expect(await screen.findByRole('heading', { name: /EVERY SMILE.*PRECISION/i, level: 1 })).toBeInTheDocument();
     expect(screen.queryByRole('link', { name: /Inventory Management/i })).not.toBeInTheDocument();
     expect(screen.queryByRole('link', { name: /Clinical Management/i })).not.toBeInTheDocument();
     expect(screen.queryByRole('link', { name: /Invoices & Billing/i })).not.toBeInTheDocument();
@@ -93,21 +93,21 @@ describe('Frontend Runtime Smoke Tests', () => {
     expect(loginLinks[0]).toHaveAttribute('href', '/login');
   });
 
-  it('renders enhanced product capabilities, security architecture, and FAQ sections on the landing page', async () => {
+  it('renders dental philosophy, treatments, technology, and Colombo 07 location on the landing page', async () => {
     render(
       <MemoryRouter initialEntries={['/']}>
         <App />
       </MemoryRouter>
     );
 
-    expect(await screen.findByRole('heading', { name: /Integrated tools built for dental practices/i, level: 2 })).toBeInTheDocument();
-    expect(screen.getByRole('heading', { name: /Access designed around verified roles/i, level: 2 })).toBeInTheDocument();
-    expect(screen.getByRole('heading', { name: /Frequently asked questions/i, level: 2 })).toBeInTheDocument();
+    expect(await screen.findByRole('heading', { name: /DENTISTRY.*ENGINEERED.*AROUND YOU/i, level: 2 })).toBeInTheDocument();
+    expect(screen.getByRole('heading', { name: /PRECISION.*BEGINS WITH.*TECHNOLOGY/i, level: 2 })).toBeInTheDocument();
+    expect(screen.getByRole('heading', { name: /DENTAL CARE.*REIMAGINED/i, level: 2 })).toBeInTheDocument();
 
-    expect(screen.getByText(/Examinations, Tooth Charting & Treatment Plans/i)).toBeInTheDocument();
-    expect(screen.getByText(/Prescription Authoring/i)).toBeInTheDocument();
-    expect(screen.getByText(/Inventory & Batch Tracking/i)).toBeInTheDocument();
-    expect(screen.getByText(/Invoices & Payment Receipts/i)).toBeInTheDocument();
+    expect(screen.getByRole('heading', { name: /General Dentistry/i })).toBeInTheDocument();
+    expect(screen.getByRole('heading', { name: /Dental Implants/i })).toBeInTheDocument();
+    expect(screen.getByRole('heading', { name: /Root Canal Treatment/i })).toBeInTheDocument();
+    expect(screen.getAllByText(/Colombo 07/i).length).toBeGreaterThanOrEqual(1);
 
     // Verify operational module routes remain inaccessible via navigation links
     expect(screen.queryByRole('link', { name: /^Inventory$/i })).not.toBeInTheDocument();

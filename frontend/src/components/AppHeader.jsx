@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Link, NavLink, useNavigate } from 'react-router-dom';
+import { Link, NavLink, useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../features/auth/context/AuthContext';
 import { BILLING_ROLES, isStaffRole } from '../features/auth/roleAccess';
 
@@ -13,6 +13,11 @@ export default function AppHeader() {
   const [isLoggingOut, setIsLoggingOut] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
   const navigate = useNavigate();
+  const location = useLocation();
+
+  if (!isLoading && !isAuthenticated && location.pathname === '/') {
+    return null;
+  }
 
   const handleLogout = async () => {
     setIsLoggingOut(true);
