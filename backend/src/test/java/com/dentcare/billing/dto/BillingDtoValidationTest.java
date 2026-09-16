@@ -197,4 +197,34 @@ class BillingDtoValidationTest {
         updateReq.setDiscountAmount(new BigDecimal("-0.50"));
         assertThat(validator.validate(updateReq)).anyMatch(v -> v.getPropertyPath().toString().equals("discountAmount"));
     }
+
+    @Test
+    @DisplayName("Monetary request fields reject more than two decimal places")
+    void testMonetaryFieldsRejectExcessFractionDigits() {
+        RecordPaymentRequest payment = new RecordPaymentRequest(new BigDecimal("0.999"), PaymentMethod.CASH);
+        InvoiceItemRequest item = new InvoiceItemRequest("Cleaning", 1, new BigDecimal("10.999"));
+        CreateInvoiceRequest create = new CreateInvoiceRequest(1001L, List.of(item));
+        create.setDiscountAmount(new BigDecimal("1.999"));
+        UpdateDraftInvoiceRequest update = new UpdateDraftInvoiceRequest();
+        update.setDiscountAmount(new BigDecimal("2.999"));
+
+        assertThat(validator.validate(payment)).anyMatch(v -> v.getPropertyPath().toString().equals("amount"));
+        assertThat(validator.validate(item)).anyMatch(v -> v.getPropertyPath().toString().equals("unitPrice"));
+        assertThat(validator.validate(create)).anyMatch(v -> v.getPropertyPath().toString().contains("unitPrice"));
+        assertThat(validator.validate(create)).anyMatch(v -> v.getPropertyPath().toString().equals("discountAmount"));
+        assertThat(validator.validate(update)).anyMatch(v -> v.getPropertyPath().toString().equals("discountAmount"));
+    }
+
+    @Test
+    @DisplayName("Monetary request fields accept values matching DECIMAL(10,2)")
+    void testMonetaryFieldsAcceptDatabasePrecision() {
+        RecordPaymentRequest payment = new RecordPaymentRequest(new BigDecimal("99999999.99"), PaymentMethod.CARD);
+        InvoiceItemRequest item = new InvoiceItemRequest("Procedure", 1, new BigDecimal("99999999.99"));
+        CreateInvoiceRequest create = new CreateInvoiceRequest(1001L, List.of(item));
+        create.setDiscountAmount(new BigDecimal("10.50"));
+
+        assertThat(validator.validate(payment)).isEmpty();
+        assertThat(validator.validate(item)).isEmpty();
+        assertThat(validator.validate(create)).isEmpty();
+    }
 }

@@ -507,7 +507,7 @@ class InvoiceServiceTest {
     // -------------------------------------------------------------------------
 
     @Test
-    @DisplayName("25. BigDecimal values preserved numerically without forced scale/rounding")
+    @DisplayName("25. Invoice values are normalized to two decimal places")
     void testPrecisionPreservation() {
         when(invoiceNumberGenerator.generate()).thenReturn("INV-PRECISION");
         when(invoiceRepository.existsByInvoiceNumber(anyString())).thenReturn(false);
@@ -519,11 +519,12 @@ class InvoiceServiceTest {
 
         InvoiceResponse response = invoiceService.createDraft(request);
 
-        assertThat(response.items().get(0).unitPrice()).isEqualByComparingTo(exactPrice);
-        assertThat(response.items().get(0).lineTotal()).isEqualByComparingTo(exactPrice);
-        assertThat(response.subtotal()).isEqualByComparingTo(exactPrice);
-        assertThat(response.totalAmount()).isEqualByComparingTo(exactPrice);
-        assertThat(response.balanceAmount()).isEqualByComparingTo(exactPrice);
+        assertThat(response.items().get(0).unitPrice()).isEqualByComparingTo(new BigDecimal("12.35"));
+        assertThat(response.items().get(0).lineTotal()).isEqualByComparingTo(new BigDecimal("12.35"));
+        assertThat(response.subtotal()).isEqualByComparingTo(new BigDecimal("12.35"));
+        assertThat(response.totalAmount()).isEqualByComparingTo(new BigDecimal("12.35"));
+        assertThat(response.balanceAmount()).isEqualByComparingTo(new BigDecimal("12.35"));
+        assertThat(response.balanceAmount().scale()).isEqualTo(2);
     }
 
     @Test
@@ -839,7 +840,7 @@ class InvoiceServiceTest {
     }
 
     @Test
-    @DisplayName("45. BigDecimal financial fields remain numerically unchanged on cancellation")
+    @DisplayName("45. Cancellation normalizes all financial fields to two decimals")
     void testBigDecimalFinancialFieldsRemainNumericallyUnchanged() {
         BigDecimal total = new BigDecimal("123.456");
         Invoice invoice = createTestInvoice(45L, InvoiceStatus.UNPAID, total, BigDecimal.ZERO, total);
@@ -850,10 +851,13 @@ class InvoiceServiceTest {
 
         InvoiceResponse response = invoiceService.cancelInvoice(45L);
 
-        assertThat(response.subtotal()).isEqualByComparingTo(total);
-        assertThat(response.totalAmount()).isEqualByComparingTo(total);
-        assertThat(response.balanceAmount()).isEqualByComparingTo(total);
-        assertThat(response.paidAmount()).isEqualByComparingTo(BigDecimal.ZERO);
+        assertThat(response.subtotal()).isEqualByComparingTo(new BigDecimal("123.46"));
+        assertThat(response.totalAmount()).isEqualByComparingTo(new BigDecimal("123.46"));
+        assertThat(response.balanceAmount()).isEqualByComparingTo(new BigDecimal("123.46"));
+        assertThat(response.paidAmount()).isEqualByComparingTo(new BigDecimal("0.00"));
+        assertThat(List.of(response.subtotal(), response.discountAmount(), response.totalAmount(),
+                response.paidAmount(), response.balanceAmount()))
+                .allMatch(amount -> amount.scale() == 2);
     }
 
     @Test

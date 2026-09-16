@@ -1,5 +1,22 @@
 .idea/
+.freebuff/
 .env
+.env.local
+.env.*.local
+*.log
+
+# Backend
 backend/target/
+
+# Frontend
 frontend/dist/
 frontend/node_modules/
+frontend/.playwright-cli/
+frontend/output/
+frontend/test-results/
+frontend/playwright-report/
+
+# OS and Editor
+.DS_Store
+Thumbs.db
+.vscode/

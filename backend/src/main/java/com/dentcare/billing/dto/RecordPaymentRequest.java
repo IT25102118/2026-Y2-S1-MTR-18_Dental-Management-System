@@ -2,6 +2,7 @@ package com.dentcare.billing.dto;
 
 import com.dentcare.billing.entity.PaymentMethod;
 import jakarta.validation.constraints.DecimalMin;
+import jakarta.validation.constraints.Digits;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 
@@ -16,6 +17,7 @@ public class RecordPaymentRequest {
 
     @NotNull(message = "Payment amount is required")
     @DecimalMin(value = "0.01", message = "Payment amount must be strictly greater than zero")
+    @Digits(integer = 8, fraction = 2, message = "Payment amount must have at most 8 integer digits and 2 decimal places")
     private BigDecimal amount;
 
     @NotNull(message = "Payment method is required")

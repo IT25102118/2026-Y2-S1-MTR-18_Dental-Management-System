@@ -131,6 +131,7 @@ export default function PrescriptionDetailPage() {
   const isDraft = prescription.status === 'DRAFT';
   const isFinalized = prescription.status === 'FINALIZED';
   const isCancelled = prescription.status === 'CANCELLED';
+  const isDentist = user?.role === 'DENTIST';
 
   return (
     <div className="prescription-container">
@@ -152,7 +153,7 @@ export default function PrescriptionDetailPage() {
         </div>
 
         <div className="table-actions no-print">
-          {isDraft && (
+          {isDentist && isDraft && (
             <>
               <Link to={`/prescriptions/${prescription.id}/edit`} className="btn btn-secondary">
                 Edit Draft
@@ -182,14 +183,16 @@ export default function PrescriptionDetailPage() {
               <button type="button" className="btn btn-primary" onClick={handlePrint}>
                 🖨️ Print / Save PDF
               </button>
-              <button
-                type="button"
-                className="btn btn-danger btn-sm"
-                onClick={() => { setActionError(null); setShowCancelModal(true); }}
-                disabled={actionLoading}
-              >
-                Cancel Prescription
-              </button>
+              {isDentist && (
+                <button
+                  type="button"
+                  className="btn btn-danger btn-sm"
+                  onClick={() => { setActionError(null); setShowCancelModal(true); }}
+                  disabled={actionLoading}
+                >
+                  Cancel Prescription
+                </button>
+              )}
             </>
           )}
 

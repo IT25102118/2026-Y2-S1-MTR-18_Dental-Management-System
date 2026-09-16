@@ -1,6 +1,7 @@
 package com.dentcare.billing.dto;
 
 import jakarta.validation.constraints.DecimalMin;
+import jakarta.validation.constraints.Digits;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
@@ -26,6 +27,7 @@ public class InvoiceItemRequest {
 
     @NotNull(message = "Unit price is required")
     @DecimalMin(value = "0.00", message = "Unit price must be non-negative")
+    @Digits(integer = 8, fraction = 2, message = "Unit price must have at most 8 integer digits and 2 decimal places")
     private BigDecimal unitPrice;
 
     public InvoiceItemRequest() {

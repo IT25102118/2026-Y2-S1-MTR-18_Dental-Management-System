@@ -26,10 +26,8 @@ import java.util.List;
 
 /**
  * Spring Security configuration for DentCare (PR-D1).
- * Configures server-side session management via JSESSIONID, CSRF protection via
- * CookieCsrfTokenRepository,
- * API-safe JSON error entry points, Spring Security logout DSL, and role-based
- * request authorization.
+ * Configures server-side session management via JSESSIONID, CSRF protection via CookieCsrfTokenRepository,
+ * API-safe JSON error entry points, Spring Security logout DSL, and role-based request authorization.
  */
 @Configuration
 @EnableWebSecurity
@@ -59,66 +57,72 @@ public class SecurityConfig {
     public SessionAuthenticationStrategy sessionAuthenticationStrategy(CsrfTokenRepository csrfTokenRepository) {
         return new CompositeSessionAuthenticationStrategy(List.of(
                 new ChangeSessionIdAuthenticationStrategy(),
-                new CsrfAuthenticationStrategy(csrfTokenRepository)));
+                new CsrfAuthenticationStrategy(csrfTokenRepository)
+        ));
     }
 
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http,
-            CsrfTokenRepository csrfTokenRepository,
-            SecurityContextRepository securityContextRepository) throws Exception {
+                                                   CsrfTokenRepository csrfTokenRepository,
+                                                   SecurityContextRepository securityContextRepository) throws Exception {
         CsrfTokenRequestAttributeHandler requestHandler = new CsrfTokenRequestAttributeHandler();
-        // Setting attribute name to null ensures raw unmasked token can be matched from
-        // the X-XSRF-TOKEN header
+        // Setting attribute name to null ensures raw unmasked token can be matched from the X-XSRF-TOKEN header
         requestHandler.setCsrfRequestAttributeName(null);
 
         http
-                .csrf(csrf -> csrf
-                        .csrfTokenRepository(csrfTokenRepository)
-                        .csrfTokenRequestHandler(requestHandler))
-                .cors(Customizer.withDefaults())
-                .sessionManagement(session -> session
-                        .sessionCreationPolicy(SessionCreationPolicy.IF_REQUIRED)
-                        .sessionFixation(fixation -> fixation.changeSessionId()))
-                .securityContext(securityContext -> securityContext
-                        .securityContextRepository(securityContextRepository))
-                .authorizeHttpRequests(auth -> auth
-                        .requestMatchers(HttpMethod.GET, "/api/auth/csrf").permitAll()
-                        .requestMatchers(HttpMethod.POST, "/api/auth/register/patient").permitAll()
-                        .requestMatchers(HttpMethod.POST, "/api/auth/login").permitAll()
-                        .requestMatchers(HttpMethod.GET, "/api/auth/me").authenticated()
-                        .requestMatchers("/api/admin/**").hasRole("ADMINISTRATOR")
-                        .requestMatchers("/api/invoices", "/api/invoices/**")
-                        .hasAnyRole("ADMINISTRATOR", "RECEPTIONIST")
-                        .requestMatchers("/api/payments", "/api/payments/**")
-                        .hasAnyRole("ADMINISTRATOR", "RECEPTIONIST")
-                        .requestMatchers("/api/billing", "/api/billing/**").hasAnyRole("ADMINISTRATOR", "RECEPTIONIST")
-                        .requestMatchers("/api/inventory", "/api/inventory/**")
-                        .hasAnyRole("ADMINISTRATOR", "RECEPTIONIST", "DENTIST", "DENTAL_ASSISTANT")
-                        .requestMatchers("/error").permitAll()
-                        .anyRequest().authenticated())
-                .exceptionHandling(ex -> ex
-                        .authenticationEntryPoint((request, response, authException) -> {
-                            response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
-                            response.setContentType(MediaType.APPLICATION_JSON_VALUE);
-                            response.getWriter().write(
-                                    "{\"status\":401,\"error\":\"Unauthorized\",\"message\":\"Authentication required\"}");
-                        })
-                        .accessDeniedHandler((request, response, accessDeniedException) -> {
-                            response.setStatus(HttpServletResponse.SC_FORBIDDEN);
-                            response.setContentType(MediaType.APPLICATION_JSON_VALUE);
-                            response.getWriter()
-                                    .write("{\"status\":403,\"error\":\"Forbidden\",\"message\":\"Access denied\"}");
-                        }))
-                .logout(logout -> logout
-                        .logoutUrl("/api/auth/logout")
-                        .invalidateHttpSession(true)
-                        .clearAuthentication(true)
-                        .deleteCookies("JSESSIONID")
-                        .logoutSuccessHandler((request, response, authentication) -> {
-                            response.setStatus(HttpServletResponse.SC_OK);
-                            response.setContentType(MediaType.APPLICATION_JSON_VALUE);
-                            response.getWriter().write("{\"message\":\"Successfully logged out\"}");
-                        }));
+            .csrf(csrf -> csrf
+                .csrfTokenRepository(csrfTokenRepository)
+                .csrfTokenRequestHandler(requestHandler)
+            )
+            .cors(Customizer.withDefaults())
+            .sessionManagement(session -> session
+                .sessionCreationPolicy(SessionCreationPolicy.IF_REQUIRED)
+                .sessionFixation(fixation -> fixation.changeSessionId())
+            )
+            .securityContext(securityContext -> securityContext
+                .securityContextRepository(securityContextRepository)
+            )
+            .authorizeHttpRequests(auth -> auth
+                .requestMatchers(HttpMethod.GET, "/api/auth/csrf").permitAll()
+                .requestMatchers(HttpMethod.POST, "/api/auth/register/patient").permitAll()
+                .requestMatchers(HttpMethod.POST, "/api/auth/login").permitAll()
+                .requestMatchers(HttpMethod.GET, "/api/auth/me").authenticated()
+                .requestMatchers("/api/admin/**").hasRole("ADMINISTRATOR")
+                .requestMatchers("/api/invoices", "/api/invoices/**").hasAnyRole("ADMINISTRATOR", "RECEPTIONIST")
+                .requestMatchers("/api/payments", "/api/payments/**").hasAnyRole("ADMINISTRATOR", "RECEPTIONIST")
+                .requestMatchers("/api/billing", "/api/billing/**").hasAnyRole("ADMINISTRATOR", "RECEPTIONIST")
+                .requestMatchers(HttpMethod.GET, "/api/inventory/**", "/api/clinical/**", "/api/prescriptions/**")
+                    .hasAnyRole("ADMINISTRATOR", "RECEPTIONIST", "DENTIST", "DENTAL_ASSISTANT")
+                .requestMatchers("/api/inventory/**")
+                    .hasAnyRole("ADMINISTRATOR", "RECEPTIONIST", "DENTIST", "DENTAL_ASSISTANT")
+                .requestMatchers("/api/clinical/**", "/api/prescriptions/**")
+                    .hasRole("DENTIST")
+                .requestMatchers("/error").permitAll()
+                .anyRequest().authenticated()
+            )
+            .exceptionHandling(ex -> ex
+                .authenticationEntryPoint((request, response, authException) -> {
+                    response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+                    response.setContentType(MediaType.APPLICATION_JSON_VALUE);
+                    response.getWriter().write("{\"status\":401,\"error\":\"Unauthorized\",\"message\":\"Authentication required\"}");
+                })
+                .accessDeniedHandler((request, response, accessDeniedException) -> {
+                    response.setStatus(HttpServletResponse.SC_FORBIDDEN);
+                    response.setContentType(MediaType.APPLICATION_JSON_VALUE);
+                    response.getWriter().write("{\"status\":403,\"error\":\"Forbidden\",\"message\":\"Access denied\"}");
+                })
+            )
+            .logout(logout -> logout
+                .logoutUrl("/api/auth/logout")
+                .invalidateHttpSession(true)
+                .clearAuthentication(true)
+                .deleteCookies("JSESSIONID")
+                .logoutSuccessHandler((request, response, authentication) -> {
+                    response.setStatus(HttpServletResponse.SC_OK);
+                    response.setContentType(MediaType.APPLICATION_JSON_VALUE);
+                    response.getWriter().write("{\"message\":\"Successfully logged out\"}");
+                })
+            );
 
         return http.build();
     }

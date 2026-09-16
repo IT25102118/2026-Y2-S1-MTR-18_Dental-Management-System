@@ -8,6 +8,7 @@ import com.dentcare.billing.exception.OverpaymentException;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.util.List;
 
 /**
@@ -21,6 +22,19 @@ import java.util.List;
  */
 @Service
 public class BillingCalculationService {
+
+    private static final int MONEY_SCALE = 2;
+    private static final RoundingMode MONEY_ROUNDING = RoundingMode.HALF_UP;
+
+    /**
+     * Normalizes a monetary value to the database's authoritative two-decimal scale.
+     */
+    public BigDecimal normalizeMoney(BigDecimal amount) {
+        if (amount == null) {
+            throw new InvalidBillingAmountException("Monetary amount is required");
+        }
+        return amount.setScale(MONEY_SCALE, MONEY_ROUNDING);
+    }
 
     /**
      * Calculates the line total for an itemized invoice entry: quantity * unitPrice.
@@ -38,7 +52,10 @@ public class BillingCalculationService {
             throw new InvalidBillingAmountException("Unit price must be non-negative");
         }
 
-        return BigDecimal.valueOf(quantity).multiply(unitPrice);
+        BigDecimal normalizedUnitPrice = normalizeMoney(unitPrice);
+        return BigDecimal.valueOf(quantity)
+                .multiply(normalizedUnitPrice)
+                .setScale(MONEY_SCALE, MONEY_ROUNDING);
     }
 
     /**
@@ -51,20 +68,20 @@ public class BillingCalculationService {
      */
     public BigDecimal calculateSubtotal(List<InvoiceItem> items) {
         if (items == null || items.isEmpty()) {
-            return BigDecimal.ZERO;
+            return BigDecimal.ZERO.setScale(MONEY_SCALE, MONEY_ROUNDING);
         }
 
-        BigDecimal sum = BigDecimal.ZERO;
+        BigDecimal sum = BigDecimal.ZERO.setScale(MONEY_SCALE, MONEY_ROUNDING);
         for (InvoiceItem item : items) {
             if (item != null) {
                 BigDecimal lineTotal = item.getLineTotal();
                 if (lineTotal == null || lineTotal.compareTo(BigDecimal.ZERO) < 0) {
                     throw new InvalidBillingAmountException("Item line total must be non-negative");
                 }
-                sum = sum.add(lineTotal);
+                sum = sum.add(normalizeMoney(lineTotal));
             }
         }
-        return sum;
+        return sum.setScale(MONEY_SCALE, MONEY_ROUNDING);
     }
 
     /**
@@ -75,17 +92,17 @@ public class BillingCalculationService {
      */
     public BigDecimal calculateSubtotalFromTotals(List<BigDecimal> lineTotals) {
         if (lineTotals == null || lineTotals.isEmpty()) {
-            return BigDecimal.ZERO;
+            return BigDecimal.ZERO.setScale(MONEY_SCALE, MONEY_ROUNDING);
         }
 
-        BigDecimal sum = BigDecimal.ZERO;
+        BigDecimal sum = BigDecimal.ZERO.setScale(MONEY_SCALE, MONEY_ROUNDING);
         for (BigDecimal lt : lineTotals) {
             if (lt == null || lt.compareTo(BigDecimal.ZERO) < 0) {
                 throw new InvalidBillingAmountException("Line total must be non-negative");
             }
-            sum = sum.add(lt);
+            sum = sum.add(normalizeMoney(lt));
         }
-        return sum;
+        return sum.setScale(MONEY_SCALE, MONEY_ROUNDING);
     }
 
     /**
@@ -101,13 +118,16 @@ public class BillingCalculationService {
             throw new InvalidBillingAmountException("Subtotal must be non-negative");
         }
 
-        BigDecimal discount = discountAmount != null ? discountAmount : BigDecimal.ZERO;
+        BigDecimal normalizedSubtotal = normalizeMoney(subtotal);
+        BigDecimal discount = discountAmount != null
+                ? normalizeMoney(discountAmount)
+                : BigDecimal.ZERO.setScale(MONEY_SCALE, MONEY_ROUNDING);
         if (discount.compareTo(BigDecimal.ZERO) < 0) {
             throw new InvalidBillingAmountException("Discount amount cannot be negative");
         }
-        if (discount.compareTo(subtotal) > 0) {
+        if (discount.compareTo(normalizedSubtotal) > 0) {
             throw new InvalidBillingAmountException(
-                    String.format("Discount amount (%s) cannot exceed invoice subtotal (%s)", discount, subtotal)
+                    String.format("Discount amount (%s) cannot exceed invoice subtotal (%s)", discount, normalizedSubtotal)
             );
         }
 
@@ -123,7 +143,7 @@ public class BillingCalculationService {
      */
     public BigDecimal calculateTotal(BigDecimal subtotal, BigDecimal discountAmount) {
         BigDecimal validDiscount = validateDiscount(subtotal, discountAmount);
-        return subtotal.subtract(validDiscount);
+        return normalizeMoney(subtotal).subtract(validDiscount).setScale(MONEY_SCALE, MONEY_ROUNDING);
     }
 
     /**
@@ -135,12 +155,12 @@ public class BillingCalculationService {
      */
     public BigDecimal normalizePaidAmount(BigDecimal rawPaidSum) {
         if (rawPaidSum == null) {
-            return BigDecimal.ZERO;
+            return BigDecimal.ZERO.setScale(MONEY_SCALE, MONEY_ROUNDING);
         }
         if (rawPaidSum.compareTo(BigDecimal.ZERO) < 0) {
             throw new InvalidBillingAmountException("Paid amount cannot be negative");
         }
-        return rawPaidSum;
+        return normalizeMoney(rawPaidSum);
     }
 
     /**
@@ -155,15 +175,16 @@ public class BillingCalculationService {
         if (totalAmount == null || totalAmount.compareTo(BigDecimal.ZERO) < 0) {
             throw new InvalidBillingAmountException("Total amount must be non-negative");
         }
+        BigDecimal normalizedTotal = normalizeMoney(totalAmount);
         BigDecimal normalizedPaid = normalizePaidAmount(paidAmount);
 
-        if (normalizedPaid.compareTo(totalAmount) > 0) {
+        if (normalizedPaid.compareTo(normalizedTotal) > 0) {
             throw new BillingValidationException(
-                    String.format("Paid amount (%s) cannot exceed invoice total amount (%s)", normalizedPaid, totalAmount)
+                    String.format("Paid amount (%s) cannot exceed invoice total amount (%s)", normalizedPaid, normalizedTotal)
             );
         }
 
-        return totalAmount.subtract(normalizedPaid);
+        return normalizedTotal.subtract(normalizedPaid).setScale(MONEY_SCALE, MONEY_ROUNDING);
     }
 
     /**
@@ -210,7 +231,9 @@ public class BillingCalculationService {
         }
 
         BigDecimal subtotal = calculateSubtotal(invoice.getItems());
-        BigDecimal discount = invoice.getDiscountAmount() != null ? invoice.getDiscountAmount() : BigDecimal.ZERO;
+        BigDecimal discount = invoice.getDiscountAmount() != null
+                ? normalizeMoney(invoice.getDiscountAmount())
+                : BigDecimal.ZERO.setScale(MONEY_SCALE, MONEY_ROUNDING);
         BigDecimal total = calculateTotal(subtotal, discount);
         BigDecimal paid = normalizePaidAmount(rawPaidSum);
         BigDecimal balance = calculateBalance(total, paid);

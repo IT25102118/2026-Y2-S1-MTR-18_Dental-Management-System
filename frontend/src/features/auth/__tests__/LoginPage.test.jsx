@@ -54,7 +54,7 @@ describe('LoginPage', () => {
     expect(mockLogin).not.toHaveBeenCalled();
   });
 
-  it('submits credentials and navigates to /account by default on success', async () => {
+  it('submits credentials and navigates staff to /staff/dashboard by default', async () => {
     mockLogin.mockResolvedValueOnce({
       id: 1,
       email: 'admin@dentcare.com',
@@ -65,7 +65,7 @@ describe('LoginPage', () => {
       <MemoryRouter initialEntries={['/login']}>
         <Routes>
           <Route path="/login" element={<LoginPage />} />
-          <Route path="/account" element={<DestinationWatcher />} />
+          <Route path="/staff/dashboard" element={<DestinationWatcher />} />
         </Routes>
       </MemoryRouter>
     );
@@ -84,7 +84,7 @@ describe('LoginPage', () => {
     });
 
     await waitFor(() => {
-      expect(screen.getByTestId('target-location')).toHaveTextContent('/account');
+      expect(screen.getByTestId('target-location')).toHaveTextContent('/staff/dashboard');
     });
   });
 
@@ -124,7 +124,7 @@ describe('LoginPage', () => {
     });
   });
 
-  it('rejects protocol-relative open redirect and safely defaults to /account', async () => {
+  it('rejects protocol-relative open redirect and safely defaults to the patient dashboard', async () => {
     mockLogin.mockResolvedValueOnce({
       id: 3,
       email: 'user@dentcare.com',
@@ -142,7 +142,7 @@ describe('LoginPage', () => {
       >
         <Routes>
           <Route path="/login" element={<LoginPage />} />
-          <Route path="/account" element={<DestinationWatcher />} />
+          <Route path="/patient/dashboard" element={<DestinationWatcher />} />
         </Routes>
       </MemoryRouter>
     );
@@ -156,8 +156,44 @@ describe('LoginPage', () => {
     fireEvent.click(screen.getByTestId('login-submit-button'));
 
     await waitFor(() => {
-      expect(screen.getByTestId('target-location')).toHaveTextContent('/account');
+      expect(screen.getByTestId('target-location')).toHaveTextContent('/patient/dashboard');
     });
+  });
+
+  it('does not honor a staff return target for a PATIENT login', async () => {
+    mockLogin.mockResolvedValueOnce({ id: 4, email: 'patient@dentcare.com', role: 'PATIENT' });
+
+    render(
+      <MemoryRouter initialEntries={[{ pathname: '/login', state: { from: '/clinical/examinations/42' } }]}>
+        <Routes>
+          <Route path="/login" element={<LoginPage />} />
+          <Route path="/patient/dashboard" element={<DestinationWatcher />} />
+        </Routes>
+      </MemoryRouter>
+    );
+
+    fireEvent.change(screen.getByTestId('login-email-input'), {
+      target: { value: 'patient@dentcare.com' }
+    });
+    fireEvent.change(screen.getByTestId('login-password-input'), {
+      target: { value: 'ValidPassword123' }
+    });
+    fireEvent.click(screen.getByTestId('login-submit-button'));
+
+    await waitFor(() => {
+      expect(screen.getByTestId('target-location')).toHaveTextContent('/patient/dashboard');
+    });
+  });
+
+  it('prefills only the registered email supplied through navigation state', () => {
+    render(
+      <MemoryRouter initialEntries={[{ pathname: '/login', state: { prefillEmail: 'new.patient@example.com' } }]}>
+        <LoginPage />
+      </MemoryRouter>
+    );
+
+    expect(screen.getByTestId('login-email-input')).toHaveValue('new.patient@example.com');
+    expect(screen.getByTestId('login-password-input')).toHaveValue('');
   });
 
   it('displays generic error on 401 Unauthorized', async () => {

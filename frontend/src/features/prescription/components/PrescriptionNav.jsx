@@ -1,11 +1,20 @@
 import React from 'react';
 import { Link, useLocation } from 'react-router-dom';
+import { useAuth } from '../../auth/context/AuthContext';
 
 /**
  * Top navigation sub-bar for Prescription Management.
  */
 export default function PrescriptionNav() {
     const location = useLocation();
+    let authUser = null;
+    try {
+        const auth = useAuth();
+        authUser = auth?.user || null;
+    } catch {
+        authUser = null;
+    }
+    const isDentist = authUser?.role === 'DENTIST';
 
     const isList = location.pathname === '/prescriptions';
     const isNew = location.pathname === '/prescriptions/new';
@@ -78,13 +87,15 @@ export default function PrescriptionNav() {
                     All Prescriptions
                 </Link>
 
-                <Link
-                    to="/prescriptions/new"
-                    style={newStyle}
-                    aria-current={isNew ? 'page' : undefined}
-                >
-                    + New Prescription
-                </Link>
+                {isDentist && (
+                    <Link
+                        to="/prescriptions/new"
+                        style={newStyle}
+                        aria-current={isNew ? 'page' : undefined}
+                    >
+                        + New Prescription
+                    </Link>
+                )}
             </div>
         </nav>
     );

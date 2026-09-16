@@ -27,7 +27,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 @WebMvcTest(InventoryBatchController.class)
 @Import(InventoryExceptionHandler.class)
-@WithMockUser(roles = "ADMINISTRATOR")
+@WithMockUser(roles = "DENTAL_ASSISTANT")
 class InventoryBatchControllerTest {
 
     @Autowired

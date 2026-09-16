@@ -321,8 +321,8 @@ class BillingReportServiceTest {
     }
 
     @Test
-    @DisplayName("17. Precision preservation: exact BigDecimal values preserved without scale alteration or rounding")
-    void testPrecisionPreservationBigDecimalExact() {
+    @DisplayName("17. Monetary aggregates are normalized to two decimal places using HALF_UP")
+    void testMonetaryAggregatesNormalizedToTwoDecimals() {
         LocalDate date = LocalDate.of(2026, 9, 15);
         LocalDateTime start = LocalDateTime.of(2026, 9, 15, 0, 0, 0);
         LocalDateTime end = LocalDateTime.of(2026, 9, 16, 0, 0, 0);
@@ -333,8 +333,11 @@ class BillingReportServiceTest {
 
         IncomeSummaryResponse summary = billingReportService.getDailyIncomeSummary(date);
 
-        assertThat(summary.totalIncome()).isEqualTo(preciseAmount);
-        assertThat(summary.breakdownByMethod().get(PaymentMethod.CASH)).isEqualTo(preciseAmount);
+        BigDecimal normalizedAmount = new BigDecimal("1234.57");
+        assertThat(summary.totalIncome()).isEqualTo(normalizedAmount);
+        assertThat(summary.totalIncome().scale()).isEqualTo(2);
+        assertThat(summary.breakdownByMethod().get(PaymentMethod.CASH)).isEqualTo(normalizedAmount);
+        assertThat(summary.breakdownByMethod().get(PaymentMethod.CASH).scale()).isEqualTo(2);
     }
 
     @Test

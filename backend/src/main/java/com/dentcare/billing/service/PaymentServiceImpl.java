@@ -85,8 +85,9 @@ public class PaymentServiceImpl implements PaymentService {
         BigDecimal authoritativePaid = billingCalculationService.normalizePaidAmount(rawRecordedSum);
         BigDecimal currentBalance = billingCalculationService.calculateBalance(invoice.getTotalAmount(), authoritativePaid);
 
-        // Validate payment amount against authoritative remaining balance before persistence
-        billingCalculationService.validatePaymentAmount(request.getAmount(), currentBalance);
+        // Normalize before validation and persistence so lifecycle decisions match DECIMAL(10,2) storage.
+        BigDecimal normalizedPaymentAmount = billingCalculationService.normalizeMoney(request.getAmount());
+        billingCalculationService.validatePaymentAmount(normalizedPaymentAmount, currentBalance);
 
         // Create and persist new payment record
         String paymentNumber = generateUniquePaymentNumber();
@@ -96,7 +97,7 @@ public class PaymentServiceImpl implements PaymentService {
         Payment payment = new Payment(
                 invoice,
                 paymentNumber,
-                request.getAmount(),
+                normalizedPaymentAmount,
                 request.getPaymentMethod(),
                 paymentReference,
                 paidAt,
@@ -106,7 +107,9 @@ public class PaymentServiceImpl implements PaymentService {
         Payment savedPayment = paymentRepository.save(payment);
 
         // Derive new invoice financial state and lifecycle progression
-        BigDecimal newPaidAmount = authoritativePaid.add(request.getAmount());
+        BigDecimal newPaidAmount = billingCalculationService.normalizePaidAmount(
+                authoritativePaid.add(normalizedPaymentAmount)
+        );
         BigDecimal newBalance = billingCalculationService.calculateBalance(invoice.getTotalAmount(), newPaidAmount);
 
         invoice.setPaidAmount(newPaidAmount);
@@ -148,7 +151,9 @@ public class PaymentServiceImpl implements PaymentService {
             throw new BillingValidationException("Reversed by user ID is required");
         }
 
-        Payment originalPayment = paymentRepository.findById(paymentId)
+        // Lock the payment before inspecting its status or reversal link. Concurrent reversal
+        // requests serialize here, so only the first request can observe RECORDED state.
+        Payment originalPayment = paymentRepository.findByIdForUpdate(paymentId)
                 .orElseThrow(() -> new PaymentNotFoundException(paymentId));
 
         if (originalPayment.getStatus() != PaymentStatus.RECORDED) {
@@ -189,7 +194,7 @@ public class PaymentServiceImpl implements PaymentService {
         Payment reversal = new Payment(
                 invoice,
                 reversalNumber,
-                originalPayment.getAmount(),
+                billingCalculationService.normalizeMoney(originalPayment.getAmount()),
                 originalPayment.getPaymentMethod(),
                 originalPayment.getPaymentReference(),
                 reversalTime,

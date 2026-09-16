@@ -565,7 +565,7 @@ export default function TreatmentPlanDetailPage() {
           <div className="detail-card">
             <div className="section-header">
               <h2>Treatment Procedures</h2>
-              {plan.status !== 'COMPLETED' && plan.status !== 'CANCELLED' && (
+              {isDentist && plan.status !== 'COMPLETED' && plan.status !== 'CANCELLED' && (
                 <button
                   type="button"
                   className="btn btn-primary btn-sm"

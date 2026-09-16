@@ -3,7 +3,9 @@ package com.dentcare.billing.repository;
 import com.dentcare.billing.entity.Payment;
 import com.dentcare.billing.entity.PaymentMethod;
 import com.dentcare.billing.entity.PaymentStatus;
+import jakarta.persistence.LockModeType;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Lock;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
@@ -22,6 +24,13 @@ import java.util.Optional;
  */
 @Repository
 public interface PaymentRepository extends JpaRepository<Payment, Long> {
+
+    /**
+     * Retrieves a payment with a pessimistic write lock for controlled reversal.
+     */
+    @Lock(LockModeType.PESSIMISTIC_WRITE)
+    @Query("SELECT p FROM Payment p WHERE p.id = :id")
+    Optional<Payment> findByIdForUpdate(@Param("id") Long id);
 
     /**
      * Finds a payment by its unique business receipt/payment number.

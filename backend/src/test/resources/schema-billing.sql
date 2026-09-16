@@ -64,6 +64,7 @@ CREATE TABLE IF NOT EXISTS payments (
     reversal_reason VARCHAR(255),
     created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
     CONSTRAINT uk_payments_number UNIQUE (payment_number),
+    CONSTRAINT uk_payments_reversal_of_payment UNIQUE (reversal_of_payment_id),
     CONSTRAINT fk_payments_invoice FOREIGN KEY (invoice_id) REFERENCES invoices (id),
     CONSTRAINT chk_payments_amount CHECK (amount > 0.00),
     CONSTRAINT chk_payments_method CHECK (payment_method IN ('CASH', 'CARD', 'BANK_TRANSFER', 'OTHER')),

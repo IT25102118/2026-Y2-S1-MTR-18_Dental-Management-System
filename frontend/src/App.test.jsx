@@ -1,5 +1,5 @@
 import React from 'react';
-import { render, screen, waitFor, within } from '@testing-library/react';
+import { fireEvent, render, screen, waitFor, within } from '@testing-library/react';
 import { MemoryRouter } from 'react-router-dom';
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import App from './App';
@@ -72,17 +72,17 @@ describe('Frontend Runtime Smoke Tests', () => {
     authApi.getCurrentUser.mockResolvedValue(null);
   });
 
-  it('renders root page with application title and navigation links', async () => {
+  it('renders a public landing page without operational module links', async () => {
     render(
       <MemoryRouter initialEntries={['/']}>
         <App />
       </MemoryRouter>
     );
 
-    expect(screen.getByRole('heading', { name: /DentCare/i, level: 1 })).toBeInTheDocument();
-    const inventoryLink = screen.getByRole('link', { name: /Inventory Management/i });
-    expect(inventoryLink).toBeInTheDocument();
-    expect(inventoryLink).toHaveAttribute('href', '/inventory');
+    expect(await screen.findByRole('heading', { name: /A clear, secure way to access dental care/i, level: 1 })).toBeInTheDocument();
+    expect(screen.queryByRole('link', { name: /Inventory Management/i })).not.toBeInTheDocument();
+    expect(screen.queryByRole('link', { name: /Clinical Management/i })).not.toBeInTheDocument();
+    expect(screen.queryByRole('link', { name: /Invoices & Billing/i })).not.toBeInTheDocument();
 
     const registerLinks = screen.getAllByRole('link', { name: /Patient Registration/i });
     expect(registerLinks.length).toBeGreaterThanOrEqual(1);
@@ -93,7 +93,30 @@ describe('Frontend Runtime Smoke Tests', () => {
     expect(loginLinks[0]).toHaveAttribute('href', '/login');
   });
 
-  it('renders root page with My Account link when authenticated', async () => {
+  it('renders enhanced product capabilities, security architecture, and FAQ sections on the landing page', async () => {
+    render(
+      <MemoryRouter initialEntries={['/']}>
+        <App />
+      </MemoryRouter>
+    );
+
+    expect(await screen.findByRole('heading', { name: /Integrated tools built for dental practices/i, level: 2 })).toBeInTheDocument();
+    expect(screen.getByRole('heading', { name: /Access designed around verified roles/i, level: 2 })).toBeInTheDocument();
+    expect(screen.getByRole('heading', { name: /Frequently asked questions/i, level: 2 })).toBeInTheDocument();
+
+    expect(screen.getByText(/Examinations, Tooth Charting & Treatment Plans/i)).toBeInTheDocument();
+    expect(screen.getByText(/Prescription Authoring/i)).toBeInTheDocument();
+    expect(screen.getByText(/Inventory & Batch Tracking/i)).toBeInTheDocument();
+    expect(screen.getByText(/Invoices & Payment Receipts/i)).toBeInTheDocument();
+
+    // Verify operational module routes remain inaccessible via navigation links
+    expect(screen.queryByRole('link', { name: /^Inventory$/i })).not.toBeInTheDocument();
+    expect(screen.queryByRole('link', { name: /^Clinical$/i })).not.toBeInTheDocument();
+    expect(screen.queryByRole('link', { name: /^Prescriptions$/i })).not.toBeInTheDocument();
+    expect(screen.queryByRole('link', { name: /^Billing$/i })).not.toBeInTheDocument();
+  });
+
+  it('redirects an authenticated administrator from root to the staff dashboard', async () => {
     authApi.getCurrentUser.mockResolvedValueOnce({
       id: 1,
       email: 'admin@dentcare.com',
@@ -109,9 +132,10 @@ describe('Frontend Runtime Smoke Tests', () => {
     );
 
     await waitFor(() => {
-      expect(screen.getByRole('link', { name: /My Account \(System\)/i })).toBeInTheDocument();
+      expect(screen.getByTestId('staff-dashboard')).toBeInTheDocument();
     });
 
+    expect(screen.getByRole('heading', { name: /Staff dashboard/i, level: 1 })).toBeInTheDocument();
     const staffLinks = screen.getAllByRole('link', { name: /Staff Management/i });
     expect(staffLinks.length).toBeGreaterThanOrEqual(1);
     expect(staffLinks[0]).toHaveAttribute('href', '/admin/staff');
@@ -313,7 +337,7 @@ describe('Frontend Runtime Smoke Tests', () => {
     expect(await screen.findByRole('heading', { name: /Staff Account Management/i, level: 1 })).toBeInTheDocument();
   });
 
-  it('denies non-administrator access to /admin/staff and redirects to /', async () => {
+  it('denies PATIENT access to /admin/staff and returns the user to the patient dashboard', async () => {
     authApi.getCurrentUser.mockResolvedValueOnce({
       id: 2,
       email: 'patient@dentcare.com',
@@ -328,8 +352,103 @@ describe('Frontend Runtime Smoke Tests', () => {
       </MemoryRouter>
     );
 
-    expect(await screen.findByRole('heading', { name: /DentCare/i, level: 1 })).toBeInTheDocument();
+    expect(await screen.findByTestId('patient-dashboard')).toBeInTheDocument();
+    expect(screen.getByRole('alert')).toHaveTextContent(/reserved for authorized clinic staff/i);
     expect(screen.queryByRole('heading', { name: /Staff Account Management/i, level: 1 })).not.toBeInTheDocument();
+  });
+
+  it('routes a successful PATIENT login to the patient dashboard', async () => {
+    authApi.login.mockResolvedValueOnce({
+      id: 7,
+      email: 'patient@dentcare.com',
+      firstName: 'Nimali',
+      lastName: 'Silva',
+      role: 'PATIENT'
+    });
+
+    render(
+      <MemoryRouter initialEntries={['/login']}>
+        <App />
+      </MemoryRouter>
+    );
+
+    fireEvent.change(await screen.findByTestId('login-email-input'), { target: { value: 'patient@dentcare.com' } });
+    fireEvent.change(screen.getByTestId('login-password-input'), { target: { value: 'Password123' } });
+    fireEvent.click(screen.getByTestId('login-submit-button'));
+
+    expect(await screen.findByTestId('patient-dashboard')).toBeInTheDocument();
+    expect(screen.getByRole('link', { name: /Patient Dashboard/i })).toBeInTheDocument();
+    expect(screen.queryByRole('link', { name: /^Inventory$/i })).not.toBeInTheDocument();
+    expect(screen.queryByRole('link', { name: /^Clinical$/i })).not.toBeInTheDocument();
+  });
+
+  it('routes a successful staff login to the staff dashboard', async () => {
+    authApi.login.mockResolvedValueOnce({
+      id: 8,
+      email: 'assistant@dentcare.com',
+      firstName: 'Kamal',
+      lastName: 'Perera',
+      role: 'DENTAL_ASSISTANT'
+    });
+
+    render(
+      <MemoryRouter initialEntries={['/login']}>
+        <App />
+      </MemoryRouter>
+    );
+
+    fireEvent.change(await screen.findByTestId('login-email-input'), { target: { value: 'assistant@dentcare.com' } });
+    fireEvent.change(screen.getByTestId('login-password-input'), { target: { value: 'Password123' } });
+    fireEvent.click(screen.getByTestId('login-submit-button'));
+
+    expect(await screen.findByTestId('staff-dashboard')).toBeInTheDocument();
+    expect(screen.getByRole('link', { name: /Staff Dashboard/i })).toBeInTheDocument();
+    expect(screen.queryByRole('link', { name: /^Billing$/i })).not.toBeInTheDocument();
+    expect(screen.queryByRole('link', { name: /Staff Management/i })).not.toBeInTheDocument();
+  });
+
+  it.each([
+    ['PATIENT', '/patient/dashboard', 'patient-dashboard'],
+    ['DENTIST', '/staff/dashboard', 'staff-dashboard']
+  ])('redirects authenticated %s users away from login and registration', async (role, destination, testId) => {
+    authApi.getCurrentUser.mockResolvedValue({
+      id: 9,
+      email: `${role.toLowerCase()}@dentcare.com`,
+      firstName: 'Existing',
+      lastName: 'User',
+      role
+    });
+
+    const { unmount } = render(
+      <MemoryRouter initialEntries={['/login']}>
+        <App />
+      </MemoryRouter>
+    );
+    expect(await screen.findByTestId(testId)).toBeInTheDocument();
+    unmount();
+
+    render(
+      <MemoryRouter initialEntries={['/register']}>
+        <App />
+      </MemoryRouter>
+    );
+    expect(await screen.findByTestId(testId)).toBeInTheDocument();
+    expect(destination).toMatch(/^\/(patient|staff)\/dashboard$/);
+  });
+
+  it('does not expose guest controls while authentication hydration is pending', () => {
+    authApi.getCurrentUser.mockReturnValueOnce(new Promise(() => {}));
+
+    render(
+      <MemoryRouter initialEntries={['/']}>
+        <App />
+      </MemoryRouter>
+    );
+
+    expect(screen.getByText(/Checking session/i)).toBeInTheDocument();
+    expect(screen.queryByTestId('header-login-link')).not.toBeInTheDocument();
+    expect(screen.queryByTestId('header-register-link')).not.toBeInTheDocument();
+    expect(screen.queryByTestId('public-landing-page')).not.toBeInTheDocument();
   });
 });
 

@@ -1,6 +1,7 @@
 import React from 'react';
 import { Navigate, useLocation, Outlet } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
+import { getDashboardPath } from '../roleAccess';
 
 /**
  * Route guard component protecting authenticated routes.
@@ -47,7 +48,13 @@ export default function ProtectedRoute({ children, allowedRoles }) {
 
   if (allowedRoles && allowedRoles.length > 0) {
     if (!user || !allowedRoles.includes(user.role)) {
-      return <Navigate to="/" replace />;
+      return (
+        <Navigate
+          to={getDashboardPath(user?.role)}
+          state={{ accessDenied: true }}
+          replace
+        />
+      );
     }
   }
 

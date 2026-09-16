@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { Link } from 'react-router-dom';
 import { getPrescriptions } from '../api/prescriptionApi';
+import { useAuth } from '../../auth/context/AuthContext';
 import PrescriptionStatusBadge from '../components/PrescriptionStatusBadge';
 import PrescriptionNav from '../components/PrescriptionNav';
 import '../prescription.css';
@@ -10,6 +11,15 @@ import '../prescription.css';
  * summary cards, client-side search, filtering, and status badges.
  */
 export default function PrescriptionListPage() {
+  let authUser = null;
+  try {
+    const auth = useAuth();
+    authUser = auth?.user || null;
+  } catch {
+    authUser = null;
+  }
+  const isDentist = authUser?.role === 'DENTIST';
+
   const [prescriptions, setPrescriptions] = useState([]);
 
   const [pageInfo, setPageInfo] = useState({
@@ -172,12 +182,14 @@ export default function PrescriptionListPage() {
                 Get started by creating a new dental prescription for a patient.
               </p>
 
-              <Link
-                  to="/prescriptions/new"
-                  className="btn btn-primary"
-              >
-                + Create First Prescription
-              </Link>
+              {isDentist && (
+                <Link
+                    to="/prescriptions/new"
+                    className="btn btn-primary"
+                >
+                  + Create First Prescription
+                </Link>
+              )}
             </div>
         ) : (
             <>

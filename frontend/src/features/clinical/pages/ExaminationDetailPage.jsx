@@ -338,17 +338,19 @@ export default function ExaminationDetailPage() {
       <div className="detail-card">
         <div className="section-header">
           <h2>Tooth & Oral Findings</h2>
-          <button
-            type="button"
-            className="btn btn-primary btn-sm"
-            onClick={() => {
-              setShowAddFinding((prev) => !prev);
-              setEditingFinding(null);
-              setFindingError('');
-            }}
-          >
-            {showAddFinding ? 'Cancel Finding' : 'Add Tooth Finding'}
-          </button>
+          {isDentist && (
+            <button
+              type="button"
+              className="btn btn-primary btn-sm"
+              onClick={() => {
+                setShowAddFinding((prev) => !prev);
+                setEditingFinding(null);
+                setFindingError('');
+              }}
+            >
+              {showAddFinding ? 'Cancel Finding' : 'Add Tooth Finding'}
+            </button>
+          )}
         </div>
 
         {showAddFinding && (

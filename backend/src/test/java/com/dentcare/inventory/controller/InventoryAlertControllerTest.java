@@ -29,7 +29,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 @WebMvcTest(InventoryAlertController.class)
 @Import(InventoryExceptionHandler.class)
-@WithMockUser(roles = "ADMINISTRATOR")
+@WithMockUser(roles = "DENTAL_ASSISTANT")
 class InventoryAlertControllerTest {
 
     @Autowired
