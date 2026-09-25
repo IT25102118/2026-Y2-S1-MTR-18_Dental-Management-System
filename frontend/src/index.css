@@ -260,6 +260,25 @@ a:focus-visible, button:focus-visible, input:focus-visible, select:focus-visible
   text-decoration: none;
 }
 
+.btn-outline-secondary {
+  background-color: transparent;
+  color: #334155;
+  border: 1px solid #cbd5e1;
+  border-radius: 6px;
+  font-weight: 600;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.15s ease;
+}
+
+.btn-outline-secondary:hover {
+  background-color: #f1f5f9;
+  color: #0f172a;
+  border-color: #94a3b8;
+  text-decoration: none;
+}
+
 .app-header-public .btn-primary {
   color: #ffffff;
   background-color: #1769aa;

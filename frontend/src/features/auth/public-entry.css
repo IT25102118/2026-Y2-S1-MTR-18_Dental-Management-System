@@ -1,19 +1,44 @@
+/* =============================================================================
+   DentCare Public Landing Page Styling (public-entry.css)
+   Scoped to .public-home
+   Luxury Healthcare Architecture: Clinical Teal, Rich Slate & Ambient Lighting
+   ============================================================================= */
+
 .public-home {
-  --public-navy: #102a43;
-  --public-blue: #1769aa;
-  --public-blue-dark: #12578e;
-  --public-teal: #18858b;
-  --public-text: #243b53;
-  --public-muted: #627d98;
-  --public-border: #d9e2ec;
-  --public-soft: #f4f7fa;
+  /* DentCare Clinical Teal & Slate Design System */
+  --public-teal-primary: #0f766e;
+  --public-teal-dark: #115e59;
+  --public-teal-accent: #0d9488;
+  --public-teal-subtle: #f0fdfa;
+  --public-teal-border: #ccfbf1;
+  --public-teal-glow: rgba(15, 118, 110, 0.28);
+
+  --public-navy: #090d16;
+  --public-slate-dark: #0f172a;
+  --public-text: #1e293b;
+  --public-secondary: #334155;
+  --public-muted: #64748b;
+  --public-muted-light: #94a3b8;
+
+  --public-border: rgba(226, 232, 240, 0.9);
+  --public-border-strong: #cbd5e1;
+  --public-border-subtle: #f1f5f9;
+
+  --public-surface: #ffffff;
+  --public-soft: #f8fafc;
+
+  --public-shadow-sm: 0 1px 2px 0 rgba(15, 23, 42, 0.04);
+  --public-shadow-card: 0 2px 8px -2px rgba(15, 23, 42, 0.05), 0 1px 3px -1px rgba(15, 23, 42, 0.03);
+  --public-shadow-card-hover: 0 16px 36px -6px rgba(15, 23, 42, 0.1), 0 6px 12px -2px rgba(15, 23, 42, 0.04);
+
   color: var(--public-text);
-  background: #fff;
-  font-family: Inter, ui-sans-serif, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  background: #ffffff;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  -webkit-font-smoothing: antialiased;
 }
 
 .public-container {
-  width: min(1180px, calc(100% - 48px));
+  width: min(1200px, calc(100% - 48px));
   margin-inline: auto;
 }
 
@@ -26,50 +51,237 @@
 }
 
 /* =============================================================================
-   1. Hero Section
+   1. Hero Section (Elevated Atmosphere with Ambient Lighting & Motion)
    ============================================================================= */
+@keyframes heroEntranceFadeDown {
+  0% {
+    opacity: 0;
+    transform: translateY(-8px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes heroEntranceFadeUp {
+  0% {
+    opacity: 0;
+    transform: translateY(16px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes heroCardEntrance {
+  0% {
+    opacity: 0;
+    transform: translateY(22px) scale(0.985);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+@keyframes ambientAuraBreath {
+  0% {
+    transform: translate(0, 0) scale(1);
+    opacity: 0.45;
+  }
+  50% {
+    transform: translate(-2%, 2%) scale(1.06);
+    opacity: 0.7;
+  }
+  100% {
+    transform: translate(2%, -1%) scale(0.98);
+    opacity: 0.5;
+  }
+}
+
+@keyframes decorDrawLine {
+  to {
+    stroke-dashoffset: 0;
+  }
+}
+
+@keyframes badgeShimmerOnce {
+  0% {
+    background-position: 200% 0;
+  }
+  100% {
+    background-position: -200% 0;
+  }
+}
+
+/* =============================================================================
+   Scroll Reveal Animations
+   ============================================================================= */
+.scroll-reveal {
+  opacity: 0;
+  transform: translateY(22px);
+  transition: opacity 650ms cubic-bezier(0.16, 1, 0.3, 1), transform 650ms cubic-bezier(0.16, 1, 0.3, 1);
+  will-change: opacity, transform;
+}
+
+.scroll-reveal.is-revealed {
+  opacity: 1;
+  transform: translateY(0);
+}
+
 .public-hero {
-  padding: 76px 0 84px;
-  background: #fff;
+  padding: 88px 0 96px;
+  background: #ffffff;
+  background-image: radial-gradient(900px 500px at 30% 0%, rgba(15, 118, 110, 0.06) 0%, transparent 70%);
+  border-bottom: 1px solid var(--public-border-subtle);
+  position: relative;
+  overflow: hidden;
+}
+
+.public-hero::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 3px;
+  background: linear-gradient(90deg, #0f766e 0%, #0d9488 40%, #14b8a6 100%);
+}
+
+.hero-ambient-glow {
+  position: absolute;
+  top: -15%;
+  left: 15%;
+  width: 720px;
+  height: 520px;
+  background: radial-gradient(circle, rgba(15, 118, 110, 0.12) 0%, rgba(13, 148, 136, 0.03) 55%, transparent 75%);
+  filter: blur(48px);
+  pointer-events: none;
+  z-index: 0;
+  animation: ambientAuraBreath 18s ease-in-out infinite alternate;
+}
+
+.hero-decor-canvas {
+  position: absolute;
+  right: -40px;
+  top: -20px;
+  width: 540px;
+  height: 480px;
+  pointer-events: none;
+  z-index: 0;
+  opacity: 0.7;
+}
+
+.hero-decor-line {
+  stroke-dasharray: 600;
+  stroke-dashoffset: 600;
+  animation: decorDrawLine 2.4s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  animation-delay: 250ms;
 }
 
 .public-hero-grid {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) minmax(0, 480px);
-  gap: clamp(48px, 6vw, 96px);
+  grid-template-columns: minmax(0, 1.15fr) minmax(0, 480px);
+  gap: clamp(48px, 6vw, 80px);
   align-items: center;
+  position: relative;
+  z-index: 1;
+}
+
+/* Hero Staggered Entrance Sequence */
+.hero-animate-eyebrow {
+  opacity: 0;
+  animation: heroEntranceFadeDown 480ms cubic-bezier(0.16, 1, 0.3, 1) 120ms forwards;
+}
+
+.hero-animate-title {
+  opacity: 0;
+  animation: heroEntranceFadeUp 520ms cubic-bezier(0.16, 1, 0.3, 1) 200ms forwards;
+}
+
+.hero-animate-lead {
+  opacity: 0;
+  animation: heroEntranceFadeUp 520ms cubic-bezier(0.16, 1, 0.3, 1) 290ms forwards;
+}
+
+.hero-animate-actions {
+  opacity: 0;
+  animation: heroEntranceFadeUp 520ms cubic-bezier(0.16, 1, 0.3, 1) 380ms forwards;
+}
+
+.hero-animate-subactions {
+  opacity: 0;
+  animation: heroEntranceFadeUp 480ms cubic-bezier(0.16, 1, 0.3, 1) 460ms forwards;
+}
+
+.hero-animate-card {
+  opacity: 0;
+  animation: heroCardEntrance 600ms cubic-bezier(0.16, 1, 0.3, 1) 250ms forwards;
+}
+
+.public-intro-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  background: linear-gradient(90deg, #f0fdfa 0%, #f0fdfa 40%, rgba(204, 251, 241, 0.7) 50%, #f0fdfa 60%, #f0fdfa 100%);
+  background-size: 200% 100%;
+  border: 1px solid var(--public-teal-border);
+  color: var(--public-teal-primary);
+  font-size: 0.75rem;
+  font-weight: 750;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  padding: 0.35rem 0.85rem;
+  border-radius: 9999px;
+  margin-bottom: 1.25rem;
+  box-shadow: 0 1px 3px rgba(15, 118, 110, 0.08);
+  animation: badgeShimmerOnce 2.2s cubic-bezier(0.16, 1, 0.3, 1) 600ms 1 normal forwards;
+}
+
+.public-intro-badge .badge-sparkle {
+  color: var(--public-teal-accent);
+  font-size: 0.85rem;
 }
 
 .public-intro {
   margin: 0 0 14px;
-  color: var(--public-blue);
-  font-size: 14px;
-  font-weight: 700;
-  letter-spacing: 0.04em;
+  color: var(--public-teal-primary);
+  font-size: 13.5px;
+  font-weight: 750;
+  letter-spacing: 0.06em;
   text-transform: uppercase;
 }
 
 .public-hero h1 {
   max-width: 640px;
-  margin-bottom: 24px;
-  font-size: clamp(40px, 4.2vw, 60px);
-  font-weight: 750;
+  margin-bottom: 22px;
+  font-size: clamp(40px, 4.4vw, 58px);
+  font-weight: 850;
   line-height: 1.1;
   letter-spacing: -0.035em;
+  color: var(--public-navy);
+}
+
+.hero-gradient-text {
+  background: linear-gradient(135deg, #0f766e 0%, #0d9488 60%, #14b8a6 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
 }
 
 .public-hero-lead {
-  max-width: 580px;
+  max-width: 560px;
   margin: 0;
-  color: var(--public-muted);
-  font-size: 18px;
+  color: var(--public-secondary);
+  font-size: 1.125rem;
   line-height: 1.65;
 }
 
 .public-actions {
   display: flex;
   flex-wrap: wrap;
-  gap: 12px;
+  gap: 14px;
   margin-top: 32px;
 }
 
@@ -79,91 +291,161 @@
   justify-content: center;
   gap: 9px;
   min-height: 48px;
-  padding: 0 22px;
-  border: 1px solid transparent;
-  border-radius: 7px;
+  padding: 0 24px;
+  border-radius: 8px;
   font-size: 15px;
   font-weight: 650;
   text-decoration: none;
-  transition: background-color 160ms ease, border-color 160ms ease, color 160ms ease, box-shadow 160ms ease;
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 .public-button svg,
 .access-link svg {
-  width: 18px;
-  height: 18px;
+  width: 17px;
+  height: 17px;
   fill: none;
   stroke: currentColor;
-  stroke-width: 1.8;
+  stroke-width: 2;
+  transition: transform 0.18s ease;
 }
 
 .public-button-primary {
-  color: #fff;
-  background: var(--public-blue);
+  color: #ffffff;
+  background: linear-gradient(135deg, #0f766e 0%, #0d9488 100%);
+  border: 1px solid #0f766e;
+  box-shadow: 0 4px 14px rgba(15, 118, 110, 0.28);
 }
 
 .public-button-primary:hover {
-  color: #fff;
-  background: var(--public-blue-dark);
+  color: #ffffff;
+  background: linear-gradient(135deg, #115e59 0%, #0f766e 100%);
   text-decoration: none;
-  box-shadow: 0 4px 14px rgba(23, 105, 170, 0.22);
+  transform: translateY(-2px);
+  box-shadow: 0 8px 22px rgba(15, 118, 110, 0.38);
+}
+
+.public-button-primary:hover svg {
+  transform: translateX(3px);
 }
 
 .public-button-secondary {
   color: var(--public-navy);
-  background: #fff;
-  border-color: #b8c7d5;
+  background: #ffffff;
+  border: 1px solid var(--public-border-strong);
+  box-shadow: var(--public-shadow-sm);
 }
 
 .public-button-secondary:hover {
-  color: var(--public-navy);
+  color: var(--public-teal-primary);
   background: var(--public-soft);
-  border-color: #8fa6bb;
+  border-color: var(--public-teal-primary);
   text-decoration: none;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(15, 23, 42, 0.08);
 }
 
 .public-button:focus-visible {
-  outline: 3px solid rgba(23, 105, 170, 0.28);
+  outline: 2px solid var(--public-teal-primary);
   outline-offset: 2px;
 }
 
-.public-staff-note {
-  margin: 14px 0 0;
-  color: #829ab1;
-  font-size: 13px;
+.public-button-staff {
+  color: #0f172a;
+  background: #f8fafc;
+  border-color: #cbd5e1;
 }
 
-/* Hero Architecture Visual */
+.public-button-staff:hover {
+  color: #0f172a;
+  background: #f1f5f9;
+  border-color: #94a3b8;
+  box-shadow: 0 4px 14px rgba(15, 23, 42, 0.12);
+}
+
+.public-staff-note {
+  margin: 0;
+  color: var(--public-muted);
+  font-size: 13px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.hero-subactions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 12px;
+  margin-top: 18px;
+}
+
+.hero-register-link {
+  color: var(--public-teal-primary);
+  font-size: 13.5px;
+  font-weight: 700;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  text-decoration: none;
+  transition: color 150ms ease;
+}
+
+.hero-register-link:hover {
+  color: var(--public-teal-dark);
+  text-decoration: underline;
+}
+
+.hero-subactions-divider {
+  color: var(--public-border-strong);
+  font-weight: bold;
+}
+
+/* =============================================================================
+   Hero Architecture Map (Ultra-Slick Mission Control Card)
+   ============================================================================= */
 .access-map {
-  padding: 26px 28px 22px;
-  color: #d9e8f5;
-  background: var(--public-navy);
-  border-radius: 10px;
-  box-shadow: 0 16px 40px rgba(16, 42, 67, 0.16);
-  border: 1px solid rgba(255, 255, 255, 0.08);
+  padding: 28px;
+  color: #e2e8f0;
+  background: linear-gradient(145deg, #090d16 0%, #0f172a 100%);
+  border-radius: 16px;
+  box-shadow: 0 24px 48px -12px rgba(15, 23, 42, 0.4), 0 0 0 1px rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  position: relative;
+  overflow: hidden;
+}
+
+.access-map::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 2.5px;
+  background: linear-gradient(90deg, #0f766e 0%, #0d9488 50%, #2dd4bf 100%);
 }
 
 .access-map-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding-bottom: 18px;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.14);
+  padding-bottom: 16px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
 }
 
 .access-map-tag {
-  font-size: 13px;
-  font-weight: 700;
-  letter-spacing: 0.03em;
-  color: #cbdbe9;
+  font-size: 12px;
+  font-weight: 750;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: #94a3b8;
 }
 
 .access-map-header svg {
   width: 20px;
   height: 20px;
   fill: none;
-  stroke: #67c3c8;
-  stroke-width: 1.7;
+  stroke: #2dd4bf;
+  stroke-width: 2;
 }
 
 .access-map-signin {
@@ -171,22 +453,25 @@
   align-items: center;
   gap: 14px;
   width: min(100%, 280px);
-  margin: 28px auto 0;
-  padding: 14px 18px;
-  background: rgba(255, 255, 255, 0.08);
-  border: 1px solid rgba(255, 255, 255, 0.2);
-  border-radius: 8px;
+  margin: 24px auto 0;
+  padding: 12px 18px;
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  backdrop-filter: blur(8px);
+  border-radius: 10px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
 }
 
 .access-map-icon {
   display: grid;
   place-items: center;
   flex: 0 0 auto;
-  width: 34px;
-  height: 34px;
-  color: #88d0d4;
-  background: rgba(103, 195, 200, 0.14);
-  border-radius: 6px;
+  width: 36px;
+  height: 36px;
+  color: #2dd4bf;
+  background: rgba(45, 212, 191, 0.15);
+  border: 1px solid rgba(45, 212, 191, 0.3);
+  border-radius: 8px;
 }
 
 .access-map-icon svg {
@@ -194,7 +479,7 @@
   height: 18px;
   fill: none;
   stroke: currentColor;
-  stroke-width: 1.8;
+  stroke-width: 2;
   stroke-linecap: round;
   stroke-linejoin: round;
 }
@@ -205,14 +490,15 @@
 }
 
 .access-map-signin strong {
-  color: #fff;
-  font-size: 14px;
+  color: #ffffff;
+  font-size: 13.5px;
+  font-weight: 700;
 }
 
 .access-map-signin span {
   margin-top: 2px;
-  color: #9fb3c8;
-  font-size: 12px;
+  color: #94a3b8;
+  font-size: 11.5px;
 }
 
 .access-map-tree {
@@ -227,7 +513,7 @@
   left: 50%;
   top: 0;
   height: 16px;
-  border-left: 1.5px solid rgba(136, 208, 212, 0.45);
+  border-left: 2px solid rgba(45, 212, 191, 0.5);
   transform: translateX(-50%);
 }
 
@@ -236,7 +522,7 @@
   left: 0;
   right: 0;
   top: 16px;
-  border-top: 1.5px solid rgba(136, 208, 212, 0.45);
+  border-top: 2px solid rgba(45, 212, 191, 0.5);
 }
 
 .access-map-branches::before,
@@ -245,7 +531,7 @@
   position: absolute;
   top: 0;
   height: 16px;
-  border-left: 1.5px solid rgba(136, 208, 212, 0.45);
+  border-left: 2px solid rgba(45, 212, 191, 0.5);
 }
 
 .access-map-branches::before {
@@ -263,12 +549,19 @@
 }
 
 .access-map-dest-card {
-  padding: 14px;
-  background: rgba(255, 255, 255, 0.05);
-  border: 1px solid rgba(255, 255, 255, 0.15);
-  border-radius: 8px;
+  padding: 16px;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 10px;
   display: flex;
   flex-direction: column;
+  transition: all 0.2s ease;
+}
+
+.access-map-dest-card:hover {
+  background: rgba(255, 255, 255, 0.07);
+  border-color: rgba(45, 212, 191, 0.35);
+  transform: translateY(-2px);
 }
 
 .access-map-dest-header {
@@ -279,8 +572,9 @@
 }
 
 .access-map-dest-header .access-map-icon {
-  width: 28px;
-  height: 28px;
+  width: 30px;
+  height: 30px;
+  border-radius: 6px;
 }
 
 .access-map-dest-header .access-map-icon svg {
@@ -290,57 +584,60 @@
 
 .access-map-role-badge {
   font-size: 11px;
-  font-weight: 700;
+  font-weight: 750;
   letter-spacing: 0.04em;
-  color: #88d0d4;
-  background: rgba(103, 195, 200, 0.15);
-  padding: 2px 7px;
-  border-radius: 4px;
+  color: #2dd4bf;
+  background: rgba(45, 212, 191, 0.15);
+  border: 1px solid rgba(45, 212, 191, 0.3);
+  padding: 2px 8px;
+  border-radius: 9999px;
 }
 
 .access-map-dest-card strong {
-  color: #fff;
+  color: #ffffff;
   font-size: 13.5px;
+  font-weight: 700;
 }
 
 .access-map-dest-card p {
   margin: 6px 0 0;
-  color: #9fb3c8;
+  color: #94a3b8;
   font-size: 11.5px;
-  line-height: 1.45;
+  line-height: 1.5;
 }
 
 .access-map-footer {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 10px;
   margin-top: 20px;
   padding-top: 14px;
-  border-top: 1px solid rgba(255, 255, 255, 0.12);
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
 }
 
 .access-map-dot {
-  width: 6px;
-  height: 6px;
+  width: 7px;
+  height: 7px;
   border-radius: 50%;
-  background: #38b2ac;
+  background: #10b981;
+  box-shadow: 0 0 0 2px rgba(16, 185, 129, 0.3);
   flex-shrink: 0;
 }
 
 .access-map-footer p {
   margin: 0;
-  color: #9fb3c8;
+  color: #94a3b8;
   font-size: 11.5px;
-  line-height: 1.4;
+  line-height: 1.45;
 }
 
 /* =============================================================================
-   2. Real Product Capabilities Section
+   2. Practice Operations / Capabilities Section
    ============================================================================= */
 .public-capabilities {
-  padding: 80px 0 88px;
-  background: #fff;
-  border-top: 1px solid #e5ebf0;
+  padding: 88px 0 96px;
+  background: #fbfcfd;
+  border-top: 1px solid var(--public-border-subtle);
 }
 
 .public-section-heading {
@@ -348,20 +645,22 @@
   grid-template-columns: 1fr 1fr;
   gap: 64px;
   align-items: end;
-  margin-bottom: 44px;
+  margin-bottom: 48px;
 }
 
 .public-section-heading h2 {
   margin-bottom: 0;
   font-size: 34px;
-  line-height: 1.2;
-  letter-spacing: -0.025em;
+  font-weight: 800;
+  line-height: 1.15;
+  letter-spacing: -0.03em;
+  color: var(--public-navy);
 }
 
 .public-section-heading > p {
   margin: 0;
-  color: var(--public-muted);
-  font-size: 16px;
+  color: var(--public-secondary);
+  font-size: 1.05rem;
   line-height: 1.65;
 }
 
@@ -371,40 +670,57 @@
   gap: 24px;
 }
 
+/* Spotlight Card (Clinical Care) */
 .capability-spotlight {
-  background: #f8fafc;
+  background: #ffffff;
   border: 1px solid var(--public-border);
-  border-radius: 10px;
-  padding: 36px 40px;
+  border-radius: 16px;
+  padding: 38px 42px;
   display: grid;
-  grid-template-columns: 1fr 260px;
-  gap: 40px;
+  grid-template-columns: 1fr 280px;
+  gap: 48px;
   align-items: center;
+  box-shadow: var(--public-shadow-card);
+  position: relative;
+  overflow: hidden;
+}
+
+.capability-spotlight::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 3px;
+  background: linear-gradient(90deg, #0f766e 0%, #0d9488 100%);
 }
 
 .capability-tag {
   display: inline-block;
   font-size: 11px;
-  font-weight: 700;
+  font-weight: 750;
   text-transform: uppercase;
   letter-spacing: 0.05em;
-  color: var(--public-blue);
-  background: #eaf3fa;
+  color: var(--public-teal-primary);
+  background: var(--public-teal-subtle);
+  border: 1px solid var(--public-teal-border);
   padding: 3px 9px;
-  border-radius: 4px;
+  border-radius: 9999px;
   margin-bottom: 12px;
 }
 
 .capability-spotlight h3 {
-  font-size: 23px;
-  font-weight: 720;
+  font-size: 24px;
+  font-weight: 750;
   margin-bottom: 12px;
   line-height: 1.25;
+  letter-spacing: -0.02em;
+  color: var(--public-navy);
 }
 
 .capability-spotlight p {
-  margin: 0 0 20px;
-  color: var(--public-muted);
+  margin: 0 0 22px;
+  color: var(--public-secondary);
   font-size: 15px;
   line-height: 1.65;
 }
@@ -415,22 +731,22 @@
   margin: 0;
   display: flex;
   flex-direction: column;
-  gap: 10px;
+  gap: 12px;
 }
 
 .capability-feature-list li {
   display: flex;
   align-items: flex-start;
-  gap: 10px;
+  gap: 11px;
   font-size: 14px;
   color: var(--public-text);
   line-height: 1.45;
 }
 
 .capability-feature-list li svg {
-  width: 16px;
-  height: 16px;
-  color: var(--public-teal);
+  width: 17px;
+  height: 17px;
+  color: #10b981;
   flex-shrink: 0;
   margin-top: 2px;
 }
@@ -439,8 +755,8 @@
   display: flex;
   flex-direction: column;
   gap: 20px;
-  padding-left: 32px;
-  border-left: 1px solid #d9e2ec;
+  padding-left: 36px;
+  border-left: 1px solid var(--public-border);
 }
 
 .capability-meta-item {
@@ -452,48 +768,77 @@
 .capability-meta-label {
   font-size: 11px;
   text-transform: uppercase;
-  letter-spacing: 0.05em;
+  letter-spacing: 0.06em;
   color: var(--public-muted);
   font-weight: 700;
 }
 
 .capability-meta-item strong {
-  font-size: 13.5px;
+  font-size: 14px;
   color: var(--public-navy);
   line-height: 1.4;
+  font-weight: 700;
 }
 
+/* Secondary Capabilities Grid */
 .capability-secondary-grid {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
-  gap: 22px;
+  gap: 24px;
 }
 
 .capability-card {
-  background: #fff;
+  background: #ffffff;
   border: 1px solid var(--public-border);
-  border-radius: 8px;
-  padding: 26px 24px;
+  border-radius: 12px;
+  padding: 28px 24px;
   display: flex;
   flex-direction: column;
   gap: 14px;
-  transition: border-color 160ms ease, box-shadow 160ms ease;
+  box-shadow: var(--public-shadow-card);
+  position: relative;
+  overflow: hidden;
+  transition: all 0.22s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 .capability-card:hover {
-  border-color: #b8c7d5;
-  box-shadow: 0 8px 24px rgba(16, 42, 67, 0.06);
+  transform: translateY(-4px);
+  box-shadow: var(--public-shadow-card-hover);
+  border-color: var(--public-border-strong);
+}
+
+.capability-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 2.5px;
+  background: var(--public-teal-primary);
+  opacity: 0;
+  transition: opacity 0.2s ease;
+}
+
+.capability-card:hover::before {
+  opacity: 1;
 }
 
 .capability-card-icon {
-  width: 42px;
-  height: 42px;
-  border-radius: 8px;
-  background: #eaf3fa;
-  color: var(--public-blue);
+  width: 44px;
+  height: 44px;
+  border-radius: 10px;
+  background: var(--public-teal-subtle);
+  color: var(--public-teal-primary);
+  border: 1px solid var(--public-teal-border);
   display: grid;
   place-items: center;
   flex-shrink: 0;
+  box-shadow: 0 2px 6px rgba(15, 118, 110, 0.08);
+  transition: transform 0.2s ease;
+}
+
+.capability-card:hover .capability-card-icon {
+  transform: scale(1.05);
 }
 
 .capability-card-icon svg {
@@ -502,10 +847,11 @@
 }
 
 .capability-card h3 {
-  font-size: 18px;
-  font-weight: 700;
+  font-size: 18.5px;
+  font-weight: 750;
   margin: 6px 0 8px;
   color: var(--public-navy);
+  letter-spacing: -0.015em;
 }
 
 .capability-card p {
@@ -519,91 +865,250 @@
    3. Patient vs Staff Experience Section
    ============================================================================= */
 .public-access {
-  padding: 80px 0;
+  position: relative;
+  padding: 84px 0 88px;
   background: var(--public-soft);
-  border-block: 1px solid #e5ebf0;
+  border-block: 1px solid var(--public-border);
+  overflow: hidden;
+}
+
+.public-access-bg-ambient {
+  position: absolute;
+  top: 30%;
+  left: 50%;
+  width: 900px;
+  height: 600px;
+  transform: translate(-50%, -50%);
+  background: radial-gradient(circle, rgba(20, 184, 166, 0.045) 0%, rgba(15, 118, 110, 0.015) 45%, transparent 70%);
+  pointer-events: none;
+  z-index: 0;
+  animation: accessAmbientPulse 16s ease-in-out infinite alternate;
+}
+
+@keyframes accessAmbientPulse {
+  0% {
+    transform: translate(-50%, -50%) scale(0.96);
+    opacity: 0.6;
+  }
+  100% {
+    transform: translate(-48%, -48%) scale(1.06);
+    opacity: 1;
+  }
+}
+
+.public-access .public-container {
+  position: relative;
+  z-index: 1;
 }
 
 .public-access-grid {
   display: grid;
-  grid-template-columns: 1fr 1fr;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 28px;
+  align-items: stretch;
 }
 
+/* Base Panel Styling */
 .access-role-card {
-  background: #fff;
+  background: #ffffff;
   border: 1px solid var(--public-border);
-  border-radius: 10px;
-  padding: 34px 36px;
+  border-radius: 16px;
+  padding: 28px 30px 24px;
   display: flex;
   flex-direction: column;
-  transition: border-color 160ms ease, box-shadow 160ms ease;
+  box-shadow: 0 4px 20px -2px rgba(15, 23, 42, 0.04), 0 2px 6px -1px rgba(15, 23, 42, 0.02);
+  position: relative;
+  overflow: hidden;
+  height: 100%;
+  box-sizing: border-box;
+  transition: transform 220ms cubic-bezier(0.16, 1, 0.3, 1),
+              box-shadow 220ms cubic-bezier(0.16, 1, 0.3, 1),
+              border-color 220ms ease;
 }
 
 .access-role-card:hover {
-  border-color: #b8c7d5;
-  box-shadow: 0 8px 24px rgba(16, 42, 67, 0.06);
+  transform: translateY(-3px);
+  box-shadow: 0 16px 36px -6px rgba(15, 23, 42, 0.08), 0 4px 12px -2px rgba(15, 23, 42, 0.03);
 }
 
+/* Staggered entrance via scroll reveal */
+.public-access.scroll-reveal .access-card-patient {
+  opacity: 0;
+  transform: translateY(20px);
+  transition: opacity 600ms cubic-bezier(0.16, 1, 0.3, 1),
+              transform 600ms cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.public-access.scroll-reveal .access-card-staff {
+  opacity: 0;
+  transform: translateY(20px);
+  transition: opacity 600ms cubic-bezier(0.16, 1, 0.3, 1) 100ms,
+              transform 600ms cubic-bezier(0.16, 1, 0.3, 1) 100ms;
+}
+
+.public-access.scroll-reveal.is-revealed .access-card-patient,
+.public-access.scroll-reveal.is-revealed .access-card-staff {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/* Top Accent Bars */
+.access-card-patient::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 3.5px;
+  background: linear-gradient(90deg, #0f766e 0%, #14b8a6 100%);
+}
+
+.access-card-staff::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 3.5px;
+  background: linear-gradient(90deg, #0f172a 0%, #334155 100%);
+}
+
+.access-card-patient:hover {
+  border-color: rgba(15, 118, 110, 0.3);
+}
+
+.access-card-staff:hover {
+  border-color: rgba(30, 41, 59, 0.3);
+}
+
+/* Panel Header */
 .access-role-header {
   display: flex;
   align-items: center;
-  gap: 16px;
-  margin-bottom: 14px;
+  gap: 14px;
+  margin-bottom: 10px;
 }
 
 .access-role-icon {
   width: 44px;
   height: 44px;
-  border-radius: 8px;
-  background: #eaf3fa;
-  color: var(--public-teal);
+  border-radius: 11px;
   display: grid;
   place-items: center;
   flex-shrink: 0;
+  transition: transform 220ms ease;
+}
+
+.access-card-patient .access-role-icon {
+  background: #f0fdfa;
+  color: #0f766e;
+  border: 1px solid #ccfbf1;
+  box-shadow: 0 2px 6px rgba(15, 118, 110, 0.08);
+}
+
+.access-card-staff .access-role-icon {
+  background: #f8fafc;
+  color: #1e293b;
+  border: 1px solid #e2e8f0;
+  box-shadow: 0 2px 6px rgba(15, 23, 42, 0.06);
+}
+
+.access-role-card:hover .access-role-icon {
+  transform: translateY(-1.5px) scale(1.03);
 }
 
 .access-role-icon svg {
-  width: 24px;
-  height: 24px;
+  width: 22px;
+  height: 22px;
   fill: none;
   stroke: currentColor;
-  stroke-width: 1.7;
+  stroke-width: 2;
   stroke-linecap: round;
   stroke-linejoin: round;
 }
 
 .access-role-kicker {
   font-size: 11px;
-  font-weight: 700;
+  font-weight: 750;
   text-transform: uppercase;
   letter-spacing: 0.05em;
-  color: var(--public-blue);
   display: block;
   margin-bottom: 2px;
+}
+
+.access-card-patient .access-role-kicker {
+  color: #0f766e;
+}
+
+.access-card-staff .access-role-kicker {
+  color: #475569;
 }
 
 .access-role-card h3 {
   margin: 0;
   font-size: 21px;
-  font-weight: 720;
+  font-weight: 750;
+  color: var(--public-navy);
+  letter-spacing: -0.02em;
+  line-height: 1.25;
 }
 
-.access-role-card p {
-  margin: 0 0 18px;
-  color: var(--public-muted);
-  font-size: 15px;
-  line-height: 1.6;
+.access-role-desc {
+  margin: 0 0 12px;
+  color: var(--public-secondary);
+  font-size: 14px;
+  line-height: 1.55;
+  min-height: 44px;
 }
 
+/* Media Frame & Imagery */
+.access-panel-media {
+  position: relative;
+  width: 100%;
+  height: 185px;
+  border-radius: 11px;
+  overflow: hidden;
+  margin: 0 0 14px;
+  border: 1px solid rgba(15, 23, 42, 0.08);
+  background: #f1f5f9;
+  flex-shrink: 0;
+}
+
+.access-panel-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center;
+  display: block;
+  transform: scale(1);
+  transition: transform 500ms cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.access-panel-media-overlay {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(180deg, rgba(15, 23, 42, 0) 55%, rgba(15, 23, 42, 0.16) 100%);
+  pointer-events: none;
+  transition: opacity 400ms ease;
+}
+
+.access-role-card:hover .access-panel-img {
+  transform: scale(1.025);
+}
+
+.access-role-card:hover .access-panel-media-overlay {
+  opacity: 0.7;
+}
+
+/* Benefits / Perks List */
 .access-perks {
   list-style: none;
-  padding: 16px 0 0;
-  margin: 0 0 24px;
-  border-top: 1px solid #edf2f7;
+  padding: 12px 0 0;
+  margin: 0 0 16px;
+  border-top: 1px solid var(--public-border-subtle);
   display: flex;
   flex-direction: column;
-  gap: 10px;
+  gap: 9px;
 }
 
 .access-perks li {
@@ -615,64 +1120,200 @@
   line-height: 1.45;
 }
 
-.access-perks li svg {
+.access-card-patient .access-perks li svg {
   width: 15px;
   height: 15px;
-  color: var(--public-teal);
+  color: #0f766e;
   flex-shrink: 0;
   margin-top: 2px;
 }
 
-.access-link {
-  display: inline-flex;
-  align-items: center;
-  gap: 7px;
-  margin-top: auto;
-  color: var(--public-blue);
-  font-size: 14px;
-  font-weight: 650;
-  text-decoration: none;
-  transition: color 160ms ease, transform 160ms ease;
+.access-card-staff .access-perks li svg {
+  width: 15px;
+  height: 15px;
+  color: #334155;
+  flex-shrink: 0;
+  margin-top: 2px;
 }
 
-.access-link:hover {
-  color: var(--public-blue-dark);
+/* Action Area */
+.access-card-actions {
+  margin-top: auto;
+  padding-top: 14px;
+  border-top: 1px solid var(--public-border-subtle);
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.access-card-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  min-height: 42px;
+  padding: 0 20px;
+  border-radius: 9px;
+  font-size: 14.5px;
+  font-weight: 650;
   text-decoration: none;
+  box-sizing: border-box;
+  transition: transform 180ms cubic-bezier(0.16, 1, 0.3, 1),
+              box-shadow 180ms cubic-bezier(0.16, 1, 0.3, 1),
+              background 180ms ease,
+              border-color 180ms ease;
+}
+
+.access-card-btn-patient {
+  color: #ffffff;
+  background: linear-gradient(135deg, #0f766e 0%, #0d9488 100%);
+  border: 1px solid #0f766e;
+  box-shadow: 0 2px 8px rgba(15, 118, 110, 0.2);
+}
+
+.access-card-btn-patient:hover {
+  color: #ffffff;
+  background: linear-gradient(135deg, #115e59 0%, #0f766e 100%);
+  text-decoration: none;
+  transform: translateY(-2px);
+  box-shadow: 0 6px 16px rgba(15, 118, 110, 0.3);
+}
+
+.access-card-btn-staff {
+  color: #ffffff;
+  background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+  border: 1px solid #0f172a;
+  box-shadow: 0 2px 8px rgba(15, 23, 42, 0.16);
+}
+
+.access-card-btn-staff:hover {
+  color: #ffffff;
+  background: linear-gradient(135deg, #1e293b 0%, #334155 100%);
+  text-decoration: none;
+  transform: translateY(-2px);
+  box-shadow: 0 6px 16px rgba(15, 23, 42, 0.25);
+}
+
+/* Strict SVG Sizing & Styling - FIXES OVERSIZED BLACK TRIANGULAR ARROWS */
+.access-card-btn svg,
+.access-card-sublink svg,
+.access-card-note svg,
+.icon-arrow {
+  width: 16px !important;
+  height: 16px !important;
+  max-width: 16px !important;
+  max-height: 16px !important;
+  flex-shrink: 0;
+  fill: none !important;
+  stroke: currentColor !important;
+  stroke-width: 2 !important;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  transition: transform 180ms cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.access-card-btn:hover svg,
+.access-card-btn:hover .icon-arrow {
+  transform: translateX(4px);
+}
+
+.access-subaction-wrap {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 6px;
+  font-size: 13px;
+  min-height: 22px;
+}
+
+.access-subaction-label {
+  color: var(--public-muted);
+}
+
+.access-card-sublink {
+  color: var(--public-teal-primary);
+  font-size: 13px;
+  font-weight: 650;
+  text-decoration: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  transition: color 160ms ease;
+}
+
+.access-card-sublink:hover {
+  color: var(--public-teal-dark);
+  text-decoration: underline;
+}
+
+.access-card-sublink:hover svg,
+.access-card-sublink:hover .icon-arrow {
+  transform: translateX(3px);
+}
+
+.access-card-note {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  font-size: 12px;
+  color: var(--public-muted);
+  line-height: 1.4;
+  min-height: 22px;
+  text-align: center;
+}
+
+.access-card-note svg {
+  width: 14px !important;
+  height: 14px !important;
+  color: #64748b;
+  stroke-width: 1.8 !important;
 }
 
 /* =============================================================================
    4. Security & Trust Architecture Section
    ============================================================================= */
 .public-security {
-  padding: 84px 0 92px;
-  background: #fff;
+  padding: 92px 0 100px;
+  background: #ffffff;
 }
 
 .public-security-grid {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
-  gap: 24px;
+  gap: 26px;
 }
 
 .security-pillar {
-  background: var(--public-soft);
-  border: 1px solid #e2e8f0;
-  border-radius: 8px;
-  padding: 28px 24px;
+  background: #ffffff;
+  border: 1px solid var(--public-border);
+  border-radius: 12px;
+  padding: 32px 26px;
   display: flex;
   flex-direction: column;
+  box-shadow: var(--public-shadow-card);
+  transition: all 0.22s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.security-pillar:hover {
+  transform: translateY(-3px);
+  box-shadow: var(--public-shadow-card-hover);
+  border-color: var(--public-border-strong);
 }
 
 .security-icon-wrap {
-  width: 42px;
-  height: 42px;
-  border-radius: 8px;
-  background: #eaf3fa;
-  color: var(--public-teal);
+  width: 44px;
+  height: 44px;
+  border-radius: 10px;
+  background: var(--public-teal-subtle);
+  color: var(--public-teal-primary);
+  border: 1px solid var(--public-teal-border);
   display: grid;
   place-items: center;
-  margin-bottom: 16px;
+  margin-bottom: 18px;
   flex-shrink: 0;
+  box-shadow: 0 2px 6px rgba(15, 118, 110, 0.08);
 }
 
 .security-icon-wrap svg {
@@ -681,11 +1322,12 @@
 }
 
 .security-pillar h3 {
-  font-size: 17.5px;
-  font-weight: 700;
+  font-size: 18px;
+  font-weight: 750;
   color: var(--public-navy);
   margin-bottom: 10px;
   line-height: 1.3;
+  letter-spacing: -0.015em;
 }
 
 .security-pillar p {
@@ -699,21 +1341,21 @@
    5. Getting Started Workflow Section
    ============================================================================= */
 .public-process {
-  padding: 88px 0;
+  padding: 92px 0;
   background: var(--public-soft);
-  border-block: 1px solid #e5ebf0;
+  border-block: 1px solid var(--public-border);
 }
 
 .public-process-grid {
   display: grid;
   grid-template-columns: 0.72fr 1.28fr;
-  gap: clamp(48px, 8vw, 110px);
+  gap: clamp(48px, 8vw, 100px);
 }
 
 .public-process-grid > div > p {
   margin-top: 14px;
-  color: var(--public-muted);
-  font-size: 16px;
+  color: var(--public-secondary);
+  font-size: 1.05rem;
   line-height: 1.65;
 }
 
@@ -726,75 +1368,142 @@
 
 .public-process li {
   display: grid;
-  grid-template-columns: 38px 1fr;
-  gap: 18px;
-  padding: 24px 0;
+  grid-template-columns: 42px 1fr;
+  gap: 20px;
+  padding: 26px 0;
   border-bottom: 1px solid var(--public-border);
 }
 
 .public-process li > span {
   display: grid;
   place-items: center;
-  width: 30px;
-  height: 30px;
-  color: var(--public-blue);
-  background: #eaf3fa;
+  width: 36px;
+  height: 36px;
+  color: #ffffff;
+  background: linear-gradient(135deg, #0f766e 0%, #0d9488 100%);
   border-radius: 50%;
-  font-size: 13.5px;
-  font-weight: 700;
+  font-size: 14px;
+  font-weight: 800;
+  box-shadow: 0 4px 10px rgba(15, 118, 110, 0.25);
 }
 
 .public-process strong {
   color: var(--public-navy);
-  font-size: 16px;
+  font-size: 16.5px;
+  font-weight: 750;
 }
 
 .public-process li p {
   margin: 6px 0 0;
-  color: var(--public-muted);
-  font-size: 14px;
+  color: var(--public-secondary);
+  font-size: 14.5px;
   line-height: 1.6;
 }
 
 /* =============================================================================
-   6. FAQ Section
+   6. Purposeful FAQ Section (Interactive Accordion)
    ============================================================================= */
 .public-faq {
-  padding: 88px 0 92px;
-  background: #fff;
+  padding: 92px 0 96px;
+  background: #fbfcfd;
+  border-top: 1px solid var(--public-border-subtle);
 }
 
 .public-faq-grid {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: 28px 48px;
+  gap: 20px 36px;
 }
 
 .faq-item {
-  border-top: 1px solid var(--public-border);
-  padding-top: 20px;
+  background: #ffffff;
+  border: 1px solid var(--public-border);
+  border-radius: 12px;
+  box-shadow: var(--public-shadow-card);
+  transition: border-color 0.22s ease, box-shadow 0.22s ease;
+  overflow: hidden;
 }
 
-.faq-item h3 {
-  font-size: 17px;
-  font-weight: 700;
+.faq-item:hover {
+  border-color: var(--public-border-strong);
+  box-shadow: var(--public-shadow-card-hover);
+}
+
+.faq-item.is-open {
+  border-color: rgba(15, 118, 110, 0.4);
+  box-shadow: 0 4px 16px -2px rgba(15, 118, 110, 0.12), var(--public-shadow-card);
+}
+
+.faq-question-btn {
+  width: 100%;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 16px;
+  padding: 22px 24px;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  text-align: left;
+  font-family: inherit;
+  font-size: 16px;
+  font-weight: 750;
   color: var(--public-navy);
-  margin-bottom: 8px;
   line-height: 1.35;
+  letter-spacing: -0.015em;
+  transition: color 0.18s ease, background-color 0.18s ease;
 }
 
-.faq-item p {
-  font-size: 14px;
+.faq-question-btn:focus-visible {
+  outline: 2px solid var(--public-teal-primary);
+  outline-offset: -2px;
+}
+
+.faq-question-btn:hover {
+  color: var(--public-teal-primary);
+  background-color: rgba(240, 253, 250, 0.5);
+}
+
+.faq-chevron {
+  width: 18px;
+  height: 18px;
+  flex-shrink: 0;
   color: var(--public-muted);
-  line-height: 1.6;
+  transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1), color 0.2s ease;
+}
+
+.faq-item.is-open .faq-chevron {
+  transform: rotate(180deg);
+  color: var(--public-teal-primary);
+}
+
+.faq-answer-collapse {
+  display: grid;
+  grid-template-rows: 0fr;
+  transition: grid-template-rows 0.28s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.faq-item.is-open .faq-answer-collapse {
+  grid-template-rows: 1fr;
+}
+
+.faq-answer-content {
+  overflow: hidden;
+}
+
+.faq-answer-content p {
+  padding: 0 24px 22px;
   margin: 0;
+  font-size: 14.5px;
+  color: var(--public-secondary);
+  line-height: 1.65;
 }
 
 /* =============================================================================
-   7. Closing CTA Section
+   7. Closing CTA Section (Executive Dark Glass Card)
    ============================================================================= */
 .public-cta {
-  padding: 0 0 88px;
+  padding: 0 0 96px;
 }
 
 .public-cta-inner {
@@ -802,45 +1511,77 @@
   justify-content: space-between;
   align-items: center;
   gap: 48px;
-  padding: 40px 44px;
-  background: #eaf3fa;
-  border: 1px solid #d4e5f2;
-  border-radius: 9px;
+  padding: 48px 52px;
+  background: linear-gradient(135deg, #090d16 0%, #0f172a 100%);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 20px;
+  color: #ffffff;
+  box-shadow: 0 24px 48px -12px rgba(15, 23, 42, 0.4);
+  position: relative;
+  overflow: hidden;
+}
+
+.public-cta-inner::after {
+  content: '';
+  position: absolute;
+  right: 0;
+  top: 0;
+  bottom: 0;
+  width: 450px;
+  background: radial-gradient(circle at 100% 50%, rgba(15, 118, 110, 0.28) 0%, transparent 70%);
+  pointer-events: none;
 }
 
 .public-cta h2 {
-  font-size: 32px;
+  font-size: 34px;
   line-height: 1.2;
-  letter-spacing: -0.025em;
+  letter-spacing: -0.03em;
   margin-bottom: 8px;
+  color: #ffffff;
+  font-weight: 800;
 }
 
 .public-cta p {
   margin: 0;
-  color: var(--public-muted);
+  color: #94a3b8;
   font-size: 16px;
 }
 
 .public-cta .public-actions {
   flex: 0 0 auto;
   margin-top: 0;
+  position: relative;
+  z-index: 1;
+}
+
+.public-cta .public-button-secondary {
+  background: rgba(255, 255, 255, 0.08);
+  border-color: rgba(255, 255, 255, 0.22);
+  color: #ffffff;
+}
+
+.public-cta .public-button-secondary:hover {
+  background: rgba(255, 255, 255, 0.15);
+  border-color: #ffffff;
+  color: #ffffff;
 }
 
 /* =============================================================================
    Footer
    ============================================================================= */
 .public-footer {
-  color: #bcccdc;
-  background: #0b2034;
+  color: #94a3b8;
+  background: #090d16;
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
 }
 
 .public-footer .public-container {
   display: grid;
   grid-template-columns: auto 1fr auto;
   align-items: center;
-  min-height: 88px;
+  min-height: 90px;
   gap: 30px;
-  font-size: 13px;
+  font-size: 13.5px;
 }
 
 .public-footer-brand-wrap {
@@ -850,20 +1591,21 @@
 }
 
 .public-footer-brand {
-  color: #fff;
-  font-size: 18px;
-  font-weight: 700;
+  color: #ffffff;
+  font-size: 19px;
+  font-weight: 800;
+  letter-spacing: -0.02em;
 }
 
 .public-footer-desc {
-  color: #829ab1;
+  color: #64748b;
   font-size: 13px;
 }
 
 .public-footer-copy {
   margin: 0;
   text-align: center;
-  color: #829ab1;
+  color: #64748b;
 }
 
 .public-footer nav {
@@ -873,14 +1615,15 @@
 }
 
 .public-footer a {
-  color: #d9e8f5;
+  color: #cbd5e1;
   text-decoration: none;
   transition: color 150ms ease;
+  font-weight: 500;
 }
 
 .public-footer a:hover {
-  color: #fff;
-  text-decoration: underline;
+  color: #2dd4bf;
+  text-decoration: none;
 }
 
 /* =============================================================================
@@ -888,7 +1631,7 @@
    ============================================================================= */
 @media (max-width: 1024px) {
   .public-hero {
-    padding-block: 64px 72px;
+    padding-block: 68px 76px;
   }
 
   .public-hero-grid {
@@ -907,7 +1650,7 @@
   .capability-spotlight {
     grid-template-columns: 1fr;
     gap: 28px;
-    padding: 30px;
+    padding: 32px;
   }
 
   .capability-spotlight-meta {
@@ -915,7 +1658,7 @@
     padding-left: 0;
     padding-top: 20px;
     border-left: 0;
-    border-top: 1px solid #d9e2ec;
+    border-top: 1px solid var(--public-border);
     gap: 32px;
   }
 
@@ -946,7 +1689,7 @@
   }
 
   .public-capabilities {
-    padding: 64px 0 72px;
+    padding: 68px 0 76px;
   }
 
   .public-access-grid {
@@ -955,7 +1698,7 @@
   }
 
   .public-security {
-    padding: 64px 0 72px;
+    padding: 68px 0 76px;
   }
 
   .public-security-grid {
@@ -964,18 +1707,19 @@
 
   .public-faq-grid {
     grid-template-columns: 1fr;
-    gap: 20px;
+    gap: 18px;
   }
 
   .public-cta-inner {
     align-items: flex-start;
     flex-direction: column;
-    gap: 24px;
+    gap: 28px;
+    padding: 36px 32px;
   }
 
   .public-footer .public-container {
     grid-template-columns: 1fr auto;
-    padding-block: 20px;
+    padding-block: 22px;
   }
 
   .public-footer-copy {
@@ -985,20 +1729,15 @@
 
 @media (max-width: 560px) {
   .public-container {
-    width: min(100% - 32px, 1180px);
+    width: min(100% - 32px, 1200px);
   }
 
   .public-hero {
-    padding: 44px 0 52px;
+    padding: 48px 0 56px;
   }
 
   .public-hero-grid {
     gap: 36px;
-  }
-
-  .public-intro {
-    margin-bottom: 12px;
-    font-size: 13px;
   }
 
   .public-hero h1 {
@@ -1022,18 +1761,16 @@
     width: 100%;
   }
 
-  /* Mobile Architecture Map */
   .access-map {
     padding: 20px 16px;
-    border-radius: 8px;
+    border-radius: 12px;
     box-sizing: border-box;
   }
 
   .access-map-signin {
     width: 100%;
-    margin-top: 20px;
+    margin-top: 18px;
     padding: 12px 14px;
-    box-sizing: border-box;
   }
 
   .access-map-tree {
@@ -1050,9 +1787,8 @@
     padding: 12px 14px;
   }
 
-  /* Capabilities mobile */
   .capability-spotlight {
-    padding: 22px 18px;
+    padding: 24px 20px;
   }
 
   .capability-spotlight h3 {
@@ -1069,43 +1805,57 @@
   }
 
   .capability-card {
-    padding: 20px 18px;
+    padding: 22px 20px;
   }
 
-  /* Role cards mobile */
   .access-role-card {
-    padding: 24px 20px;
+    padding: 24px 20px 20px;
+  }
+
+  .access-panel-media {
+    height: 165px;
+    margin-bottom: 12px;
   }
 
   .access-role-card h3 {
-    font-size: 19px;
+    font-size: 20px;
+  }
+
+  .access-card-btn {
+    width: 100%;
+  }
+
+  .access-subaction-wrap {
+    flex-direction: column;
+    gap: 3px;
+    text-align: center;
   }
 
   .public-section-heading h2,
   .public-process h2,
   .public-cta h2 {
-    font-size: 26px;
+    font-size: 27px;
   }
 
   .public-process {
-    padding: 56px 0;
+    padding: 60px 0;
   }
 
   .public-process li {
-    grid-template-columns: 30px 1fr;
-    gap: 12px;
+    grid-template-columns: 34px 1fr;
+    gap: 14px;
   }
 
   .public-faq {
-    padding: 56px 0;
+    padding: 60px 0;
   }
 
   .public-cta {
-    padding-bottom: 56px;
+    padding-bottom: 60px;
   }
 
   .public-cta-inner {
-    padding: 24px 20px;
+    padding: 28px 22px;
   }
 
   .public-cta .public-actions {
@@ -1114,7 +1864,7 @@
 
   .public-footer .public-container {
     grid-template-columns: 1fr;
-    padding-block: 22px;
+    padding-block: 24px;
   }
 
   .public-footer nav {
@@ -1125,9 +1875,62 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .public-home * {
-    scroll-behavior: auto !important;
+  .public-home *,
+  .public-home *::before,
+  .public-home *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
     transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+
+  .hero-ambient-glow,
+  .public-access-bg-ambient {
+    animation: none !important;
+    opacity: 0.4 !important;
+    transform: none !important;
+  }
+
+  .hero-decor-line {
+    stroke-dashoffset: 0 !important;
+    animation: none !important;
+  }
+
+  .hero-animate-eyebrow,
+  .hero-animate-title,
+  .hero-animate-lead,
+  .hero-animate-actions,
+  .hero-animate-subactions,
+  .hero-animate-card {
+    opacity: 1 !important;
+    transform: none !important;
+    animation: none !important;
+  }
+
+  .scroll-reveal,
+  .public-access.scroll-reveal .access-card-patient,
+  .public-access.scroll-reveal .access-card-staff {
+    opacity: 1 !important;
+    transform: none !important;
+    transition: none !important;
+  }
+
+  .public-button,
+  .capability-card,
+  .access-role-card,
+  .access-panel-img,
+  .access-panel-media-overlay,
+  .access-role-icon,
+  .access-card-btn,
+  .access-card-btn svg,
+  .access-card-sublink svg,
+  .icon-arrow,
+  .security-pillar {
+    transform: none !important;
+    transition: none !important;
+  }
+
+  .faq-answer-collapse {
+    transition: none !important;
   }
 }
-

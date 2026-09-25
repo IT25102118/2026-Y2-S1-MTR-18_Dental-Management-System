@@ -2,6 +2,7 @@ import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { getItemMovements, reverseStockMovement } from '../api/movementApi';
 import { InventoryApiError } from '../api/inventoryApi';
 import InventoryPagination from './InventoryPagination';
+import { MovementTypeBadge } from './InventoryStatusBadge';
 import { useAuth } from '../../auth/context/AuthContext';
 
 function formatDateTime(isoString) {
@@ -61,6 +62,30 @@ export default function StockMovementHistoryTable({ itemId, onReversalSuccess, r
   const [reversalSubmitting, setReversalSubmitting] = useState(false);
   const [reversalError, setReversalError] = useState(null);
   const [successMessage, setSuccessMessage] = useState(null);
+
+  const reasonInputRef = React.useRef(null);
+  const triggerRef = React.useRef(null);
+
+  useEffect(() => {
+    if (reversalTarget) {
+      setTimeout(() => {
+        reasonInputRef.current?.focus();
+      }, 0);
+
+      const handleKeyDown = (e) => {
+        if (e.key === 'Escape' && !reversalSubmitting) {
+          handleCloseReversal();
+        }
+      };
+      window.addEventListener('keydown', handleKeyDown);
+      return () => {
+        window.removeEventListener('keydown', handleKeyDown);
+      };
+    } else if (triggerRef.current) {
+      triggerRef.current?.focus();
+      triggerRef.current = null;
+    }
+  }, [reversalTarget, reversalSubmitting]);
 
   // Track locally known reversed movements
   const [reversedMovementIds, setReversedMovementIds] = useState(() => new Set());
@@ -269,9 +294,7 @@ export default function StockMovementHistoryTable({ itemId, onReversalSuccess, r
                     <tr key={m.id} data-testid={`movement-row-${m.id}`}>
                       <td style={{ whiteSpace: 'nowrap' }}>{formatDateTime(m.occurredAt)}</td>
                       <td>
-                        <span className={`movement-badge badge-${m.movementType?.toLowerCase()}`}>
-                          {MOVEMENT_TYPE_LABELS[m.movementType] || m.movementType}
-                        </span>
+                        <MovementTypeBadge type={m.movementType} />
                       </td>
                       <td style={{ fontWeight: 600 }}>
                         <span className={isPositive ? 'delta-positive' : isNegative ? 'delta-negative' : ''}>
@@ -341,7 +364,10 @@ export default function StockMovementHistoryTable({ itemId, onReversalSuccess, r
                           <button
                             type="button"
                             className="btn btn-warning btn-sm"
-                            onClick={() => handleOpenReversal(m)}
+                            onClick={(e) => {
+                              triggerRef.current = e.currentTarget;
+                              handleOpenReversal(m);
+                            }}
                             data-testid={`reverse-movement-btn-${m.id}`}
                           >
                             Reverse Movement
@@ -382,7 +408,7 @@ export default function StockMovementHistoryTable({ itemId, onReversalSuccess, r
                 className="modal-close-btn"
                 onClick={handleCloseReversal}
                 disabled={reversalSubmitting}
-                aria-label="Close"
+                aria-label="Close reversal dialog"
               >
                 ×
               </button>
@@ -415,6 +441,14 @@ export default function StockMovementHistoryTable({ itemId, onReversalSuccess, r
                     <strong>Original Reason:</strong> {reversalTarget.reason}
                   </div>
                 )}
+                <div style={{ marginTop: '0.4rem', fontSize: '0.775rem', color: '#475569', lineHeight: 1.4 }}>
+                  <p style={{ margin: '0 0 0.25rem 0' }}>
+                    <strong>Append-Only Ledger:</strong> Dental Management System maintains an append-only ledger. Reversing posts a net-compensating corrective entry without deleting the original record.
+                  </p>
+                  <p style={{ margin: 0, color: '#64748b' }}>
+                    <em>Current inventory balance will be adjusted accordingly. A reversal transaction itself cannot be reversed.</em>
+                  </p>
+                </div>
               </div>
 
               {reversalError && (
@@ -429,6 +463,7 @@ export default function StockMovementHistoryTable({ itemId, onReversalSuccess, r
                 </label>
                 <textarea
                   id="reversal-reason-input"
+                  ref={reasonInputRef}
                   rows="3"
                   className="form-control"
                   value={reversalReason}

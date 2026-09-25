@@ -1,5 +1,6 @@
 import React, { createContext, useContext, useState, useEffect, useCallback, useRef } from 'react';
 import { getCurrentUser, login as apiLogin, logout as apiLogout } from '../api/authApi';
+import { isStaffRole } from '../roleAccess';
 
 const AuthContext = createContext(null);
 
@@ -67,8 +68,26 @@ export function AuthProvider({ children }) {
     return hydrateSession();
   }, [hydrateSession]);
 
-  const login = useCallback(async (credentials) => {
+  const login = useCallback(async (credentials, expectedPortal) => {
     const loggedInUser = await apiLogin(credentials);
+
+    // If logging in through a specific portal, validate role before establishing authenticated state
+    if (expectedPortal === 'patient' && loggedInUser?.role !== 'PATIENT') {
+      try { await apiLogout(); } catch { /* ignore logout failure */ }
+      const portalErr = new Error('Unauthorized portal for this account. Staff accounts must use the Staff Login.');
+      portalErr.status = 403;
+      portalErr.isPortalMismatch = true;
+      throw portalErr;
+    }
+
+    if (expectedPortal === 'staff' && !isStaffRole(loggedInUser?.role)) {
+      try { await apiLogout(); } catch { /* ignore logout failure */ }
+      const portalErr = new Error('Unauthorized portal for this account. Patient accounts must use the Patient Login.');
+      portalErr.status = 403;
+      portalErr.isPortalMismatch = true;
+      throw portalErr;
+    }
+
     // Only after successful server authentication: advance generation
     // to invalidate any prior in-flight hydration requests.
     ++authOperationIdRef.current;

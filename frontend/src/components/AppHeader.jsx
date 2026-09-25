@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Link, NavLink, useNavigate, useLocation } from 'react-router-dom';
+import { Link, NavLink, useNavigate } from 'react-router-dom';
 import { useAuth } from '../features/auth/context/AuthContext';
 import { BILLING_ROLES, isStaffRole } from '../features/auth/roleAccess';
 
@@ -13,11 +13,6 @@ export default function AppHeader() {
   const [isLoggingOut, setIsLoggingOut] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
   const navigate = useNavigate();
-  const location = useLocation();
-
-  if (!isLoading && !isAuthenticated && location.pathname === '/') {
-    return null;
-  }
 
   const handleLogout = async () => {
     setIsLoggingOut(true);
@@ -180,10 +175,13 @@ export default function AppHeader() {
             </div>
           ) : (
             <div className="auth-action-buttons">
-              <Link to="/login" className="btn btn-sm btn-outline-primary" data-testid="header-login-link">
-                Sign In
+              <Link to="/patient/login" className="btn btn-sm btn-primary header-patient-login-btn" data-testid="header-patient-login-link" id="header-patient-login">
+                Patient Login
               </Link>
-              <Link to="/register" className="btn btn-sm btn-primary" data-testid="header-register-link">
+              <Link to="/staff/login" className="btn btn-sm btn-outline-secondary header-staff-login-btn" data-testid="header-staff-login-link" id="header-staff-login">
+                Staff Login
+              </Link>
+              <Link to="/register" className="btn btn-sm btn-outline-primary header-register-btn" data-testid="header-register-link">
                 <span className="header-register-label-full">Patient Registration</span>
                 <span className="header-register-label-short">Register</span>
               </Link>

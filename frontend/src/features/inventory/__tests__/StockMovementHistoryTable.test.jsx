@@ -283,6 +283,8 @@ describe('StockMovementHistoryTable', () => {
       expect(screen.getByRole('heading', { name: /confirm movement reversal/i })).toBeInTheDocument();
       expect(within(modal).getByText(/Target Movement:/i)).toBeInTheDocument();
       expect(within(modal).getByText(/#1/i)).toBeInTheDocument();
+      expect(within(modal).getByText(/maintains an append-only ledger/i)).toBeInTheDocument();
+      expect(within(modal).getByText(/compensating inventory transaction/i)).toBeInTheDocument();
 
       // Check confirm button is initially disabled because reason is empty
       const confirmBtn = screen.getByTestId('confirm-reversal-button');
@@ -417,5 +419,47 @@ describe('StockMovementHistoryTable', () => {
       // Modal remains open
       expect(screen.getByTestId('reversal-modal')).toBeInTheDocument();
     });
+
+    it('handles pagination navigation when multiple pages of movements exist', async () => {
+      movementApi.getItemMovements.mockResolvedValueOnce({
+        content: sampleMovements,
+        number: 0,
+        size: 20,
+        totalPages: 3,
+        totalElements: 55,
+        first: true,
+        last: false,
+        empty: false
+      });
+
+      render(<StockMovementHistoryTable itemId={42} />);
+
+      await waitFor(() => {
+        expect(screen.getByRole('table')).toBeInTheDocument();
+      });
+
+      const nextBtn = screen.getByRole('button', { name: /next/i });
+      expect(nextBtn).not.toBeDisabled();
+
+      movementApi.getItemMovements.mockResolvedValueOnce({
+        content: [sampleMovements[0]],
+        number: 1,
+        size: 20,
+        totalPages: 3,
+        totalElements: 55,
+        first: false,
+        last: false,
+        empty: false
+      });
+
+      fireEvent.click(nextBtn);
+
+      await waitFor(() => {
+        expect(movementApi.getItemMovements).toHaveBeenCalledWith(42, expect.objectContaining({
+          page: 1
+        }));
+      });
+    });
   });
 });
+

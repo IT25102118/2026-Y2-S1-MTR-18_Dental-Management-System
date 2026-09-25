@@ -280,4 +280,182 @@ describe('InventoryItemsPage', () => {
       expect(screen.getByText('ITM-001')).toBeInTheDocument();
     });
   });
+
+  it('renders InventoryPageHeader with title, subtitle, and Register New Item link', async () => {
+    inventoryApi.getItems.mockResolvedValueOnce({
+      content: sampleItems,
+      number: 0,
+      size: 20,
+      totalPages: 1,
+      totalElements: 3,
+      first: true,
+      last: true,
+      empty: false
+    });
+
+    render(
+      <MemoryRouter>
+        <InventoryItemsPage />
+      </MemoryRouter>
+    );
+
+    await waitFor(() => {
+      expect(screen.getByTestId('inventory-page-header')).toBeInTheDocument();
+    });
+
+    expect(screen.getByRole('heading', { level: 1, name: /inventory items/i })).toBeInTheDocument();
+    expect(
+      screen.getByText(/manage clinical supplies, stock levels, reorder thresholds, and catalog metadata/i)
+    ).toBeInTheDocument();
+    const registerBtn = screen.getByTestId('register-item-btn');
+    expect(registerBtn).toHaveAttribute('href', '/inventory/items/new');
+  });
+
+  it('displays active filter chip and allows removing it to refresh catalog', async () => {
+    inventoryApi.getItems.mockResolvedValue({
+      content: [sampleItems[0]],
+      number: 0,
+      size: 20,
+      totalPages: 1,
+      totalElements: 1,
+      first: true,
+      last: true,
+      empty: false
+    });
+
+    render(
+      <MemoryRouter>
+        <InventoryItemsPage />
+      </MemoryRouter>
+    );
+
+    await waitFor(() => {
+      expect(screen.getByText('ITM-001')).toBeInTheDocument();
+    });
+
+    // Apply text search
+    fireEvent.change(screen.getByLabelText(/search/i), { target: { value: 'mirror' } });
+    fireEvent.click(screen.getByRole('button', { name: /^search$/i }));
+
+    await waitFor(() => {
+      expect(screen.getByTestId('active-filters-bar')).toBeInTheDocument();
+      expect(screen.getByText('Search: "mirror"')).toBeInTheDocument();
+    });
+
+    // Remove the search filter via chip remove button
+    const removeChipBtn = screen.getByRole('button', { name: /remove search filter/i });
+    fireEvent.click(removeChipBtn);
+
+    await waitFor(() => {
+      expect(inventoryApi.getItems).toHaveBeenLastCalledWith(
+        expect.objectContaining({ search: '', page: 0 })
+      );
+    });
+  });
+
+  it('renders filtered empty state with Clear Filters button when search returns no results', async () => {
+    // Initial fetch returns sampleItems
+    inventoryApi.getItems
+      .mockResolvedValueOnce({
+        content: sampleItems,
+        number: 0,
+        size: 20,
+        totalPages: 1,
+        totalElements: 3,
+        first: true,
+        last: true,
+        empty: false
+      })
+      // Filter fetch returns empty
+      .mockResolvedValueOnce({
+        content: [],
+        number: 0,
+        size: 20,
+        totalPages: 0,
+        totalElements: 0,
+        first: true,
+        last: true,
+        empty: true
+      })
+      // Reset fetch returns sampleItems
+      .mockResolvedValueOnce({
+        content: sampleItems,
+        number: 0,
+        size: 20,
+        totalPages: 1,
+        totalElements: 3,
+        first: true,
+        last: true,
+        empty: false
+      });
+
+    render(
+      <MemoryRouter>
+        <InventoryItemsPage />
+      </MemoryRouter>
+    );
+
+    await waitFor(() => {
+      expect(screen.getByText('ITM-001')).toBeInTheDocument();
+    });
+
+    // Search for non-existent item
+    fireEvent.change(screen.getByLabelText(/search/i), { target: { value: 'nonexistent' } });
+    fireEvent.click(screen.getByRole('button', { name: /^search$/i }));
+
+    await waitFor(() => {
+      expect(screen.getByRole('heading', { level: 3, name: /no matching inventory items/i })).toBeInTheDocument();
+      expect(screen.getByText(/no inventory items match your search or filter criteria/i)).toBeInTheDocument();
+    });
+
+    // Click Clear Filters
+    const clearBtn = screen.getByRole('button', { name: /clear filters/i });
+    fireEvent.click(clearBtn);
+
+    await waitFor(() => {
+      expect(screen.getByText('Dental Mirror #4')).toBeInTheDocument();
+    });
+  });
+
+  it('formats item code with inv-mono, quantities with num-cell, and inactive rows with row-inactive', async () => {
+    inventoryApi.getItems.mockResolvedValueOnce({
+      content: sampleItems,
+      number: 0,
+      size: 20,
+      totalPages: 1,
+      totalElements: 3,
+      first: true,
+      last: true,
+      empty: false
+    });
+
+    render(
+      <MemoryRouter>
+        <InventoryItemsPage />
+      </MemoryRouter>
+    );
+
+    await waitFor(() => {
+      expect(screen.getByText('ITM-001')).toBeInTheDocument();
+    });
+
+    // Item code link has inv-mono class
+    const codeLink = screen.getByText('ITM-001');
+    expect(codeLink).toHaveClass('inv-mono');
+
+    // Table has num-cell on quantity cells
+    const qtyCells = document.querySelectorAll('.num-cell');
+    expect(qtyCells.length).toBeGreaterThan(0);
+
+    // Inactive item row (ITM-003, active: false) has row-inactive class
+    const inactiveName = screen.getByText('Old Composite Syringe');
+    const inactiveRow = inactiveName.closest('tr');
+    expect(inactiveRow).toHaveClass('row-inactive');
+
+    // Active item row (ITM-001, active: true) does not have row-inactive class
+    const activeName = screen.getByText('Dental Mirror #4');
+    const activeRow = activeName.closest('tr');
+    expect(activeRow).not.toHaveClass('row-inactive');
+  });
 });
+

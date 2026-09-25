@@ -1,555 +1,934 @@
 /* =============================================================================
-   DentCare Staff Dashboard Styling (Production Healthcare SaaS Experience)
-   Scoped to .staff-dashboard-root to prevent styles leaking or affecting
-   the patient dashboard or other public entry components.
+   DentCare Staff Dashboard Styling
+   Scoped to .staff-dashboard-root
+   Luxury Healthcare Operations Console: Polished, High-Density & Task-Oriented
    ============================================================================= */
 
 :root {
-  --sd-bg: #f8fafc;
+  /* DentCare Clinical Teal Palette */
+  --sd-brand-primary: #0f766e;
+  --sd-brand-dark: #115e59;
+  --sd-brand-accent: #0d9488;
+  --sd-brand-subtle: #f0fdfa;
+  --sd-brand-border: #ccfbf1;
+  --sd-brand-glow: rgba(15, 118, 110, 0.12);
+
+  /* Surfaces & Canvas */
+  --sd-bg-gradient: radial-gradient(1200px circle at 15% 0%, rgba(15, 118, 110, 0.04) 0%, rgba(248, 250, 252, 1) 65%);
   --sd-surface: #ffffff;
-  --sd-surface-subtle: #f1f5f9;
+  --sd-surface-subtle: #f8fafc;
+  --sd-surface-accent: #f1f5f9;
+
+  /* Typography Hierarchy */
+  --sd-ink-hero: #090d16;
   --sd-ink: #0f172a;
   --sd-ink-secondary: #334155;
   --sd-muted: #64748b;
-  --sd-border: #e2e8f0;
-  --sd-border-subtle: #edf2f7;
-  --sd-border-hover: #cbd5e1;
-  --sd-brand: #0284c7;
-  --sd-brand-hover: #0369a1;
-  --sd-brand-light: #f0f9ff;
-  --sd-brand-border: #bae6fd;
-  --sd-radius-sm: 8px;
-  --sd-radius-md: 12px;
-  --sd-radius-lg: 16px;
-  --sd-shadow-sm: 0 1px 2px 0 rgba(15, 23, 42, 0.05);
-  --sd-shadow-card: 0 1px 3px 0 rgba(15, 23, 42, 0.06), 0 1px 2px -1px rgba(15, 23, 42, 0.06);
-  --sd-shadow-hover: 0 10px 25px -5px rgba(15, 23, 42, 0.08), 0 8px 10px -6px rgba(15, 23, 42, 0.04);
+  --sd-muted-light: #94a3b8;
+
+  /* Borders & Dividers */
+  --sd-border: rgba(226, 232, 240, 0.9);
+  --sd-border-strong: #cbd5e1;
+  --sd-border-subtle: #f1f5f9;
+
+  /* Semantic Feedback Tokens */
+  --sd-success: #10b981;
+  --sd-success-text: #047857;
+  --sd-success-bg: #ecfdf5;
+  --sd-success-border: #a7f3d0;
+
+  --sd-danger: #dc2626;
+  --sd-danger-bg: #fef2f2;
+  --sd-danger-border: #fecaca;
+
+  /* Controlled Geometric Radii */
+  --sd-radius-xs: 4px;
+  --sd-radius-sm: 6px;
+  --sd-radius-md: 10px;
+  --sd-radius-lg: 12px;
+  --sd-radius-pill: 9999px;
+
+  /* Multi-layered Soft Shadows */
+  --sd-shadow-sm: 0 1px 2px 0 rgba(15, 23, 42, 0.04);
+  --sd-shadow-card: 0 1px 3px 0 rgba(15, 23, 42, 0.04), 0 1px 2px -1px rgba(15, 23, 42, 0.03);
+  --sd-shadow-card-hover: 0 12px 28px -6px rgba(15, 23, 42, 0.08), 0 4px 10px -2px rgba(15, 23, 42, 0.03);
 }
 
 .staff-dashboard-root {
   max-width: 1240px;
   margin: 0 auto;
-  padding: 1.5rem 1.25rem 3.5rem;
+  padding: 1.25rem 1.25rem 3.5rem;
   width: 100%;
+  min-height: calc(100vh - 64px);
+  background: var(--sd-bg-gradient);
 }
 
 /* =============================================================================
-   Header & Operational Context Bar
+   ZONE 1: Compact Page Header (Premium Frosted Executive Surface)
    ============================================================================= */
-.staff-dashboard-header {
-  background-color: var(--sd-surface);
-  border: 1px solid var(--sd-border);
-  border-radius: var(--sd-radius-lg);
-  box-shadow: var(--sd-shadow-card);
-  padding: 1.75rem 2rem;
-  margin-bottom: 1.5rem;
-}
-
-.staff-dashboard-top-bar {
+.staff-page-header {
   display: flex;
   align-items: center;
   justify-content: space-between;
   flex-wrap: wrap;
   gap: 1rem;
-  padding-bottom: 1.25rem;
-  border-bottom: 1px solid var(--sd-border-subtle);
-  margin-bottom: 1.25rem;
+  background: #ffffff;
+  border: 1px solid var(--sd-border);
+  border-radius: var(--sd-radius-lg);
+  padding: 1.15rem 1.35rem;
+  box-shadow: var(--sd-shadow-card);
+  margin-bottom: 1rem;
+  position: relative;
+  overflow: hidden;
 }
 
-.staff-station-status {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.5rem;
-  font-size: 0.8125rem;
-  font-weight: 500;
-  color: var(--sd-muted);
+.staff-page-header::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 3px;
+  background: linear-gradient(90deg, #0f766e 0%, #0d9488 40%, #14b8a6 100%);
 }
 
-.staff-status-indicator {
-  display: inline-block;
-  width: 8px;
-  height: 8px;
-  border-radius: 50%;
-  background-color: #10b981;
-  box-shadow: 0 0 0 2px rgba(16, 185, 129, 0.2);
-}
-
-.staff-station-date {
-  font-size: 0.8125rem;
-  font-weight: 500;
-  color: var(--sd-muted);
-}
-
-.staff-header-content {
-  display: flex;
-  align-items: flex-start;
-  justify-content: space-between;
-  flex-wrap: wrap;
-  gap: 1.5rem;
-}
-
-.staff-user-identity {
+.staff-header-identity {
   display: flex;
   align-items: center;
-  gap: 1.25rem;
+  gap: 0.875rem;
 }
 
 .staff-avatar-chip {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 52px;
-  height: 52px;
-  border-radius: var(--sd-radius-md);
-  background: linear-gradient(135deg, #0284c7 0%, #0369a1 100%);
+  width: 44px;
+  height: 44px;
+  border-radius: 10px;
+  background: linear-gradient(135deg, #0f766e 0%, #134e4a 100%);
   color: #ffffff;
-  font-size: 1.125rem;
-  font-weight: 700;
+  font-size: 1.05rem;
+  font-weight: 800;
   letter-spacing: -0.02em;
-  box-shadow: 0 2px 8px rgba(2, 132, 199, 0.25);
+  box-shadow: 0 4px 12px rgba(15, 118, 110, 0.25);
+  border: 2px solid #ffffff;
   flex-shrink: 0;
 }
 
-.staff-title-group h1 {
-  margin: 0;
-  font-size: 1.75rem;
-  font-weight: 800;
-  color: var(--sd-ink);
-  letter-spacing: -0.025em;
-  line-height: 1.2;
+.staff-header-titles {
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
 }
 
-.staff-title-group p {
-  margin: 0.35rem 0 0;
-  font-size: 0.9375rem;
-  color: var(--sd-muted);
-  line-height: 1.5;
+.staff-header-eyebrow {
+  font-size: 0.6875rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: #0f766e;
+  line-height: 1;
+  margin-bottom: 0.15rem;
 }
 
-.staff-header-actions {
+.staff-title-row {
   display: flex;
   align-items: center;
-  gap: 0.75rem;
+  gap: 0.625rem;
   flex-wrap: wrap;
 }
 
-/* Role Badges */
+.staff-title-row h1 {
+  margin: 0;
+  font-size: 1.4rem;
+  font-weight: 800;
+  color: var(--sd-ink-hero);
+  letter-spacing: -0.03em;
+  line-height: 1.2;
+}
+
+.staff-station-status-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-size: 0.6875rem;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  color: var(--sd-success-text);
+  background: var(--sd-success-bg);
+  border: 1px solid var(--sd-success-border);
+  border-radius: var(--sd-radius-pill);
+  padding: 0.15rem 0.55rem;
+  box-shadow: 0 1px 2px rgba(16, 185, 129, 0.1);
+}
+
+.staff-status-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background-color: var(--sd-success);
+  box-shadow: 0 0 0 2px rgba(16, 185, 129, 0.25);
+  animation: staffPulse 2.5s infinite;
+}
+
+@keyframes staffPulse {
+  0% {
+    box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.45);
+  }
+  70% {
+    box-shadow: 0 0 0 6px rgba(16, 185, 129, 0);
+  }
+  100% {
+    box-shadow: 0 0 0 0 rgba(16, 185, 129, 0);
+  }
+}
+
+.staff-header-subtitle {
+  margin: 0.15rem 0 0;
+  font-size: 0.8125rem;
+  color: var(--sd-ink-secondary);
+  line-height: 1.45;
+}
+
+.staff-header-subtitle strong {
+  color: var(--sd-ink-hero);
+  font-weight: 700;
+}
+
+.staff-header-controls {
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+  flex-wrap: wrap;
+}
+
 .staff-role-badge {
   display: inline-flex;
   align-items: center;
-  gap: 0.375rem;
-  padding: 0.375rem 0.875rem;
-  border-radius: 9999px;
+  gap: 0.45rem;
+  padding: 0.4rem 0.85rem;
+  border-radius: var(--sd-radius-pill);
   font-size: 0.75rem;
-  font-weight: 700;
-  letter-spacing: 0.04em;
+  font-weight: 750;
+  letter-spacing: 0.05em;
   text-transform: uppercase;
+  background-color: var(--sd-surface-subtle);
+  color: var(--sd-ink);
+  border: 1px solid var(--sd-border-strong);
+  box-shadow: var(--sd-shadow-sm);
 }
 
-.staff-role-badge.role-admin {
-  background-color: #f0fdf4;
-  color: #15803d;
-  border: 1px solid #bbf7d0;
+.role-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background-color: var(--sd-brand-primary);
 }
 
-.staff-role-badge.role-dentist {
-  background-color: #e0f2fe;
-  color: #0369a1;
-  border: 1px solid #bae6fd;
-}
-
-.staff-role-badge.role-receptionist {
-  background-color: #fefce8;
-  color: #854d0e;
-  border: 1px solid #fde68a;
-}
-
-.staff-role-badge.role-assistant {
-  background-color: #f5f3ff;
-  color: #6d28d9;
-  border: 1px solid #ddd6fe;
-}
-
-/* Header Account Link */
 .staff-account-btn {
   display: inline-flex;
   align-items: center;
-  gap: 0.5rem;
-  padding: 0.5rem 1rem;
+  gap: 0.45rem;
+  padding: 0.42rem 0.9rem;
   background-color: #ffffff;
   color: var(--sd-ink-secondary);
-  border: 1px solid var(--sd-border);
+  border: 1px solid var(--sd-border-strong);
   border-radius: var(--sd-radius-sm);
-  font-size: 0.875rem;
-  font-weight: 600;
+  font-size: 0.8125rem;
+  font-weight: 650;
   text-decoration: none;
-  transition: all 0.15s ease-in-out;
+  box-shadow: var(--sd-shadow-sm);
+  transition: all 0.18s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 .staff-account-btn:hover {
   background-color: var(--sd-surface-subtle);
-  border-color: var(--sd-border-hover);
-  color: var(--sd-ink);
+  border-color: var(--sd-brand-primary);
+  color: var(--sd-brand-primary);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 10px rgba(15, 23, 42, 0.06);
   text-decoration: none;
 }
 
 .staff-account-btn:focus-visible {
-  outline: 2px solid var(--sd-brand);
+  outline: 2px solid var(--sd-brand-primary);
   outline-offset: 2px;
 }
 
 /* =============================================================================
-   Operational Context / Role Guidance Banner
-   ============================================================================= */
-.staff-guidance-banner {
-  display: flex;
-  align-items: center;
-  gap: 1rem;
-  background-color: #f8fafc;
-  border: 1px solid #e2e8f0;
-  border-left: 4px solid var(--sd-brand);
-  border-radius: var(--sd-radius-sm);
-  padding: 0.875rem 1.25rem;
-  margin-bottom: 2rem;
-  font-size: 0.875rem;
-  color: var(--sd-ink-secondary);
-  line-height: 1.5;
-}
-
-.staff-guidance-icon {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: 28px;
-  height: 28px;
-  border-radius: 50%;
-  background-color: var(--sd-brand-light);
-  color: var(--sd-brand);
-  flex-shrink: 0;
-}
-
-.staff-guidance-text {
-  margin: 0;
-}
-
-.staff-guidance-text strong {
-  color: var(--sd-ink);
-}
-
-/* =============================================================================
-   Alerts & Notifications
+   Security / Access Notice
    ============================================================================= */
 .staff-dashboard-notice {
   display: flex;
   align-items: center;
   gap: 0.75rem;
-  background-color: #fef2f2;
-  border: 1px solid #fecaca;
-  border-left: 4px solid #ef4444;
+  background-color: var(--sd-danger-bg);
+  border: 1px solid var(--sd-danger-border);
+  border-left: 4px solid var(--sd-danger);
   color: #991b1b;
   border-radius: var(--sd-radius-sm);
-  padding: 1rem 1.25rem;
-  margin-bottom: 1.5rem;
-  font-size: 0.875rem;
-  font-weight: 500;
+  padding: 0.75rem 1rem;
+  margin-bottom: 1rem;
+  box-shadow: var(--sd-shadow-sm);
+}
+
+.staff-notice-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  color: var(--sd-danger);
+}
+
+.staff-notice-text {
+  font-size: 0.8125rem;
+  line-height: 1.45;
 }
 
 /* =============================================================================
-   Section Header
+   ZONE 2: Compact Operational Overview Strip (Executive Telemetry Bar)
    ============================================================================= */
-.staff-section-header {
+.staff-overview-bar {
   display: flex;
   align-items: center;
   justify-content: space-between;
+  background-color: var(--sd-surface);
+  border: 1px solid var(--sd-border);
+  border-radius: var(--sd-radius-md);
+  padding: 0.65rem 1.25rem;
   margin-bottom: 1.25rem;
+  box-shadow: var(--sd-shadow-card);
+  gap: 1.25rem;
+  flex-wrap: wrap;
 }
 
-.staff-section-header-left {
-  display: flex;
-  align-items: baseline;
-  gap: 0.75rem;
+.staff-overview-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.8125rem;
+  color: var(--sd-ink-secondary);
 }
 
-.staff-section-header h2 {
-  margin: 0;
-  font-size: 1.25rem;
-  font-weight: 700;
-  color: var(--sd-ink);
-  letter-spacing: -0.015em;
+.staff-overview-item svg {
+  color: var(--sd-brand-primary);
+  flex-shrink: 0;
 }
 
-.staff-module-counter {
-  font-size: 0.75rem;
+.staff-overview-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background-color: var(--sd-success);
+}
+
+.staff-overview-label {
   font-weight: 600;
   color: var(--sd-muted);
-  background-color: var(--sd-surface-subtle);
-  border: 1px solid var(--sd-border);
-  border-radius: 9999px;
-  padding: 0.125rem 0.5rem;
+  font-size: 0.75rem;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+}
+
+.staff-overview-val {
+  font-weight: 700;
+  color: var(--sd-ink-hero);
+  letter-spacing: -0.01em;
+}
+
+.staff-overview-divider {
+  width: 1px;
+  height: 18px;
+  background-color: var(--sd-border);
 }
 
 /* =============================================================================
-   Practice Module Cards Grid
+   ZONE 3: Main Workspace (2-Column Task Architecture)
    ============================================================================= */
+.staff-workspace-layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 310px;
+  gap: 1.25rem;
+  align-items: start;
+}
+
+/* Primary Working Area */
+.staff-tools-primary {
+  min-width: 0;
+}
+
+.staff-tools-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  margin-bottom: 0.875rem;
+}
+
+.staff-tools-header-text {
+  display: flex;
+  align-items: center;
+  gap: 0.625rem;
+}
+
+.staff-tools-header-text h2 {
+  margin: 0;
+  font-size: 1.1875rem;
+  font-weight: 750;
+  color: var(--sd-ink-hero);
+  letter-spacing: -0.02em;
+}
+
+.staff-module-counter {
+  font-size: 0.6875rem;
+  font-weight: 700;
+  color: var(--sd-brand-primary);
+  background-color: var(--sd-brand-subtle);
+  border: 1px solid var(--sd-brand-border);
+  border-radius: var(--sd-radius-pill);
+  padding: 0.15rem 0.55rem;
+}
+
+.staff-search-box {
+  position: relative;
+  display: flex;
+  align-items: center;
+  width: 230px;
+}
+
+.staff-search-icon {
+  position: absolute;
+  left: 0.75rem;
+  color: var(--sd-muted-light);
+  pointer-events: none;
+}
+
+.staff-search-input {
+  width: 100%;
+  padding: 0.42rem 1.85rem 0.42rem 2.15rem;
+  background-color: #ffffff;
+  border: 1px solid var(--sd-border-strong);
+  border-radius: var(--sd-radius-sm);
+  font-size: 0.8125rem;
+  color: var(--sd-ink);
+  box-shadow: var(--sd-shadow-sm);
+  transition: all 0.16s ease;
+}
+
+.staff-search-input:focus {
+  outline: none;
+  border-color: var(--sd-brand-primary);
+  box-shadow: 0 0 0 3px rgba(15, 118, 110, 0.15);
+}
+
+.staff-search-clear {
+  position: absolute;
+  right: 0.5rem;
+  background: none;
+  border: none;
+  color: var(--sd-muted-light);
+  font-size: 1.15rem;
+  line-height: 1;
+  padding: 0.15rem;
+  cursor: pointer;
+  border-radius: 50%;
+  transition: color 0.15s ease;
+}
+
+.staff-search-clear:hover {
+  color: var(--sd-ink);
+}
+
+/* Practice Tools Cards Grid (2-Column Elevated Tiles) */
 .staff-cards-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
-  gap: 1.25rem;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 1.1rem;
 }
 
 .staff-module-card {
   display: flex;
   flex-direction: column;
-  background-color: var(--sd-surface);
+  background-color: #ffffff;
   border: 1px solid var(--sd-border);
   border-radius: var(--sd-radius-lg);
   box-shadow: var(--sd-shadow-card);
-  padding: 1.5rem;
-  transition: transform 0.18s ease, box-shadow 0.18s ease, border-color 0.18s ease;
+  padding: 1.25rem;
   position: relative;
+  overflow: hidden;
+  transition: transform 0.22s cubic-bezier(0.16, 1, 0.3, 1),
+              box-shadow 0.22s cubic-bezier(0.16, 1, 0.3, 1),
+              border-color 0.22s ease;
+}
+
+.staff-module-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 2.5px;
+  background: var(--sd-brand-primary);
+  opacity: 0.85;
+  transition: height 0.18s ease, opacity 0.18s ease;
 }
 
 .staff-module-card:hover {
-  transform: translateY(-2px);
-  box-shadow: var(--sd-shadow-hover);
-  border-color: var(--sd-border-hover);
+  transform: translateY(-3px);
+  box-shadow: var(--sd-shadow-card-hover);
+  border-color: var(--sd-border-strong);
+}
+
+.staff-module-card:hover::before {
+  height: 3.5px;
+  opacity: 1;
 }
 
 .staff-module-card:focus-within {
-  border-color: var(--sd-brand);
-  box-shadow: 0 0 0 3px rgba(2, 132, 199, 0.15);
+  border-color: var(--sd-brand-primary);
+  box-shadow: 0 0 0 3px rgba(15, 118, 110, 0.18);
 }
 
-/* Card Top Metadata & Icon */
-.staff-card-top {
+.staff-card-header {
   display: flex;
-  align-items: flex-start;
-  justify-content: space-between;
-  gap: 0.75rem;
-  margin-bottom: 1rem;
+  align-items: center;
+  gap: 0.875rem;
+  margin-bottom: 0.65rem;
 }
 
 .staff-card-icon-wrapper {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 44px;
-  height: 44px;
-  border-radius: var(--sd-radius-md);
+  width: 40px;
+  height: 40px;
+  border-radius: 10px;
+  flex-shrink: 0;
+  background: #f0fdfa;
+  color: var(--sd-brand-primary);
+  border: 1px solid var(--sd-brand-border);
+  box-shadow: 0 2px 6px rgba(15, 118, 110, 0.08);
+  transition: transform 0.18s ease, background 0.18s ease;
+}
+
+.staff-module-card:hover .staff-card-icon-wrapper {
+  transform: scale(1.04);
+  background: #e6fffa;
+}
+
+.staff-card-heading-group {
+  flex: 1 1 auto;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+  min-width: 0;
+}
+
+.staff-card-heading-group h3 {
+  margin: 0;
+  font-size: 1rem;
+  font-weight: 700;
+  color: var(--sd-ink-hero);
+  letter-spacing: -0.015em;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.staff-card-category-tag {
+  font-size: 0.6875rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--sd-ink-secondary);
+  background-color: var(--sd-surface-accent);
+  border: 1px solid var(--sd-border);
+  border-radius: var(--sd-radius-pill);
+  padding: 0.12rem 0.5rem;
   flex-shrink: 0;
 }
 
-/* Color theme per module */
-.icon-inventory {
-  background-color: #f0fdf4;
-  color: #16a34a;
-  border: 1px solid #dcfce7;
+.staff-card-desc {
+  margin: 0 0 0.875rem;
+  font-size: 0.8125rem;
+  color: var(--sd-ink-secondary);
+  line-height: 1.5;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
 }
 
-.icon-clinical {
-  background-color: #f0f9ff;
-  color: #0284c7;
-  border: 1px solid #e0f2fe;
-}
-
-.icon-prescriptions {
-  background-color: #f5f3ff;
-  color: #7c3aed;
-  border: 1px solid #ede9fe;
-}
-
-.icon-billing {
-  background-color: #fefce8;
-  color: #ca8a04;
-  border: 1px solid #fef08a;
-}
-
-.icon-reports {
-  background-color: #ecfdf5;
-  color: #059669;
-  border: 1px solid #a7f3d0;
-}
-
-.icon-admin {
-  background-color: #f8fafc;
-  color: #475569;
-  border: 1px solid #e2e8f0;
-}
-
-.staff-card-badge {
-  font-size: 0.6875rem;
-  font-weight: 700;
-  letter-spacing: 0.04em;
-  text-transform: uppercase;
-  color: var(--sd-muted);
-  background-color: var(--sd-surface-subtle);
-  border: 1px solid var(--sd-border-subtle);
-  border-radius: 9999px;
-  padding: 0.25rem 0.625rem;
-}
-
-/* Card Heading and Description */
-.staff-card-body {
-  flex: 1 1 auto;
-}
-
-.staff-card-body h3 {
-  margin: 0 0 0.5rem;
-  font-size: 1.1875rem;
-  font-weight: 700;
-  color: var(--sd-ink);
-  letter-spacing: -0.015em;
-  line-height: 1.35;
-}
-
-.staff-card-body p {
-  margin: 0 0 1.25rem;
-  font-size: 0.875rem;
-  color: var(--sd-muted);
-  line-height: 1.6;
-}
-
-/* Quick Jump Links */
+/* Quick Jump Chips */
 .staff-quick-links {
   margin-top: auto;
-  padding-top: 1rem;
+  padding-top: 0.75rem;
   border-top: 1px solid var(--sd-border-subtle);
   display: flex;
-  flex-direction: column;
-  gap: 0.625rem;
+  align-items: center;
+  gap: 0.5rem;
+  flex-wrap: wrap;
 }
 
-.staff-quick-links-label {
+.staff-quick-label {
   font-size: 0.6875rem;
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.05em;
-  color: var(--sd-muted);
+  color: var(--sd-muted-light);
 }
 
-.staff-quick-links-chips {
-  display: flex;
+.staff-quick-chips {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
   flex-wrap: wrap;
-  gap: 0.375rem;
 }
 
 .staff-quick-chip {
   display: inline-flex;
   align-items: center;
   font-size: 0.75rem;
-  font-weight: 500;
+  font-weight: 600;
   color: var(--sd-ink-secondary);
   background-color: var(--sd-surface-subtle);
-  border: 1px solid var(--sd-border-subtle);
-  border-radius: 6px;
-  padding: 0.25rem 0.625rem;
+  border: 1px solid var(--sd-border);
+  border-radius: var(--sd-radius-xs);
+  padding: 0.2rem 0.55rem;
   text-decoration: none;
-  transition: all 0.12s ease;
+  transition: all 0.16s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 .staff-quick-chip:hover {
-  background-color: var(--sd-brand-light);
-  color: var(--sd-brand);
-  border-color: var(--sd-brand-border);
+  background-color: var(--sd-brand-subtle);
+  border-color: var(--sd-brand-primary);
+  color: var(--sd-brand-primary);
+  transform: translateY(-1px);
   text-decoration: none;
 }
 
 .staff-quick-chip:focus-visible {
-  outline: 2px solid var(--sd-brand);
+  outline: 2px solid var(--sd-brand-primary);
   outline-offset: 1px;
 }
 
-/* Card Action Link */
+/* Primary Action Button (Full Width Elevated Target) */
 .staff-card-action {
-  margin-top: 1.25rem;
-  padding-top: 0.875rem;
-  border-top: 1px solid var(--sd-border-subtle);
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
+  margin-top: 0.875rem;
 }
 
 .staff-primary-link {
+  width: 100%;
   display: inline-flex;
   align-items: center;
-  gap: 0.375rem;
-  font-size: 0.875rem;
-  font-weight: 650;
-  color: var(--sd-brand);
+  justify-content: center;
+  gap: 0.45rem;
+  font-size: 0.8125rem;
+  font-weight: 700;
+  color: var(--sd-brand-primary);
   text-decoration: none;
-  transition: color 0.15s ease;
+  padding: 0.55rem 0.875rem;
+  border-radius: var(--sd-radius-sm);
+  background: var(--sd-surface-subtle);
+  border: 1px solid var(--sd-border);
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 .staff-primary-link:hover {
-  color: var(--sd-brand-hover);
   text-decoration: none;
+  background: var(--sd-brand-primary);
+  border-color: var(--sd-brand-primary);
+  color: #ffffff;
+  box-shadow: 0 4px 12px rgba(15, 118, 110, 0.25);
+  transform: translateY(-1px);
 }
 
 .staff-primary-link:focus-visible {
-  outline: 2px solid var(--sd-brand);
+  outline: 2px solid var(--sd-brand-primary);
   outline-offset: 2px;
-  border-radius: 4px;
 }
 
 .staff-link-arrow {
-  transition: transform 0.15s ease;
-  font-size: 1rem;
+  transition: transform 0.18s ease;
+  font-size: 0.95rem;
   line-height: 1;
 }
 
-.staff-module-card:hover .staff-link-arrow {
+.staff-primary-link:hover .staff-link-arrow {
   transform: translateX(4px);
 }
 
+/* Empty Search */
+.staff-empty-search {
+  padding: 2.5rem 1.5rem;
+  text-align: center;
+  background-color: var(--sd-surface);
+  border: 1px dashed var(--sd-border-strong);
+  border-radius: var(--sd-radius-lg);
+  color: var(--sd-muted);
+  font-size: 0.875rem;
+}
+
+.staff-empty-search p {
+  margin: 0 0 0.875rem;
+}
+
+.staff-clear-btn {
+  padding: 0.4rem 1rem;
+  font-size: 0.8125rem;
+  font-weight: 650;
+  border-radius: var(--sd-radius-sm);
+  background-color: var(--sd-surface);
+  border: 1px solid var(--sd-border-strong);
+  color: var(--sd-ink-secondary);
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.staff-clear-btn:hover {
+  background-color: var(--sd-surface-subtle);
+  border-color: var(--sd-brand-primary);
+  color: var(--sd-brand-primary);
+}
+
 /* =============================================================================
-   Responsive Behavior
+   Secondary Operational Sidebar (Luxury Task & Governance Cards)
+   ============================================================================= */
+.staff-tools-sidebar {
+  display: flex;
+  flex-direction: column;
+  gap: 1.1rem;
+}
+
+.staff-sidebar-card {
+  background-color: var(--sd-surface);
+  border: 1px solid var(--sd-border);
+  border-radius: var(--sd-radius-lg);
+  box-shadow: var(--sd-shadow-card);
+  padding: 1.15rem;
+  position: relative;
+  overflow: hidden;
+}
+
+.staff-sidebar-header {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: 0.875rem;
+  padding-bottom: 0.6rem;
+  border-bottom: 1px solid var(--sd-border-subtle);
+  color: var(--sd-brand-primary);
+}
+
+.staff-sidebar-header h3 {
+  margin: 0;
+  font-size: 0.9375rem;
+  font-weight: 750;
+  color: var(--sd-ink-hero);
+  letter-spacing: -0.01em;
+}
+
+/* Quick Action Rows */
+.staff-sidebar-links {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+}
+
+.staff-action-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.55rem 0.65rem;
+  border-radius: var(--sd-radius-sm);
+  text-decoration: none;
+  background-color: #ffffff;
+  border: 1px solid transparent;
+  transition: all 0.16s ease;
+}
+
+.staff-action-row:hover {
+  background-color: var(--sd-surface-subtle);
+  border-color: var(--sd-border);
+  transform: translateX(2px);
+  text-decoration: none;
+}
+
+.staff-action-row:focus-visible {
+  outline: 2px solid var(--sd-brand-primary);
+  outline-offset: 1px;
+}
+
+.staff-action-text {
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+  min-width: 0;
+}
+
+.staff-action-title {
+  font-size: 0.8125rem;
+  font-weight: 650;
+  color: var(--sd-ink);
+  line-height: 1.3;
+  transition: color 0.15s ease;
+}
+
+.staff-action-row:hover .staff-action-title {
+  color: var(--sd-brand-primary);
+}
+
+.staff-action-desc {
+  font-size: 0.6875rem;
+  color: var(--sd-muted);
+  line-height: 1.3;
+}
+
+.staff-action-chevron {
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: var(--sd-border-strong);
+  line-height: 1;
+  padding-left: 0.5rem;
+  transition: transform 0.15s ease, color 0.15s ease;
+}
+
+.staff-action-row:hover .staff-action-chevron {
+  color: var(--sd-brand-primary);
+  transform: translateX(3px);
+}
+
+/* Role Scope Sidebar Note */
+.staff-scope-note {
+  margin: 0 0 0.875rem;
+  font-size: 0.8125rem;
+  color: var(--sd-ink-secondary);
+  line-height: 1.55;
+}
+
+.staff-scope-meta {
+  display: flex;
+  flex-direction: column;
+  gap: 0.45rem;
+  padding-top: 0.75rem;
+  border-top: 1px solid var(--sd-border-subtle);
+  font-size: 0.75rem;
+}
+
+.staff-scope-meta-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+}
+
+.staff-scope-meta-item .meta-label {
+  color: var(--sd-muted);
+  font-weight: 500;
+}
+
+.staff-scope-meta-item .meta-val {
+  color: var(--sd-ink-hero);
+  font-weight: 700;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 175px;
+}
+
+/* =============================================================================
+   Responsive Breakpoints
    ============================================================================= */
 @media (max-width: 1024px) {
-  .staff-dashboard-root {
-    padding: 1.25rem 1rem 3rem;
+  .staff-workspace-layout {
+    grid-template-columns: 1fr;
+    gap: 1.25rem;
   }
 
-  .staff-dashboard-header {
-    padding: 1.5rem 1.5rem;
-  }
-
-  .staff-cards-grid {
-    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  .staff-tools-sidebar {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
     gap: 1rem;
   }
 }
 
 @media (max-width: 768px) {
   .staff-dashboard-root {
-    padding: 1rem 0.75rem 2.5rem;
+    padding: 1rem 0.875rem 2.5rem;
   }
 
-  .staff-dashboard-header {
-    padding: 1.25rem 1.25rem;
-  }
-
-  .staff-header-content {
+  .staff-page-header {
+    padding: 1rem;
     flex-direction: column;
     align-items: stretch;
+    gap: 0.875rem;
   }
 
-  .staff-header-actions {
+  .staff-header-controls {
     justify-content: space-between;
     width: 100%;
   }
 
-  .staff-top-bar {
+  .staff-overview-bar {
     flex-direction: column;
-    align-items: flex-start;
+    align-items: stretch;
     gap: 0.5rem;
+    padding: 0.75rem 1rem;
+  }
+
+  .staff-overview-divider {
+    display: none;
   }
 
   .staff-cards-grid {
     grid-template-columns: 1fr;
-    gap: 1rem;
+    gap: 0.875rem;
   }
 
-  .staff-title-group h1 {
-    font-size: 1.5rem;
+  .staff-tools-sidebar {
+    grid-template-columns: 1fr;
+    gap: 0.875rem;
+  }
+
+  .staff-search-box {
+    width: 100%;
+  }
+
+  .staff-tools-header {
+    flex-direction: column;
+    align-items: stretch;
+  }
+}
+
+@media (max-width: 540px) {
+  .staff-dashboard-root {
+    padding: 0.75rem 0.65rem 2rem;
+  }
+
+  .staff-page-header {
+    padding: 0.875rem;
+    border-radius: 10px;
+  }
+
+  .staff-title-row h1 {
+    font-size: 1.25rem;
+  }
+
+  .staff-avatar-chip {
+    width: 38px;
+    height: 38px;
+    font-size: 0.95rem;
+  }
+
+  .staff-module-card {
+    padding: 1rem;
+    border-radius: 10px;
+  }
+
+  .staff-sidebar-card {
+    padding: 0.875rem;
+    border-radius: 10px;
   }
 }

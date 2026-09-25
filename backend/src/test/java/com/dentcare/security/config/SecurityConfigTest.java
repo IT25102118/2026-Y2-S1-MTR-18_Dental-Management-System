@@ -105,6 +105,20 @@ class SecurityConfigTest {
                 .andExpect(status().isForbidden());
     }
 
+    @Test
+    @WithMockUser(roles = "PATIENT")
+    @DisplayName("PATIENT cannot access admin, billing, invoices, or payments APIs")
+    void testPatientCannotAccessAdminOrBillingApis() throws Exception {
+        mockMvc.perform(get("/api/admin/staff"))
+                .andExpect(status().isForbidden());
+        mockMvc.perform(get("/api/invoices"))
+                .andExpect(status().isForbidden());
+        mockMvc.perform(get("/api/billing/reports/income"))
+                .andExpect(status().isForbidden());
+        mockMvc.perform(get("/api/payments"))
+                .andExpect(status().isForbidden());
+    }
+
     @ParameterizedTest
     @ValueSource(strings = {"ADMINISTRATOR", "RECEPTIONIST", "DENTIST", "DENTAL_ASSISTANT"})
     @DisplayName("Every staff role can reach inventory endpoints")

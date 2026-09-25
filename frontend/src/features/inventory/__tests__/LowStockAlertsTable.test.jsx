@@ -184,4 +184,77 @@ describe('LowStockAlertsTable', () => {
       expect(screen.getByRole('table')).toBeInTheDocument();
     });
   });
+
+  it('renders View Item action links pointing to /inventory/items/:id', async () => {
+    alertApi.getLowStockAlerts.mockResolvedValueOnce({
+      content: sampleAlerts,
+      number: 0,
+      size: 20,
+      totalPages: 1,
+      totalElements: 2,
+      first: true,
+      last: true,
+      empty: false
+    });
+
+    render(
+      <MemoryRouter>
+        <LowStockAlertsTable />
+      </MemoryRouter>
+    );
+
+    await waitFor(() => {
+      expect(screen.getByRole('table')).toBeInTheDocument();
+    });
+
+    const viewLinks = screen.getAllByRole('link', { name: /view details for/i });
+    expect(viewLinks).toHaveLength(2);
+    expect(viewLinks[0]).toHaveAttribute('href', '/inventory/items/101');
+    expect(viewLinks[1]).toHaveAttribute('href', '/inventory/items/102');
+  });
+
+  it('handles pagination navigation when next page is clicked', async () => {
+    alertApi.getLowStockAlerts.mockResolvedValueOnce({
+      content: sampleAlerts,
+      number: 0,
+      size: 20,
+      totalPages: 2,
+      totalElements: 30,
+      first: true,
+      last: false,
+      empty: false
+    });
+
+    render(
+      <MemoryRouter>
+        <LowStockAlertsTable />
+      </MemoryRouter>
+    );
+
+    await waitFor(() => {
+      expect(screen.getByRole('table')).toBeInTheDocument();
+    });
+
+    const nextBtn = screen.getByRole('button', { name: /next page/i });
+    expect(nextBtn).toBeEnabled();
+
+    alertApi.getLowStockAlerts.mockResolvedValueOnce({
+      content: [sampleAlerts[0]],
+      number: 1,
+      size: 20,
+      totalPages: 2,
+      totalElements: 30,
+      first: false,
+      last: true,
+      empty: false
+    });
+
+    fireEvent.click(nextBtn);
+
+    await waitFor(() => {
+      expect(alertApi.getLowStockAlerts).toHaveBeenCalledWith(expect.objectContaining({
+        page: 1
+      }));
+    });
+  });
 });

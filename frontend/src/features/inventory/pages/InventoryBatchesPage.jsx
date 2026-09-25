@@ -2,7 +2,7 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { Link } from 'react-router-dom';
 import { searchBatches } from '../api/movementApi';
 import InventoryPagination from '../components/InventoryPagination';
-import InventoryNav from '../components/InventoryNav';
+import InventoryPageHeader from '../components/InventoryPageHeader';
 import { getBatchDerivedStatus } from '../components/ItemBatchesTable';
 import '../inventory.css';
 
@@ -100,32 +100,26 @@ export default function InventoryBatchesPage() {
 
   return (
     <div className="inventory-container">
-      <nav className="inventory-nav" aria-label="Breadcrumb">
-        <Link to="/inventory/items">← Back to Inventory Items</Link>
-      </nav>
+      <InventoryPageHeader
+        title="Inventory Batches"
+        subtitle="Global batch tracking, expiry monitoring, and stock allocations across clinic supplies."
+        breadcrumb={{ to: '/inventory/items', label: '← Back to Inventory Items' }}
+        actions={
+          <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap' }}>
+            <Link to="/inventory/items" className="btn btn-secondary btn-sm">
+              View Items
+            </Link>
+            <Link to="/inventory/alerts" className="btn btn-secondary btn-sm">
+              View Alerts
+            </Link>
+            <Link to="/inventory/items/new" className="btn btn-primary btn-sm">
+              Register New Item
+            </Link>
+          </div>
+        }
+      />
 
-      <div className="inventory-header">
-        <div>
-          <h1>Inventory Batches</h1>
-          <p style={{ margin: '0.25rem 0 0 0', color: '#64748b' }}>
-            Global batch tracking, expiry monitoring, and stock allocations.
-          </p>
-        </div>
-        <div style={{ display: 'flex', gap: '0.5rem' }}>
-          <Link to="/inventory/items" className="btn btn-secondary">
-            View Items
-          </Link>
-          <Link to="/inventory/alerts" className="btn btn-secondary">
-            View Alerts
-          </Link>
-          <Link to="/inventory/items/new" className="btn btn-primary">
-            Register New Item
-          </Link>
-        </div>
-      </div>
-
-      <InventoryNav />
-
+      <h2 className="sr-only">Batch Search and Filtering</h2>
       <form className="batch-filters-card" onSubmit={handleFilterSubmit} aria-label="Batch search filters">
         <div className="filters-grid">
           <div className="form-group">
@@ -228,7 +222,7 @@ export default function InventoryBatchesPage() {
                 <tr>
                   <th scope="col">Batch Number</th>
                   <th scope="col">Item</th>
-                  <th scope="col">Quantity On Hand</th>
+                  <th scope="col" style={{ textAlign: 'right' }}>Quantity On Hand</th>
                   <th scope="col">Expiry Date</th>
                   <th scope="col">Status</th>
                   <th scope="col">Received Date</th>
@@ -242,7 +236,7 @@ export default function InventoryBatchesPage() {
                     <tr key={b.id}>
                       <td>
                         {b.batchNumber ? (
-                          <strong>{b.batchNumber}</strong>
+                          <strong className="inv-mono">{b.batchNumber}</strong>
                         ) : (
                           <span className="unbatched-badge">Unbatched Stock</span>
                         )}
@@ -256,14 +250,16 @@ export default function InventoryBatchesPage() {
                           `${b.itemName || '—'} (${b.itemCode || '—'})`
                         )}
                       </td>
-                      <td style={{ fontWeight: 600 }}>{b.quantityOnHand}</td>
-                      <td>{b.expiryDate || 'No expiry'}</td>
+                      <td style={{ fontWeight: 600, textAlign: 'right' }} className="tabular-nums">
+                        {b.quantityOnHand}
+                      </td>
+                      <td className="tabular-nums">{b.expiryDate || 'No expiry'}</td>
                       <td>
                         <span className={`badge ${status.className}`} data-testid={`batch-status-${b.id}`}>
                           {status.label}
                         </span>
                       </td>
-                      <td>{b.receivedDate || '—'}</td>
+                      <td className="tabular-nums">{b.receivedDate || '—'}</td>
                       <td>{b.supplierReference || '—'}</td>
                     </tr>
                   );

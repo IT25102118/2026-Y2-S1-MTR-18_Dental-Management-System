@@ -99,6 +99,114 @@
 .public-auth-secondary { display: inline-flex; align-items: center; justify-content: center; min-height: 48px; padding: 0 20px; color: var(--pa-navy); background: #fff; border: 1px solid #b8c7d5; border-radius: 6px; font-size: 14px; font-weight: 650; text-decoration: none; }
 .public-auth-secondary:hover { color: var(--pa-navy); background: #f4f7fa; text-decoration: none; }
 
+/* =============================================================================
+   Dedicated Portal Styles (Patient vs Staff)
+   ============================================================================= */
+.public-portal-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 10px;
+  background: #f0fdfa;
+  border: 1px solid #ccfbf1;
+  color: #0f766e;
+  border-radius: 9999px;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+  margin-bottom: 12px;
+}
+
+.public-portal-tag.patient-tag {
+  background: #f0fdfa;
+  border-color: #99f6e4;
+  color: #0f766e;
+}
+
+.public-portal-tag.staff-tag {
+  background: #f1f5f9;
+  border-color: #cbd5e1;
+  color: #1e293b;
+}
+
+.portal-choice-pills {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: 14px;
+}
+
+.portal-pill-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 12px;
+  background: #f0fdfa;
+  border: 1px solid #ccfbf1;
+  color: #0f766e;
+  border-radius: 6px;
+  font-size: 13px;
+  font-weight: 600;
+  text-decoration: none;
+  transition: all 150ms ease;
+}
+
+.portal-pill-btn:hover {
+  background: #ccfbf1;
+  color: #115e59;
+  text-decoration: none;
+}
+
+.portal-pill-btn.staff-pill {
+  background: #f8fafc;
+  border-color: #e2e8f0;
+  color: #334155;
+}
+
+.portal-pill-btn.staff-pill:hover {
+  background: #e2e8f0;
+  color: #0f172a;
+}
+
+.staff-security-notice {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  margin-bottom: 20px;
+  padding: 10px 14px;
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-left: 3px solid #0f766e;
+  border-radius: 6px;
+  font-size: 13px;
+  color: #475569;
+  line-height: 1.45;
+}
+
+.staff-security-notice p {
+  margin: 0;
+}
+
+.submit-staff-btn {
+  background: #0f172a !important;
+  border-color: #0f172a !important;
+}
+
+.submit-staff-btn:hover:not(:disabled) {
+  background: #1e293b !important;
+  border-color: #1e293b !important;
+  box-shadow: 0 4px 12px rgba(15, 23, 42, 0.2) !important;
+}
+
+.public-auth-card-patient {
+  border-top: 3px solid #0f766e;
+}
+
+.public-auth-card-staff {
+  border-top: 3px solid #0f172a;
+}
+
 @media (max-width: 700px) {
   .public-auth-page { align-items: flex-start; padding: 32px 18px 48px; }
   .public-auth-card { padding: 32px 28px; }

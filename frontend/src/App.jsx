@@ -44,7 +44,15 @@ export default function App() {
             <Route path="/" element={<PublicLandingPage />} />
             <Route
               path="/login"
-              element={<PublicOnlyRoute><LoginPage /></PublicOnlyRoute>}
+              element={<PublicOnlyRoute><LoginPage portalType="unified" /></PublicOnlyRoute>}
+            />
+            <Route
+              path="/patient/login"
+              element={<PublicOnlyRoute><LoginPage portalType="patient" /></PublicOnlyRoute>}
+            />
+            <Route
+              path="/staff/login"
+              element={<PublicOnlyRoute><LoginPage portalType="staff" /></PublicOnlyRoute>}
             />
             <Route
               path="/register"
