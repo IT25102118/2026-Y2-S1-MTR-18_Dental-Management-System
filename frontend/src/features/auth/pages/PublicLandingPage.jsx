@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Link, Navigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { getDashboardPath } from '../roleAccess';
+import heroClinicImg from '../../../assets/hero-clinic.jpg';
 import patientAccessImg from '../../../assets/patient-access.jpg';
 import staffAccessImg from '../../../assets/staff-access.jpg';
 import '../public-entry.css';
@@ -24,39 +25,102 @@ function ArrowIcon({ className = 'icon-arrow' }) {
 }
 
 function ShieldIcon() {
-  return <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3 5.5 5.7v5.7c0 4.2 2.7 7.8 6.5 9.6 3.8-1.8 6.5-5.4 6.5-9.6V5.7L12 3Z" /><path d="m9.3 12 1.8 1.8 3.7-4" /></svg>;
+  return (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+      <path d="M12 3 5.5 5.7v5.7c0 4.2 2.7 7.8 6.5 9.6 3.8-1.8 6.5-5.4 6.5-9.6V5.7L12 3Z" />
+      <path d="m9.3 12 1.8 1.8 3.7-4" />
+    </svg>
+  );
 }
 
 function UserIcon() {
-  return <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="8" r="3.5" /><path d="M5.5 20c.6-4.1 2.8-6.2 6.5-6.2s5.9 2.1 6.5 6.2" /></svg>;
+  return (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+      <circle cx="12" cy="8" r="3.5" />
+      <path d="M5.5 20c.6-4.1 2.8-6.2 6.5-6.2s5.9 2.1 6.5 6.2" />
+    </svg>
+  );
 }
 
 function TeamIcon() {
-  return <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="9" cy="8" r="3" /><path d="M3.8 19c.5-3.7 2.2-5.5 5.2-5.5s4.7 1.8 5.2 5.5M16 6.5a2.7 2.7 0 0 1 0 5.3M16.5 14c2.2.5 3.5 2.2 3.8 5" /></svg>;
+  return (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+      <circle cx="9" cy="8" r="3" />
+      <path d="M3.8 19c.5-3.7 2.2-5.5 5.2-5.5s4.7 1.8 5.2 5.5M16 6.5a2.7 2.7 0 0 1 0 5.3M16.5 14c2.2.5 3.5 2.2 3.8 5" />
+    </svg>
+  );
 }
 
 function CheckIcon() {
-  return <svg viewBox="0 0 20 20" aria-hidden="true"><path d="m4 10 4 4 8-8" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" /></svg>;
+  return (
+    <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+      <path d="m4 10 4 4 8-8" />
+    </svg>
+  );
+}
+
+function ToothIcon() {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+      <path d="M12 2C8.5 2 6 4.5 6 8c0 3.5 1.5 6 3 10 .8 2.2 2 4 3 4s2.2-1.8 3-4c1.5-4 3-6.5 3-10 0-3.5-2.5-6-6-6z" />
+      <path d="M9 10c1-1 2-1.5 3-1.5s2 .5 3 1.5" />
+    </svg>
+  );
+}
+
+function ClipboardIcon() {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+      <path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2" />
+      <rect x="8" y="2" width="8" height="4" rx="1" />
+      <path d="M9 12h6M9 16h6" />
+    </svg>
+  );
 }
 
 function PillIcon() {
-  return <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m10.5 20.5 8-8a4.95 4.95 0 1 0-7-7l-8 8a4.95 4.95 0 1 0 7 7Z" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" /><path d="m8.5 8.5 7 7" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" /></svg>;
+  return (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+      <path d="m10.5 20.5 8-8a4.95 4.95 0 1 0-7-7l-8 8a4.95 4.95 0 1 0 7 7Z" />
+      <path d="m8.5 8.5 7 7" />
+    </svg>
+  );
 }
 
 function PackageIcon() {
-  return <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m12 3 8 4.5v9L12 21l-8-4.5v-9L12 3Z" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" /><path d="m12 12 8-4.5M12 12v9M12 12 4 7.5" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" /></svg>;
+  return (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+      <path d="m12 3 8 4.5v9L12 21l-8-4.5v-9L12 3Z" />
+      <path d="m12 12 8-4.5M12 12v9M12 12 4 7.5" />
+    </svg>
+  );
 }
 
 function ReceiptIcon() {
-  return <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 3v18l3-1.5 3 1.5 3-1.5 3 1.5 4-2V3l-4 2-3-2-3 2-3-2-3 2Z" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" /><path d="M8 8h8M8 12h8M8 16h5" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" /></svg>;
+  return (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+      <path d="M4 3v18l3-1.5 3 1.5 3-1.5 3 1.5 4-2V3l-4 2-3-2-3 2-3-2-3 2Z" />
+      <path d="M8 8h8M8 12h8M8 16h5" />
+    </svg>
+  );
 }
 
 function LockIcon() {
-  return <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="5" y="11" width="14" height="10" rx="2" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" /><path d="M8 11V7a4 4 0 0 1 8 0v4" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" /></svg>;
+  return (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+      <rect x="5" y="11" width="14" height="10" rx="2" />
+      <path d="M8 11V7a4 4 0 0 1 8 0v4" />
+    </svg>
+  );
 }
 
 function KeyIcon() {
-  return <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="7.5" cy="15.5" r="4.5" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" /><path d="m10.7 12.3 8.8-8.8M16 7l2.5 2.5M18.5 4.5 21 7" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" /></svg>;
+  return (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+      <circle cx="7.5" cy="15.5" r="4.5" />
+      <path d="m10.7 12.3 8.8-8.8M16 7l2.5 2.5M18.5 4.5 21 7" />
+    </svg>
+  );
 }
 
 function ChevronIcon() {
@@ -119,10 +183,17 @@ export default function PublicLandingPage() {
   }, []);
 
   if (isLoading) {
-    return <div className="auth-loading-container" role="status" aria-live="polite" data-testid="landing-loading"><div className="auth-spinner" aria-hidden="true" /><p>Preparing DentCare...</p></div>;
+    return (
+      <div className="auth-loading-container" role="status" aria-live="polite" data-testid="landing-loading">
+        <div className="auth-spinner" aria-hidden="true" />
+        <p>Preparing DentCare...</p>
+      </div>
+    );
   }
 
-  if (isAuthenticated) return <Navigate to={getDashboardPath(user?.role)} replace />;
+  if (isAuthenticated) {
+    return <Navigate to={getDashboardPath(user?.role)} replace />;
+  }
 
   return (
     <main className="public-home" data-testid="public-landing-page">
@@ -131,10 +202,10 @@ export default function PublicLandingPage() {
         <div className="hero-ambient-glow" aria-hidden="true" />
         <div className="hero-decor-canvas" aria-hidden="true">
           <svg className="hero-decor-svg" viewBox="0 0 1200 480" fill="none" preserveAspectRatio="none">
-            <path d="M0,100 Q320,30 640,90 T1200,50" stroke="rgba(15,118,110,0.08)" strokeWidth="1.5" />
+            <path d="M0,100 Q320,30 640,90 T1200,50" stroke="rgba(15,118,110,0.07)" strokeWidth="1.5" />
             <path d="M0,240 Q460,150 820,200 T1200,140" stroke="rgba(13,148,136,0.05)" strokeWidth="1.5" />
-            <circle cx="460" cy="150" r="3.5" fill="rgba(15,118,110,0.22)" />
-            <circle cx="820" cy="200" r="3.5" fill="rgba(13,148,136,0.22)" />
+            <circle cx="460" cy="150" r="3.5" fill="rgba(15,118,110,0.2)" />
+            <circle cx="820" cy="200" r="3.5" fill="rgba(13,148,136,0.2)" />
           </svg>
         </div>
 
@@ -142,72 +213,61 @@ export default function PublicLandingPage() {
           <div className="public-hero-copy">
             <div className="public-intro-badge hero-animate-eyebrow">
               <span className="badge-sparkle" aria-hidden="true">✦</span>
-              <span>Dental Management System</span>
+              <span>Modern Dental Care, Connected</span>
             </div>
             <h1 id="public-hero-title" className="hero-animate-title">
-              Dental care, connected. <span className="hero-gradient-text">A clear, secure way to access dental care.</span>
+              Better dental care starts with a better experience. <span className="hero-gradient-text">A clear, secure way to access dental care.</span>
             </h1>
-            <p className="public-hero-lead hero-animate-lead">DentCare connects patients with their care information and gives authorized clinic staff a protected workspace for managing practice operations.</p>
+            <p className="public-hero-lead hero-animate-lead">
+              DentCare connects patients with their personal care information and provides authorized clinic staff with a protected workspace for clinical and practice operations.
+            </p>
             <div className="public-actions hero-animate-actions" aria-label="Account access actions">
-              <Link to="/patient/login" className="public-button public-button-primary" data-testid="landing-patient-login-cta" id="hero-patient-login-cta">
-                <UserIcon /> Patient Login <ArrowIcon />
+              <Link
+                to="/patient/login"
+                className="public-button public-button-primary"
+                data-testid="landing-patient-login-cta"
+                id="hero-patient-login-cta"
+              >
+                <UserIcon /> <span>Patient Login</span> <ArrowIcon />
               </Link>
-              <Link to="/staff/login" className="public-button public-button-secondary public-button-staff" data-testid="landing-staff-login-cta" id="hero-staff-login-cta">
-                <ShieldIcon /> Staff Login
+              <Link
+                to="/staff/login"
+                className="public-button public-button-secondary public-button-staff"
+                data-testid="landing-staff-login-cta"
+                id="hero-staff-login-cta"
+              >
+                <ShieldIcon /> <span>Staff Login</span>
               </Link>
             </div>
             <div className="hero-subactions hero-animate-subactions">
               <Link to="/register" className="hero-register-link" data-testid="landing-register-cta">
-                Patient Registration <ArrowIcon />
+                <span>Patient Registration</span> <ArrowIcon />
               </Link>
               <span className="hero-subactions-divider" aria-hidden="true">·</span>
               <p className="public-staff-note">Staff accounts are provisioned exclusively by clinic administrators.</p>
             </div>
           </div>
 
-          <div className="access-map hero-animate-card" aria-label="Account access routes">
-            <div className="access-map-header">
-              <span className="access-map-tag">System Access Architecture</span>
-              <ShieldIcon />
-            </div>
-
-            <div className="access-map-signin">
-              <span className="access-map-icon"><ShieldIcon /></span>
-              <div>
-                <strong>Two Dedicated Access Portals</strong>
-                <span>Role-segregated authentication boundaries</span>
-              </div>
-            </div>
-
-            <div className="access-map-tree" aria-hidden="true">
-              <div className="access-map-stem" />
-              <div className="access-map-branches" />
-            </div>
-
-            <div className="access-map-destinations">
-              <div className="access-map-dest-card">
-                <div className="access-map-dest-header">
-                  <span className="access-map-icon"><UserIcon /></span>
-                  <span className="access-map-role-badge">Patient Portal</span>
+          <div className="hero-visual-wrapper hero-animate-card" aria-label="Modern dental operatory">
+            <div className="hero-visual-card">
+              <img
+                src={heroClinicImg}
+                alt="Modern dental clinic treatment operatory with clinical chair and soft natural light"
+                className="hero-visual-img"
+                width="960"
+                height="720"
+              />
+              <div className="hero-visual-overlay" aria-hidden="true" />
+              <div className="hero-accent-badge">
+                <span className="hero-accent-dot" aria-hidden="true" />
+                <div className="hero-accent-text">
+                  <strong>DentCare Operatory</strong>
+                  <span>Clinical Excellence &amp; Care Coordination</span>
                 </div>
-                <strong>Patient Workspace</strong>
-                <p>Self-registration, profile management, and dedicated patient portal access.</p>
-              </div>
-
-              <div className="access-map-dest-card">
-                <div className="access-map-dest-header">
-                  <span className="access-map-icon"><TeamIcon /></span>
-                  <span className="access-map-role-badge">Staff Portal</span>
-                </div>
-                <strong>Staff Workspace</strong>
-                <p>Clinical charting, prescriptions, stock inventory, and invoice operations.</p>
               </div>
             </div>
-
-            <div className="access-map-footer">
-              <span className="access-map-dot" aria-hidden="true" />
-              <p>Routing and permissions are strictly enforced on the server by account role.</p>
-            </div>
+            <div className="hero-visual-glow" aria-hidden="true" />
+            <div className="hero-visual-frame-accent" aria-hidden="true" />
           </div>
         </div>
       </section>
@@ -220,61 +280,63 @@ export default function PublicLandingPage() {
               <p className="public-intro">Practice Operations</p>
               <h2 id="public-capabilities-title">Integrated tools built for dental practices</h2>
             </div>
-            <p>From initial dental charting to inventory supply control and patient billing, DentCare supports day-to-day clinic operations within a unified platform.</p>
+            <p>From initial examinations and anatomical tooth charting to medication orders, inventory supply tracking, and patient billing, DentCare supports daily clinic operations within a unified platform.</p>
           </div>
 
-          <div className="public-capabilities-layout">
-            <article className="capability-spotlight">
-              <div className="capability-spotlight-content">
+          <div className="public-capabilities-grid">
+            <article className="capability-card">
+              <div className="capability-card-icon"><ToothIcon /></div>
+              <div className="capability-card-body">
                 <span className="capability-tag">Clinical Care</span>
                 <h3>Examinations, Tooth Charting &amp; Treatment Plans</h3>
-                <p>DentCare structures clinical workflows from initial patient assessment through multi-stage care delivery. Clinicians document oral health evaluations, record anatomical tooth-level findings, and assemble clear treatment plans with procedure notes and estimated fees.</p>
-                <ul className="capability-feature-list" aria-label="Clinical care capabilities">
-                  <li><CheckIcon /><span>Comprehensive examination records with medical history and chief complaints</span></li>
-                  <li><CheckIcon /><span>Anatomical tooth charting with specific condition tracking and findings</span></li>
-                  <li><CheckIcon /><span>Staged treatment plans with procedure tracking and status progression</span></li>
-                </ul>
-              </div>
-              <div className="capability-spotlight-meta">
-                <div className="capability-meta-item">
-                  <span className="capability-meta-label">Authorized Roles</span>
-                  <strong>Dentist &amp; Dental Assistant</strong>
-                </div>
-                <div className="capability-meta-item">
-                  <span className="capability-meta-label">Clinical Scope</span>
-                  <strong>Examinations · Findings · Plans</strong>
-                </div>
+                <p>Record comprehensive evaluations with anatomical tooth-level condition tracking, chief complaints, and staged procedure progress.</p>
               </div>
             </article>
 
-            <div className="capability-secondary-grid">
-              <article className="capability-card">
-                <div className="capability-card-icon"><PillIcon /></div>
-                <div className="capability-card-body">
-                  <span className="capability-tag">Medication</span>
-                  <h3>Prescription Authoring</h3>
-                  <p>Dentists author structured medication orders with specific dosage forms, frequencies, durations, and clinical instructions tied directly to patient care.</p>
-                </div>
-              </article>
+            <article className="capability-card">
+              <div className="capability-card-icon"><PillIcon /></div>
+              <div className="capability-card-body">
+                <span className="capability-tag">Medications</span>
+                <h3>Prescription Authoring</h3>
+                <p>Author structured medication orders specifying dosage forms, frequencies, durations, and clinical instructions.</p>
+              </div>
+            </article>
 
-              <article className="capability-card">
-                <div className="capability-card-icon"><PackageIcon /></div>
-                <div className="capability-card-body">
-                  <span className="capability-tag">Supply Chain</span>
-                  <h3>Inventory &amp; Batch Tracking</h3>
-                  <p>Maintain clinic operational readiness through real-time stock item cataloging, batch expiration date monitoring, and automated low-stock reorder thresholds.</p>
-                </div>
-              </article>
+            <article className="capability-card">
+              <div className="capability-card-icon"><PackageIcon /></div>
+              <div className="capability-card-body">
+                <span className="capability-tag">Supply Chain</span>
+                <h3>Inventory &amp; Batch Tracking</h3>
+                <p>Maintain clinic operational readiness through real-time stock item tracking, batch expiration monitoring, and low-stock alerts.</p>
+              </div>
+            </article>
 
-              <article className="capability-card">
-                <div className="capability-card-icon"><ReceiptIcon /></div>
-                <div className="capability-card-body">
-                  <span className="capability-tag">Financials</span>
-                  <h3>Invoices &amp; Payment Receipts</h3>
-                  <p>Generate itemized patient invoices for completed procedures, record payments immediately, issue official receipts, and track practice revenue trends.</p>
-                </div>
-              </article>
-            </div>
+            <article className="capability-card">
+              <div className="capability-card-icon"><ReceiptIcon /></div>
+              <div className="capability-card-body">
+                <span className="capability-tag">Financials</span>
+                <h3>Invoices &amp; Payment Receipts</h3>
+                <p>Generate itemized invoices for completed procedures, record payments immediately, and issue official patient receipts.</p>
+              </div>
+            </article>
+
+            <article className="capability-card">
+              <div className="capability-card-icon"><ClipboardIcon /></div>
+              <div className="capability-card-body">
+                <span className="capability-tag">Care Pathways</span>
+                <h3>Care Coordination &amp; History</h3>
+                <p>Track longitudinal patient care notes, treatment progressions, and verified health summaries across appointments.</p>
+              </div>
+            </article>
+
+            <article className="capability-card">
+              <div className="capability-card-icon"><LockIcon /></div>
+              <div className="capability-card-body">
+                <span className="capability-tag">Security</span>
+                <h3>Role-Isolated Workspaces</h3>
+                <p>Ensure clinicians, assistants, front-desk staff, and patients only access workflows appropriate to their verified role.</p>
+              </div>
+            </article>
           </div>
         </div>
       </section>
@@ -290,6 +352,7 @@ export default function PublicLandingPage() {
             </div>
             <p>DentCare provides two clearly separated login pathways. Select your portal to access your designated workspace.</p>
           </div>
+
           <div className="public-access-grid">
             <article className="access-role-card access-card-patient" data-testid="access-card-patient">
               <div className="access-role-header">
@@ -381,34 +444,34 @@ export default function PublicLandingPage() {
         </div>
       </section>
 
-      {/* 4. Security & Trust Architecture */}
+      {/* 4. Trust & Privacy Architecture */}
       <section className="public-security scroll-reveal" aria-labelledby="public-security-title">
         <div className="public-container">
           <div className="public-section-heading">
             <div>
-              <p className="public-intro">Security &amp; Architecture</p>
+              <p className="public-intro">Account Privacy &amp; Segregation</p>
               <h2 id="public-security-title">Access designed around verified roles</h2>
             </div>
-            <p>DentCare implements defense-in-depth protections to ensure public access, patient accounts, and clinic operations remain strictly isolated.</p>
+            <p>Your portal only shows information appropriate to your account and role. DentCare implements defense-in-depth protections to ensure public access, patient records, and operational clinic workspaces remain strictly isolated.</p>
           </div>
 
           <div className="public-security-grid">
             <div className="security-pillar">
               <div className="security-icon-wrap"><ShieldIcon /></div>
-              <h3>Server-Enforced Authorization</h3>
-              <p>All sensitive operations and data endpoints are protected server-side with Spring Security. Role authorities are validated on every HTTP request.</p>
+              <h3>Separate Access Boundaries</h3>
+              <p>Patients and staff sign into distinct portals with independent authentication pathways. Cross-portal access is strictly prevented at login.</p>
             </div>
 
             <div className="security-pillar">
               <div className="security-icon-wrap"><LockIcon /></div>
-              <h3>Separated Workspaces</h3>
-              <p>Patient accounts cannot view or interact with operational clinic data, including clinical charts, supply inventory, or practice financials.</p>
+              <h3>Protected Workspaces</h3>
+              <p>Patient accounts cannot view operational clinic data, including clinical charts, supply inventory, or practice financials.</p>
             </div>
 
             <div className="security-pillar">
               <div className="security-icon-wrap"><KeyIcon /></div>
-              <h3>Protected Sessions &amp; CSRF</h3>
-              <p>State-changing requests require valid cryptographic CSRF tokens, paired with secure session cookie controls to prevent unauthorized access.</p>
+              <h3>Server-Enforced Validation</h3>
+              <p>Role authorities and sessions are verified on every request with Spring Security, backed by secure cookies and CSRF protections.</p>
             </div>
           </div>
         </div>
@@ -440,7 +503,7 @@ export default function PublicLandingPage() {
             <li>
               <span>3</span>
               <div>
-                <strong>Continue to your workspace</strong>
+                <strong>Access your workspace</strong>
                 <p>DentCare strictly verifies your account role and grants immediate access to your designated workspace.</p>
               </div>
             </li>
@@ -463,7 +526,7 @@ export default function PublicLandingPage() {
             {faqItems.map((item, index) => {
               const isOpen = openFaq === index;
               return (
-                <div className={`faq-item ${isOpen ? 'faq-item-open' : ''}`} key={item.id}>
+                <div className={`faq-item ${isOpen ? 'is-open' : ''}`} key={item.id}>
                   <h3>
                     <button
                       type="button"
@@ -485,7 +548,9 @@ export default function PublicLandingPage() {
                     role="region"
                     aria-labelledby={`faq-btn-${item.id}`}
                   >
-                    <p>{item.answer}</p>
+                    <div className="faq-answer-content">
+                      <p>{item.answer}</p>
+                    </div>
                   </div>
                 </div>
               );
@@ -494,17 +559,33 @@ export default function PublicLandingPage() {
         </div>
       </section>
 
-      {/* 7. Closing CTA */}
+      {/* 7. Final Action Area */}
       <section className="public-cta scroll-reveal" aria-labelledby="public-cta-title">
         <div className="public-container public-cta-inner">
-          <div>
+          <div className="public-cta-copy">
             <h2 id="public-cta-title">Ready to access DentCare?</h2>
             <p>Access your designated portal or register as a new patient to get started.</p>
           </div>
-          <div className="public-actions">
-            <Link to="/patient/login" className="public-button public-button-primary">Patient Login <ArrowIcon /></Link>
-            <Link to="/staff/login" className="public-button public-button-secondary public-button-staff">Staff Login</Link>
-            <Link to="/register" className="public-button public-button-secondary">Patient Registration</Link>
+          <div className="public-cta-actions">
+            <div className="public-cta-group">
+              <span className="public-cta-group-label">Patients</span>
+              <div className="public-cta-btn-row">
+                <Link to="/patient/login" className="public-button public-button-primary">
+                  <UserIcon /> <span>Access your dental care</span> <ArrowIcon />
+                </Link>
+                <Link to="/register" className="public-cta-sublink">
+                  <span>Register as a new patient</span>
+                </Link>
+              </div>
+            </div>
+            <div className="public-cta-group">
+              <span className="public-cta-group-label">Clinic Staff</span>
+              <div className="public-cta-btn-row">
+                <Link to="/staff/login" className="public-button public-button-secondary public-button-staff">
+                  <ShieldIcon /> <span>Open staff workspace</span> <ArrowIcon />
+                </Link>
+              </div>
+            </div>
           </div>
         </div>
       </section>

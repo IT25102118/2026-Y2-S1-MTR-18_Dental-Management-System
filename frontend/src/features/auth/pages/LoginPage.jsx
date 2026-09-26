@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { canRoleAccessPath, getDashboardPath, isSafeInternalPath, isStaffRole } from '../roleAccess';
+import staffWorkspaceImg from '../../../assets/staff-workspace.jpg';
 import '../auth.css';
 import '../public-auth.css';
 
@@ -24,6 +25,23 @@ function ShieldIcon() {
   return (
     <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
       <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
+    </svg>
+  );
+}
+
+function ToothIcon() {
+  return (
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+      <path d="M12 2C8.5 2 6 4.5 6 8c0 3.5 1.5 6 3 10 .8 2.2 2 4 3 4s2.2-1.8 3-4c1.5-4 3-6.5 3-10 0-3.5-2.5-6-6-6z" />
+      <path d="M9 10c1-1 2-1.5 3-1.5s2 .5 3 1.5" />
+    </svg>
+  );
+}
+
+function ArrowIcon() {
+  return (
+    <svg className="btn-arrow-icon" viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+      <path d="M4 10h11M11 6l4 4-4 4" />
     </svg>
   );
 }
@@ -105,9 +123,178 @@ export default function LoginPage({ portalType: propPortalType }) {
 
   const hasError = Boolean(errorMessage);
 
+  // Dedicated Premium Split-Layout for Staff Portal
+  if (isStaffPortal) {
+    return (
+      <main className="public-auth-page staff-portal-layout" aria-labelledby="login-title">
+        <div className="staff-split-shell" data-testid="login-card-staff">
+          {/* Left / Visual Overview Panel */}
+          <aside className="staff-visual-panel" aria-label="Staff Portal Overview">
+            <div className="staff-panel-header staff-anim-header">
+              <Link to="/" className="staff-panel-brand" aria-label="DentCare Home">
+                <span className="staff-brand-icon" aria-hidden="true">
+                  <ToothIcon />
+                </span>
+                <span className="staff-brand-title">DentCare</span>
+              </Link>
+              <div className="staff-portal-badge">
+                <ShieldIcon />
+                <span>STAFF PORTAL</span>
+              </div>
+            </div>
+
+            <div className="staff-panel-content">
+              <div className="staff-panel-copy staff-anim-copy">
+                <span className="staff-panel-kicker">Clinic Operations Workspace</span>
+                <h2 className="staff-panel-headline">Clinical operations, securely connected.</h2>
+                <p className="staff-panel-desc">
+                  Protected operational workspace for authorized dentists, dental assistants, receptionists, and practice administrators.
+                </p>
+              </div>
+
+              <div className="staff-panel-media staff-anim-media">
+                <img
+                  src={staffWorkspaceImg}
+                  alt="Modern dental clinic consultation suite and doctor workstation"
+                  className="staff-panel-img"
+                  width="800"
+                  height="600"
+                />
+                <div className="staff-panel-media-overlay" aria-hidden="true" />
+                <div className="staff-panel-media-badge">
+                  <span className="staff-badge-pulse" aria-hidden="true" />
+                  <span>Practice Operations Active</span>
+                </div>
+              </div>
+
+              <div className="staff-capabilities-list staff-anim-chips" aria-label="Staff workspace capabilities">
+                <div className="staff-capability-chip">
+                  <span className="chip-dot" aria-hidden="true" />
+                  <span>Clinical workflows</span>
+                </div>
+                <div className="staff-capability-chip">
+                  <span className="chip-dot" aria-hidden="true" />
+                  <span>Practice operations</span>
+                </div>
+                <div className="staff-capability-chip">
+                  <span className="chip-dot" aria-hidden="true" />
+                  <span>Inventory &amp; administration</span>
+                </div>
+              </div>
+            </div>
+
+            <div className="staff-security-notice staff-anim-notice" role="note">
+              <span className="notice-icon" aria-hidden="true"><ShieldIcon /></span>
+              <p>Staff accounts are provisioned exclusively by clinic administrators. Public registration is not permitted for staff roles.</p>
+            </div>
+          </aside>
+
+          {/* Right / Login Form Panel */}
+          <div className="staff-form-panel staff-anim-form">
+            <Link to="/" className="public-auth-back">
+              <span aria-hidden="true">←</span> Back to home
+            </Link>
+
+            <header className="public-auth-header staff-form-header">
+              <div className="public-portal-tag staff-tag">
+                <ShieldIcon />
+                <span>Authorized Clinic Staff</span>
+              </div>
+              <h1 id="login-title">Staff Login</h1>
+              <p className="staff-welcome-text">Welcome back. Sign in to your DentCare staff workspace.</p>
+            </header>
+
+            {errorMessage && (
+              <div id="login-error" className="public-auth-alert" role="alert" aria-live="polite" data-testid="login-error-alert">
+                <span aria-hidden="true">!</span>
+                <p>{errorMessage}</p>
+              </div>
+            )}
+
+            <form onSubmit={handleSubmit} className="public-auth-form" noValidate>
+              <div className="public-field">
+                <label htmlFor="login-email">Staff Email address</label>
+                <input
+                  id="login-email"
+                  type="email"
+                  name="email"
+                  value={email}
+                  onChange={(event) => setEmail(event.target.value)}
+                  required
+                  autoComplete="email"
+                  inputMode="email"
+                  placeholder="staff@dentcare.com"
+                  disabled={isSubmitting}
+                  aria-invalid={hasError}
+                  aria-describedby={hasError ? 'login-error' : undefined}
+                  data-testid="login-email-input"
+                />
+              </div>
+
+              <div className="public-field">
+                <label htmlFor="login-password">Password</label>
+                <div className="public-password-field">
+                  <input
+                    id="login-password"
+                    type={showPassword ? 'text' : 'password'}
+                    name="password"
+                    value={password}
+                    onChange={(event) => setPassword(event.target.value)}
+                    required
+                    autoComplete="current-password"
+                    placeholder="Enter your password"
+                    disabled={isSubmitting}
+                    aria-invalid={hasError}
+                    aria-describedby={hasError ? 'login-error' : undefined}
+                    data-testid="login-password-input"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowPassword((current) => !current)}
+                    aria-label={showPassword ? 'Hide password' : 'Show password'}
+                    aria-pressed={showPassword}
+                    disabled={isSubmitting}
+                  >
+                    <VisibilityIcon visible={showPassword} />
+                  </button>
+                </div>
+              </div>
+
+              <button
+                type="submit"
+                className="public-auth-submit submit-staff-btn"
+                disabled={isSubmitting}
+                data-testid="login-submit-button"
+              >
+                {isSubmitting ? (
+                  <span className="public-submit-loading"><span aria-hidden="true" />Signing In...</span>
+                ) : (
+                  <>
+                    <span>Sign In to Staff Workspace</span>
+                    <ArrowIcon />
+                  </>
+                )}
+              </button>
+
+              <p className="staff-auth-disclaimer">
+                For authorized DentCare clinic staff only.
+              </p>
+            </form>
+
+            <div className="public-auth-footer staff-auth-footer">
+              <p>Looking for patient records? <Link to="/patient/login">Go to Patient Login</Link></p>
+              <span>New patients can register online using <Link to="/register">Patient Registration</Link>.</span>
+            </div>
+          </div>
+        </div>
+      </main>
+    );
+  }
+
+  // Patient and Unified Login Views (Preserved completely)
   return (
-    <main className={`public-auth-page public-auth-login ${isPatientPortal ? 'portal-patient-theme' : ''} ${isStaffPortal ? 'portal-staff-theme' : ''}`} aria-labelledby="login-title">
-      <div className={`public-auth-card ${isPatientPortal ? 'public-auth-card-patient' : ''} ${isStaffPortal ? 'public-auth-card-staff' : ''}`} data-testid={`login-card-${portalType}`}>
+    <main className={`public-auth-page public-auth-login ${isPatientPortal ? 'portal-patient-theme' : ''}`} aria-labelledby="login-title">
+      <div className={`public-auth-card ${isPatientPortal ? 'public-auth-card-patient' : ''}`} data-testid={`login-card-${portalType}`}>
         <Link to="/" className="public-auth-back"><span aria-hidden="true">←</span> Back to home</Link>
 
         <header className="public-auth-header">
@@ -119,15 +306,6 @@ export default function LoginPage({ portalType: propPortalType }) {
               </div>
               <h1 id="login-title">Patient Login</h1>
               <p>Sign in with your verified patient email and password to access your personal dental workspace.</p>
-            </>
-          ) : isStaffPortal ? (
-            <>
-              <div className="public-portal-tag staff-tag">
-                <ShieldIcon />
-                <span>Authorized Clinic Staff</span>
-              </div>
-              <h1 id="login-title">Staff Login</h1>
-              <p>Secure workspace sign-in for DentCare dentists, dental assistants, receptionists, and administrators.</p>
             </>
           ) : (
             <>
@@ -149,13 +327,6 @@ export default function LoginPage({ portalType: propPortalType }) {
           )}
         </header>
 
-        {isStaffPortal && (
-          <div className="staff-security-notice" role="note">
-            <span className="notice-icon" aria-hidden="true">🛡️</span>
-            <p>Staff accounts are provisioned exclusively by clinic administrators. Public registration is not permitted for staff roles.</p>
-          </div>
-        )}
-
         {errorMessage && (
           <div id="login-error" className="public-auth-alert" role="alert" aria-live="polite" data-testid="login-error-alert">
             <span aria-hidden="true">!</span>
@@ -166,7 +337,7 @@ export default function LoginPage({ portalType: propPortalType }) {
         <form onSubmit={handleSubmit} className="public-auth-form" noValidate>
           <div className="public-field">
             <label htmlFor="login-email">
-              {isPatientPortal ? 'Patient Email address' : isStaffPortal ? 'Staff Email address' : 'Email address'}
+              {isPatientPortal ? 'Patient Email address' : 'Email address'}
             </label>
             <input
               id="login-email"
@@ -177,7 +348,7 @@ export default function LoginPage({ portalType: propPortalType }) {
               required
               autoComplete="email"
               inputMode="email"
-              placeholder={isStaffPortal ? 'staff@dentcare.com' : 'name@example.com'}
+              placeholder="name@example.com"
               disabled={isSubmitting}
               aria-invalid={hasError}
               aria-describedby={hasError ? 'login-error' : undefined}
@@ -216,7 +387,7 @@ export default function LoginPage({ portalType: propPortalType }) {
 
           <button
             type="submit"
-            className={`public-auth-submit ${isStaffPortal ? 'submit-staff-btn' : ''}`}
+            className="public-auth-submit"
             disabled={isSubmitting}
             data-testid="login-submit-button"
           >
@@ -224,8 +395,6 @@ export default function LoginPage({ portalType: propPortalType }) {
               <span className="public-submit-loading"><span aria-hidden="true" />Signing In...</span>
             ) : isPatientPortal ? (
               'Sign In as Patient'
-            ) : isStaffPortal ? (
-              'Sign In to Staff Workspace'
             ) : (
               'Sign In'
             )}
@@ -237,11 +406,6 @@ export default function LoginPage({ portalType: propPortalType }) {
             <>
               <p>New patient? <Link to="/register">Register as a Patient</Link></p>
               <span>Clinic staff member? <Link to="/staff/login">Go to Staff Login</Link></span>
-            </>
-          ) : isStaffPortal ? (
-            <>
-              <p>Looking for patient records? <Link to="/patient/login">Go to Patient Login</Link></p>
-              <span>New patients can register online using <Link to="/register">Patient Registration</Link>.</span>
             </>
           ) : (
             <>
