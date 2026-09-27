@@ -1,89 +1,111 @@
 /* =============================================================================
-   DentCare Staff Dashboard Styling — Clinic Command Center Edition
+   DentCare Staff Dashboard Styling — Luxury Dental Clinic Edition
    Scoped to .staff-dashboard-root
    ============================================================================= */
 
 :root {
-  /* DentCare Command Palette */
+  /* ── Deep Navy & Clinical Slate Foundation ── */
   --cc-navy-950: #060a14;
-  --cc-navy-900: #080e1e;
-  --cc-navy-850: #0b132b;
-  --cc-navy-800: #0f172a;
+  --cc-navy-900: #090e1a;
+  --cc-navy-850: #0c1426;
+  --cc-navy-800: #101c33;
   --cc-slate-700: #334155;
   --cc-slate-600: #475569;
   --cc-slate-500: #64748b;
   --cc-slate-400: #94a3b8;
+  --cc-slate-300: #cbd5e1;
   --cc-slate-200: #e2e8f0;
   --cc-slate-100: #f1f5f9;
   --cc-slate-50: #f8fafc;
 
-  /* Signature Clinical Teal */
+  /* ── Signature DentCare Teal Accent ── */
   --cc-teal-900: #134e4a;
   --cc-teal-800: #115e59;
   --cc-teal-700: #0f766e;
   --cc-teal-600: #0d9488;
   --cc-teal-500: #14b8a6;
   --cc-teal-400: #2dd4bf;
+  --cc-teal-300: #5eead4;
   --cc-teal-200: #99f6e4;
   --cc-teal-100: #ccfbf1;
   --cc-teal-50: #f0fdfa;
 
-  /* Functional Accents */
+  /* ── Controlled Accents ── */
   --cc-emerald: #10b981;
   --cc-emerald-glow: rgba(16, 185, 129, 0.35);
-  --cc-amber: #f59e0b;
-  --cc-blue: #3b82f6;
   --cc-danger: #ef4444;
 
-  /* Controlled Shadows */
-  --cc-shadow-sm: 0 1px 3px 0 rgba(15, 23, 42, 0.05), 0 1px 2px -1px rgba(15, 23, 42, 0.03);
-  --cc-shadow-md: 0 4px 14px -3px rgba(15, 23, 42, 0.07), 0 2px 6px -2px rgba(15, 23, 42, 0.03);
-  --cc-shadow-lg: 0 14px 28px -6px rgba(15, 23, 42, 0.1), 0 6px 12px -3px rgba(15, 23, 42, 0.04);
-  --cc-shadow-glow: 0 0 20px -3px rgba(45, 212, 191, 0.25);
+  /* ── Multi-Layered Depth & Shadows ── */
+  --cc-shadow-sm: 0 1px 2px 0 rgba(15, 23, 42, 0.04);
+  --cc-shadow-card: 0 1px 3px 0 rgba(15, 23, 42, 0.04), 0 4px 14px -2px rgba(15, 23, 42, 0.03);
+  --cc-shadow-card-hover: 0 12px 28px -6px rgba(15, 23, 42, 0.08), 0 4px 10px -2px rgba(15, 118, 110, 0.06);
+  --cc-shadow-header: 0 20px 42px -10px rgba(9, 14, 26, 0.45), 0 4px 16px -2px rgba(9, 14, 26, 0.2);
 }
 
 /* =============================================================================
-   PAGE CANVAS (Blueprint Grid & Ambient Illumination)
+   PAGE CANVAS (Subtle Blueprint Pattern & Ambient Medical Illumination)
    ============================================================================= */
 .staff-dashboard-root {
-  max-width: 1320px;
+  max-width: 1340px;
   margin: 0 auto;
-  padding: 1.25rem 1.5rem 4rem;
+  padding: 1.25rem 1.75rem 4rem;
   width: 100%;
   min-height: calc(100vh - 64px);
   background-color: #f8fafc;
   background-image: 
-    radial-gradient(at 10% 0%, rgba(15, 118, 110, 0.06) 0%, transparent 45%),
-    radial-gradient(at 90% 20%, rgba(59, 130, 246, 0.03) 0%, transparent 40%),
-    radial-gradient(rgba(15, 118, 110, 0.04) 1px, transparent 1px);
-  background-size: auto, auto, 24px 24px;
+    radial-gradient(at 0% 0%, rgba(13, 148, 136, 0.045) 0%, transparent 45%),
+    radial-gradient(at 100% 12%, rgba(15, 118, 110, 0.035) 0%, transparent 40%),
+    radial-gradient(rgba(15, 118, 110, 0.035) 1px, transparent 1px);
+  background-size: 100% 100%, 100% 100%, 24px 24px;
   color: var(--cc-navy-800);
 }
 
 /* =============================================================================
-   1. PREMIUM COMMAND CENTER HEADER (Dark Navy Foundation)
+   1. PREMIUM COMMAND CENTER HEADER (Deep Navy / Clinical Slate)
    ============================================================================= */
 .staff-command-header {
   position: relative;
-  background: linear-gradient(135deg, #080e1e 0%, #0b132b 45%, #0f242d 100%);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  border-top: 1px solid rgba(45, 212, 191, 0.35);
+  background: linear-gradient(135deg, #080d19 0%, #0c1426 50%, #0f222d 100%);
+  border: 1px solid rgba(255, 255, 255, 0.09);
+  border-top: 1px solid rgba(45, 212, 191, 0.4);
   border-radius: 16px;
-  padding: 1.35rem 1.65rem;
-  box-shadow: 0 16px 36px -8px rgba(8, 14, 30, 0.35), 0 4px 12px -2px rgba(8, 14, 30, 0.2);
+  padding: 1.4rem 1.85rem;
+  box-shadow: var(--cc-shadow-header);
   margin-bottom: 0.85rem;
   overflow: hidden;
   animation: headerGlide 0.45s cubic-bezier(0.16, 1, 0.3, 1) both;
 }
 
-.staff-header-glass-overlay {
+/* Soft ambient teal radial glow behind header */
+.staff-header-glow {
   position: absolute;
   top: 0;
   left: 0;
-  right: 0;
+  width: 100%;
   height: 100%;
-  background: radial-gradient(800px circle at 0% 0%, rgba(45, 212, 191, 0.08) 0%, transparent 70%);
+  background: radial-gradient(750px circle at 0% 0%, rgba(45, 212, 191, 0.12) 0%, transparent 65%);
   pointer-events: none;
+}
+
+/* Subtle architectural grid lines in header background */
+.staff-header-grid-lines {
+  position: absolute;
+  inset: 0;
+  background-image: 
+    linear-gradient(to right, rgba(255, 255, 255, 0.02) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(255, 255, 255, 0.02) 1px, transparent 1px);
+  background-size: 32px 32px;
+  pointer-events: none;
+}
+
+/* Lightweight clinical geometric line motif (top right) */
+.staff-header-clinical-motif {
+  position: absolute;
+  right: -25px;
+  top: -25px;
+  pointer-events: none;
+  opacity: 0.12;
+  transform: rotate(6deg);
 }
 
 .staff-command-header-inner {
@@ -99,14 +121,16 @@
 .staff-command-identity {
   display: flex;
   align-items: center;
-  gap: 1rem;
+  gap: 1.15rem;
 }
 
+/* Staff Avatar with Double-Layered Refined Teal Orbit */
 .staff-avatar-orbit {
   position: relative;
   display: inline-flex;
   align-items: center;
   justify-content: center;
+  flex-shrink: 0;
 }
 
 .staff-avatar-orbit::before {
@@ -114,9 +138,9 @@
   position: absolute;
   inset: -3px;
   border-radius: 14px;
-  background: linear-gradient(135deg, #2dd4bf 0%, rgba(45, 212, 191, 0.2) 100%);
-  opacity: 0.75;
-  filter: blur(2px);
+  background: linear-gradient(135deg, #2dd4bf 0%, rgba(45, 212, 191, 0.15) 100%);
+  opacity: 0.8;
+  filter: blur(2.5px);
 }
 
 .staff-avatar-chip {
@@ -127,14 +151,13 @@
   width: 48px;
   height: 48px;
   border-radius: 12px;
-  background: linear-gradient(135deg, #0f766e 0%, #080e1e 100%);
+  background: linear-gradient(135deg, #0f766e 0%, #070d18 100%);
   color: #ffffff;
   font-size: 1.15rem;
   font-weight: 800;
   letter-spacing: -0.02em;
-  border: 1.5px solid rgba(255, 255, 255, 0.25);
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
-  flex-shrink: 0;
+  border: 1.5px solid rgba(255, 255, 255, 0.22);
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.45);
 }
 
 .staff-command-text {
@@ -145,8 +168,8 @@
 
 .staff-header-eyebrow {
   font-size: 0.6875rem;
-  font-weight: 750;
-  letter-spacing: 0.08em;
+  font-weight: 800;
+  letter-spacing: 0.09em;
   text-transform: uppercase;
   color: #2dd4bf;
   line-height: 1;
@@ -161,48 +184,18 @@
 
 .staff-title-row h1 {
   margin: 0;
-  font-size: 1.6rem;
+  font-size: 1.65rem;
   font-weight: 850;
   color: #ffffff;
   letter-spacing: -0.03em;
   line-height: 1.15;
 }
 
-.staff-station-status-pill {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.35rem;
-  font-size: 0.6875rem;
-  font-weight: 700;
-  letter-spacing: 0.02em;
-  color: #34d399;
-  background: rgba(16, 185, 129, 0.15);
-  border: 1px solid rgba(52, 211, 153, 0.3);
-  border-radius: 9999px;
-  padding: 0.15rem 0.6rem;
-  box-shadow: 0 0 10px rgba(16, 185, 129, 0.15);
-}
-
-.staff-status-dot {
-  width: 6px;
-  height: 6px;
-  border-radius: 50%;
-  background-color: #10b981;
-  box-shadow: 0 0 0 2px rgba(16, 185, 129, 0.3);
-  animation: beaconPulse 2.5s infinite;
-}
-
-@keyframes beaconPulse {
-  0% { box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.5); }
-  70% { box-shadow: 0 0 0 7px rgba(16, 185, 129, 0); }
-  100% { box-shadow: 0 0 0 0 rgba(16, 185, 129, 0); }
-}
-
 .staff-header-subtitle {
   margin: 0;
   font-size: 0.8125rem;
   color: #94a3b8;
-  line-height: 1.4;
+  line-height: 1.45;
 }
 
 .staff-header-subtitle strong {
@@ -217,6 +210,38 @@
   flex-wrap: wrap;
 }
 
+/* Station Online Live Status Pill */
+.staff-station-status-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  font-size: 0.6875rem;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  color: #34d399;
+  background: rgba(16, 185, 129, 0.14);
+  border: 1px solid rgba(52, 211, 153, 0.3);
+  border-radius: 9999px;
+  padding: 0.22rem 0.65rem;
+  box-shadow: 0 0 12px rgba(16, 185, 129, 0.12);
+}
+
+.staff-status-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background-color: #10b981;
+  box-shadow: 0 0 0 2px rgba(16, 185, 129, 0.3);
+  animation: beaconPulse 2.6s infinite;
+}
+
+@keyframes beaconPulse {
+  0% { box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.5); }
+  70% { box-shadow: 0 0 0 7px rgba(16, 185, 129, 0); }
+  100% { box-shadow: 0 0 0 0 rgba(16, 185, 129, 0); }
+}
+
+/* Session Date Pill */
 .staff-header-date {
   display: inline-flex;
   align-items: center;
@@ -224,7 +249,7 @@
   font-size: 0.75rem;
   font-weight: 600;
   color: #cbd5e1;
-  background: rgba(255, 255, 255, 0.06);
+  background: rgba(255, 255, 255, 0.07);
   border: 1px solid rgba(255, 255, 255, 0.12);
   border-radius: 8px;
   padding: 0.42rem 0.75rem;
@@ -234,6 +259,7 @@
   color: #2dd4bf;
 }
 
+/* Authenticated Role Badge */
 .staff-role-badge {
   display: inline-flex;
   align-items: center;
@@ -247,7 +273,7 @@
   background: rgba(255, 255, 255, 0.08);
   color: #ffffff;
   border: 1px solid rgba(255, 255, 255, 0.18);
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.25);
 }
 
 .role-dot {
@@ -292,6 +318,7 @@
   box-shadow: 0 0 6px #34d399;
 }
 
+/* My Account Link Button */
 .staff-account-btn {
   display: inline-flex;
   align-items: center;
@@ -354,7 +381,7 @@
 }
 
 /* =============================================================================
-   2. COMMAND TELEMETRY STRIP (Integrated Horizontal Status)
+   2. PREMIUM OPERATION STRIP (Integrated Horizontal Telemetry)
    ============================================================================= */
 .staff-command-strip {
   display: flex;
@@ -363,7 +390,7 @@
   background-color: #ffffff;
   border: 1px solid rgba(226, 232, 240, 0.9);
   border-radius: 12px;
-  padding: 0.65rem 1.35rem;
+  padding: 0.65rem 1.45rem;
   margin-bottom: 1.35rem;
   box-shadow: 0 2px 6px -1px rgba(15, 23, 42, 0.04);
   gap: 1.25rem;
@@ -416,7 +443,7 @@
 .staff-command-layout {
   display: grid;
   grid-template-columns: minmax(0, 1fr) 310px;
-  gap: 1.35rem;
+  gap: 1.45rem;
   align-items: start;
 }
 
@@ -463,22 +490,22 @@
   position: relative;
   display: flex;
   align-items: center;
-  width: 340px;
+  width: 350px;
 }
 
 .staff-search-icon {
   position: absolute;
-  left: 0.75rem;
+  left: 0.8rem;
   color: #94a3b8;
   pointer-events: none;
 }
 
 .staff-command-search-input {
   width: 100%;
-  padding: 0.46rem 1.85rem 0.46rem 2.25rem;
+  padding: 0.48rem 1.85rem 0.48rem 2.35rem;
   background-color: #ffffff;
   border: 1px solid #cbd5e1;
-  border-radius: 8px;
+  border-radius: 9px;
   font-size: 0.8125rem;
   color: #0f172a;
   box-shadow: var(--cc-shadow-sm);
@@ -487,8 +514,8 @@
 
 .staff-command-search-input:focus {
   outline: none;
-  border-color: #0f766e;
-  box-shadow: 0 0 0 3px rgba(15, 118, 110, 0.15);
+  border-color: #0d9488;
+  box-shadow: 0 0 0 3px rgba(13, 148, 136, 0.16);
 }
 
 .staff-search-clear {
@@ -510,147 +537,132 @@
 }
 
 /* =============================================================================
-   ASYMMETRIC BENTO COMMAND GRID
+   MODULE WORKSPACE: UNIFIED COHERENT LIGHT PREMIUM MODULE CARDS
+   All module cards share the EXACT SAME light surface, border, shadow, and radius.
+   No dark billing cards, no rainbow tiles.
    ============================================================================= */
-.staff-bento-grid {
+.staff-modules-grid {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
-  grid-auto-flow: dense;
   gap: 1.15rem;
 }
 
-.staff-bento-grid.count-1 .staff-bento-tile {
-  grid-column: span 2;
-}
-
-.staff-bento-tile {
+.staff-module-card {
   position: relative;
   display: flex;
   flex-direction: column;
   background-color: #ffffff;
   background-image: linear-gradient(180deg, #ffffff 0%, #fafcfb 100%);
-  border: 1px solid rgba(15, 118, 110, 0.14);
+  border: 1px solid rgba(15, 118, 110, 0.13);
   border-radius: 14px;
-  box-shadow: 0 1px 3px 0 rgba(15, 23, 42, 0.04), 0 1px 2px -1px rgba(15, 23, 42, 0.02);
-  padding: 1.25rem;
+  box-shadow: var(--cc-shadow-card);
+  padding: 1.3rem;
   overflow: hidden;
-  transition: transform 0.2s cubic-bezier(0.16, 1, 0.3, 1),
-              box-shadow 0.2s cubic-bezier(0.16, 1, 0.3, 1),
+  animation: cardFadeUp 0.45s cubic-bezier(0.16, 1, 0.3, 1) calc(0.12s + var(--stagger-idx, 0) * 0.06s) both;
+  transition: transform 0.22s cubic-bezier(0.16, 1, 0.3, 1),
+              box-shadow 0.22s cubic-bezier(0.16, 1, 0.3, 1),
               border-color 0.2s ease;
 }
 
-/* Stagger entrance */
-.staff-bento-tile:nth-child(1) { animation: bentoPop 0.4s cubic-bezier(0.16, 1, 0.3, 1) 0.08s both; }
-.staff-bento-tile:nth-child(2) { animation: bentoPop 0.4s cubic-bezier(0.16, 1, 0.3, 1) 0.14s both; }
-.staff-bento-tile:nth-child(3) { animation: bentoPop 0.4s cubic-bezier(0.16, 1, 0.3, 1) 0.20s both; }
-.staff-bento-tile:nth-child(4) { animation: bentoPop 0.4s cubic-bezier(0.16, 1, 0.3, 1) 0.26s both; }
-.staff-bento-tile:nth-child(5) { animation: bentoPop 0.4s cubic-bezier(0.16, 1, 0.3, 1) 0.32s both; }
-.staff-bento-tile:nth-child(6) { animation: bentoPop 0.4s cubic-bezier(0.16, 1, 0.3, 1) 0.38s both; }
-
-/* Unified Shared Hover & Focus Language across all module cards */
-.staff-bento-tile:hover {
-  transform: translateY(-2.5px);
-  border-color: rgba(15, 118, 110, 0.35);
-  box-shadow: 0 10px 24px -4px rgba(15, 23, 42, 0.08), 0 2px 6px -1px rgba(15, 118, 110, 0.05);
+/* Subtle inner bevel / highlight */
+.staff-card-ambient {
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.9);
+  pointer-events: none;
 }
 
-.staff-bento-tile:focus-within {
+/* Lead module wide layout on desktop if odd number of authorized modules */
+.staff-module-card.staff-tile-wide {
+  grid-column: span 2;
+}
+
+/* Shared Unified Hover & Focus for all module cards */
+.staff-module-card:hover {
+  transform: translateY(-3px);
+  border-color: rgba(15, 118, 110, 0.35);
+  box-shadow: var(--cc-shadow-card-hover);
+}
+
+.staff-module-card:focus-within {
   border-color: #0f766e;
   box-shadow: 0 0 0 3px rgba(15, 118, 110, 0.16);
 }
 
-/* ── Grid Column Placement (Preserves responsive bento grid structure) ── */
-.staff-bento-tile.bento-hero,
-.staff-bento-tile.bento-wide {
-  grid-column: span 2;
-}
-
-/* Suppress redundant tag so category badges remain completely uniform */
-.staff-tile-flagship-tag {
-  display: none;
-}
-
-/* Inventory Module: subtle teal border tint emphasis while belonging to same design system */
-.staff-bento-tile.bento-teal {
-  border-color: rgba(15, 118, 110, 0.24);
-}
-
-/* ── Tile Internal Anatomy ── */
-.staff-tile-header {
+/* ── Card Internal Anatomy ── */
+.staff-card-header {
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: 0.85rem;
-  margin-bottom: 0.75rem;
+  margin-bottom: 0.85rem;
 }
 
-.staff-tile-icon-box {
+/* Unified Refined Icon Box */
+.staff-card-icon-box {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 42px;
-  height: 42px;
-  border-radius: 10px;
+  width: 44px;
+  height: 44px;
+  border-radius: 11px;
   flex-shrink: 0;
-  background: #f0fdfa;
+  background: linear-gradient(135deg, #f0fdfa 0%, #e6fffa 100%);
   color: #0f766e;
   border: 1px solid #ccfbf1;
-  box-shadow: 0 2px 6px rgba(15, 118, 110, 0.06);
-  transition: transform 0.2s ease, background-color 0.2s ease;
+  box-shadow: 0 2px 6px rgba(15, 118, 110, 0.08);
+  transition: transform 0.2s ease, border-color 0.2s ease;
 }
 
-.staff-bento-tile:hover .staff-tile-icon-box {
-  transform: scale(1.04);
-}
-
-/* ── Inventory Module Icon Container (Refined Dental Supply Treatment) ── */
-.staff-tile-icon-box.staff-icon-inventory,
-.staff-bento-tile.bento-hero .staff-tile-icon-box.staff-icon-inventory,
-.staff-bento-tile.bento-teal .staff-tile-icon-box.staff-icon-inventory {
-  background: linear-gradient(135deg, #f0fdfa 0%, #e0fbf6 100%);
-  color: #0f766e;
-  border: 1px solid #99f6e4;
-  box-shadow: 0 2px 8px -1px rgba(15, 118, 110, 0.14), inset 0 1px 0 rgba(255, 255, 255, 0.85);
-}
-
-.staff-bento-tile:hover .staff-tile-icon-box.staff-icon-inventory {
-  background: linear-gradient(135deg, #e6fffa 0%, #ccfbf1 100%);
+.staff-module-card:hover .staff-card-icon-box {
+  transform: scale(1.03);
   border-color: #5eead4;
-  transform: scale(1.04);
 }
 
-.staff-tile-meta {
+/* Inventory Management: Preserved Improved Icon Polish */
+.staff-card-icon-box.staff-icon-inventory {
+  background: linear-gradient(135deg, #f0fdfa 0%, #e0fbf6 100%);
+  border-color: #99f6e4;
+  box-shadow: 0 2px 8px -1px rgba(15, 118, 110, 0.12), inset 0 1px 0 rgba(255, 255, 255, 0.9);
+}
+
+.staff-module-card:hover .staff-card-icon-box.staff-icon-inventory {
+  border-color: #2dd4bf;
+  box-shadow: 0 4px 12px -1px rgba(15, 118, 110, 0.2);
+}
+
+.staff-card-meta {
   display: flex;
   align-items: center;
-  gap: 0.45rem;
 }
 
-.staff-tile-badge {
+.staff-card-badge {
   font-size: 0.65rem;
-  font-weight: 700;
+  font-weight: 750;
   text-transform: uppercase;
   letter-spacing: 0.04em;
   color: #475569;
   background-color: #f1f5f9;
   border: 1px solid #e2e8f0;
   border-radius: 9999px;
-  padding: 0.12rem 0.55rem;
+  padding: 0.14rem 0.58rem;
   flex-shrink: 0;
 }
 
-.staff-tile-body {
-  margin-bottom: 0.85rem;
+.staff-card-body {
+  margin-bottom: 0.95rem;
 }
 
-.staff-tile-body h3 {
+.staff-card-title {
   margin: 0 0 0.35rem;
-  font-size: 1.025rem;
+  font-size: 1.05rem;
   font-weight: 800;
   color: #0f172a;
   letter-spacing: -0.015em;
 }
 
-.staff-tile-desc {
+.staff-card-desc {
   margin: 0;
   font-size: 0.8125rem;
   color: #475569;
@@ -661,11 +673,11 @@
   overflow: hidden;
 }
 
-/* Shortcuts Chips */
-.staff-tile-shortcuts {
+/* Shortcuts Section */
+.staff-card-shortcuts {
   margin-top: auto;
   padding-top: 0.75rem;
-  border-top: 1px solid rgba(226, 232, 240, 0.6);
+  border-top: 1px solid rgba(226, 232, 240, 0.7);
   display: flex;
   align-items: center;
   gap: 0.45rem;
@@ -714,9 +726,9 @@
   outline-offset: 1px;
 }
 
-/* Primary Action Link */
-.staff-tile-footer {
-  margin-top: 0.85rem;
+/* Primary CTA Link */
+.staff-card-footer {
+  margin-top: 0.95rem;
 }
 
 .staff-primary-link {
@@ -729,7 +741,7 @@
   font-weight: 750;
   color: #0f766e;
   text-decoration: none;
-  padding: 0.52rem 0.85rem;
+  padding: 0.54rem 0.85rem;
   border-radius: 8px;
   background: #f0fdfa;
   border: 1px solid #ccfbf1;
@@ -797,7 +809,7 @@
 }
 
 /* =============================================================================
-   4. TACTICAL COMMAND RAIL (Right Column)
+   4. TACTICAL COMMAND RAIL (Command Dock & Governance)
    ============================================================================= */
 .staff-command-rail {
   display: flex;
@@ -811,7 +823,7 @@
   border: 1px solid rgba(226, 232, 240, 0.9);
   border-radius: 14px;
   box-shadow: var(--cc-shadow-sm);
-  padding: 1.15rem;
+  padding: 1.2rem;
   overflow: hidden;
 }
 
@@ -966,7 +978,7 @@
 }
 
 /* =============================================================================
-   KEYFRAME ANIMATIONS
+   KEYFRAME ANIMATIONS (Restrained, Smooth, Tasteful)
    ============================================================================= */
 @keyframes headerGlide {
   from {
@@ -1001,21 +1013,21 @@
   }
 }
 
-@keyframes bentoPop {
+@keyframes cardFadeUp {
   from {
     opacity: 0;
-    transform: translateY(12px) scale(0.98);
+    transform: translateY(10px);
   }
   to {
     opacity: 1;
-    transform: translateY(0) scale(1);
+    transform: translateY(0);
   }
 }
 
 @keyframes railSlide {
   from {
     opacity: 0;
-    transform: translateX(10px);
+    transform: translateX(8px);
   }
   to {
     opacity: 1;
@@ -1060,7 +1072,7 @@
   }
 
   .staff-command-header {
-    padding: 1.15rem;
+    padding: 1.2rem;
     border-radius: 14px;
   }
 
@@ -1086,13 +1098,12 @@
     display: none;
   }
 
-  .staff-bento-grid {
+  .staff-modules-grid {
     grid-template-columns: 1fr;
     gap: 1rem;
   }
 
-  .staff-bento-tile.bento-hero,
-  .staff-bento-tile.bento-wide {
+  .staff-module-card.staff-tile-wide {
     grid-column: span 1;
   }
 
@@ -1121,8 +1132,8 @@
   }
 
   .staff-avatar-chip {
-    width: 42px;
-    height: 42px;
+    width: 44px;
+    height: 44px;
     font-size: 1rem;
   }
 
@@ -1143,7 +1154,7 @@
     width: 100%;
   }
 
-  .staff-bento-tile {
-    padding: 1.1rem;
+  .staff-module-card {
+    padding: 1.15rem;
   }
 }

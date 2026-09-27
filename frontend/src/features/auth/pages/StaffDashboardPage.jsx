@@ -236,46 +236,13 @@ export default function StaffDashboardPage() {
     });
   }, [modules, searchQuery]);
 
-  // Dynamic Bento tile style variation based on role context
-  const getBentoVariant = (module) => {
-    const role = user?.role;
-    if (role === 'ADMINISTRATOR') {
-      if (module.id === 'clinical') return 'bento-hero';
-      if (module.id === 'billing') return 'bento-dark';
-      if (module.id === 'inventory') return 'bento-teal';
-      if (module.id === 'staff-admin') return 'bento-wide';
-      return 'bento-standard';
+  // Dynamic layout class: If odd count (e.g., 5 or 3), allow the lead module to span 2 columns on desktop
+  const getTileLayoutClass = (index, totalCount) => {
+    if (totalCount % 2 !== 0 && index === 0) {
+      return 'staff-tile-wide';
     }
-    if (role === 'DENTIST') {
-      if (module.id === 'clinical') return 'bento-hero';
-      if (module.id === 'prescriptions') return 'bento-dark';
-      return 'bento-teal';
-    }
-    if (role === 'RECEPTIONIST') {
-      if (module.id === 'billing') return 'bento-hero';
-      if (module.id === 'reports') return 'bento-dark';
-      if (module.id === 'inventory') return 'bento-teal';
-      return 'bento-standard';
-    }
-    if (role === 'DENTAL_ASSISTANT') {
-      if (module.id === 'inventory') return 'bento-hero';
-      if (module.id === 'clinical') return 'bento-dark';
-      return 'bento-teal';
-    }
-    return 'bento-standard';
+    return '';
   };
-
-  // Ensure hero tile sits cleanly at the top of the command bento grid
-  const displayModules = useMemo(() => {
-    if (searchQuery.trim()) return filteredModules;
-    return [...filteredModules].sort((a, b) => {
-      const aHero = getBentoVariant(a) === 'bento-hero';
-      const bHero = getBentoVariant(b) === 'bento-hero';
-      if (aHero && !bHero) return -1;
-      if (!aHero && bHero) return 1;
-      return 0;
-    });
-  }, [filteredModules, user?.role, searchQuery]);
 
   // Contextual quick actions based on active staff role
   const quickActions = useMemo(() => {
@@ -342,10 +309,37 @@ export default function StaffDashboardPage() {
   return (
     <main className="staff-dashboard-root" data-testid="staff-dashboard">
       {/* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-          1. COMMAND CENTER HEADER (Dark Navy Foundation)
+          1. PREMIUM COMMAND CENTER HEADER (Dark Navy Foundation)
           ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */}
       <header className="staff-command-header">
-        <div className="staff-header-glass-overlay" aria-hidden="true" />
+        <div className="staff-header-glow" aria-hidden="true" />
+        <div className="staff-header-grid-lines" aria-hidden="true" />
+
+        {/* Lightweight clinical geometric line motif */}
+        <svg
+          className="staff-header-clinical-motif"
+          width="210"
+          height="210"
+          viewBox="0 0 100 100"
+          fill="none"
+          xmlns="http://www.w3.org/2000/svg"
+          aria-hidden="true"
+        >
+          <path
+            d="M50 12 C35 12 24 22 24 38 C24 54 28 68 34 88 C36 92 42 92 44 86 C46 80 48 68 50 68 C52 68 54 80 56 86 C58 92 64 92 66 88 C72 68 76 54 76 38 C76 22 65 12 50 12 Z"
+            stroke="rgba(45, 212, 191, 0.16)"
+            strokeWidth="1.5"
+            strokeDasharray="3 3"
+          />
+          <path
+            d="M38 32 C38 26 44 22 50 22 C56 22 62 26 62 32 C62 38 56 42 50 42 C44 42 38 38 38 32 Z"
+            stroke="rgba(45, 212, 191, 0.1)"
+            strokeWidth="1"
+          />
+          <circle cx="50" cy="50" r="38" stroke="rgba(45, 212, 191, 0.07)" strokeWidth="1" />
+          <line x1="12" y1="50" x2="88" y2="50" stroke="rgba(45, 212, 191, 0.06)" strokeWidth="0.75" />
+          <line x1="50" y1="12" x2="50" y2="88" stroke="rgba(45, 212, 191, 0.06)" strokeWidth="0.75" />
+        </svg>
         
         <div className="staff-command-header-inner">
           <div className="staff-command-identity">
@@ -356,21 +350,30 @@ export default function StaffDashboardPage() {
             </div>
             
             <div className="staff-command-text">
-              <span className="staff-header-eyebrow">Dental Practice Management System</span>
+              <span className="staff-header-eyebrow">DENTCARE STAFF WORKSPACE</span>
               <div className="staff-title-row">
                 <h1>Staff dashboard</h1>
-                <span className="staff-station-status-pill" title="Clinic workstation connected">
-                  <span className="staff-status-dot" aria-hidden="true" />
-                  <span>Station Online</span>
-                </span>
               </div>
               <p className="staff-header-subtitle">
-                Welcome back, <strong>{user?.firstName || 'team member'}</strong>. Clinical operations &amp; practice command center.
+                Welcome back, <strong>{user?.firstName || 'team member'}</strong>. Your clinical and practice operations workspace.
               </p>
             </div>
           </div>
 
           <div className="staff-command-controls">
+            <span
+              className={`staff-role-badge ${getRoleBadgeClass(user?.role)}`}
+              data-testid="staff-role-badge"
+            >
+              <span className="role-dot" aria-hidden="true" />
+              {user?.role}
+            </span>
+
+            <span className="staff-station-status-pill" title="Clinic workstation connected">
+              <span className="staff-status-dot" aria-hidden="true" />
+              <span>Station Online</span>
+            </span>
+
             {currentDateStr && (
               <span className="staff-header-date" title="Current session date">
                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
@@ -382,14 +385,6 @@ export default function StaffDashboardPage() {
                 <span>{currentDateStr}</span>
               </span>
             )}
-            
-            <span
-              className={`staff-role-badge ${getRoleBadgeClass(user?.role)}`}
-              data-testid="staff-role-badge"
-            >
-              <span className="role-dot" aria-hidden="true" />
-              {user?.role}
-            </span>
 
             <Link to="/account" className="staff-account-btn">
               <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
@@ -419,12 +414,12 @@ export default function StaffDashboardPage() {
       )}
 
       {/* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-          2. COMMAND TELEMETRY STRIP (Integrated Horizontal Status)
+          2. COMMAND OPERATION STRIP (Integrated Horizontal Status)
           ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */}
       <section className="staff-command-strip" aria-label="Operational telemetry">
         <div className="staff-telemetry-node">
           <span className="staff-telemetry-beacon" aria-hidden="true" />
-          <span className="staff-telemetry-tag">Workstation:</span>
+          <span className="staff-telemetry-tag">Workstation</span>
           <span className="staff-telemetry-data">Online &bull; Ready</span>
         </div>
 
@@ -437,8 +432,8 @@ export default function StaffDashboardPage() {
             <rect width="7" height="7" x="14" y="14" rx="1" />
             <rect width="7" height="7" x="3" y="14" rx="1" />
           </svg>
-          <span className="staff-telemetry-tag">Permitted Tools:</span>
-          <span className="staff-telemetry-data">{modules.length} {modules.length === 1 ? 'Module' : 'Modules'}</span>
+          <span className="staff-telemetry-tag">Permitted Tools</span>
+          <span className="staff-telemetry-data">{modules.length} {modules.length === 1 ? 'Module' : 'Modules'} Authorized</span>
         </div>
 
         <div className="staff-telemetry-sep" aria-hidden="true" />
@@ -447,14 +442,18 @@ export default function StaffDashboardPage() {
           <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
             <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10" />
           </svg>
-          <span className="staff-telemetry-tag">Access Scope:</span>
+          <span className="staff-telemetry-tag">Access Scope</span>
           <span className="staff-telemetry-data">{getRoleDisplay(user?.role)}</span>
         </div>
 
         <div className="staff-telemetry-sep" aria-hidden="true" />
 
         <div className="staff-telemetry-node staff-telemetry-session">
-          <span className="staff-telemetry-tag">Station Mode:</span>
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+            <circle cx="12" cy="12" r="10" />
+            <polyline points="12 6 12 12 16 14" />
+          </svg>
+          <span className="staff-telemetry-tag">Station Mode</span>
           <span className="staff-telemetry-data">Chairside Primary</span>
         </div>
       </section>
@@ -483,7 +482,7 @@ export default function StaffDashboardPage() {
                 ref={searchInputRef}
                 type="text"
                 className="staff-command-search-input"
-                placeholder="Search tools, modules, or direct actions... [/]"
+                placeholder="Search tools, modules, or actions… [/]"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 aria-label="Filter practice tools"
@@ -501,34 +500,35 @@ export default function StaffDashboardPage() {
             </div>
           </div>
 
-          {/* Bento Command Grid */}
-          {displayModules.length > 0 ? (
-            <div className={`staff-bento-grid count-${displayModules.length}`}>
-              {displayModules.map((module) => {
-                const variantClass = getBentoVariant(module);
+          {/* Unified Light Module Grid */}
+          {filteredModules.length > 0 ? (
+            <div className={`staff-modules-grid count-${filteredModules.length}`}>
+              {filteredModules.map((module, index) => {
+                const layoutClass = getTileLayoutClass(index, filteredModules.length);
                 return (
-                  <article className={`staff-bento-tile ${variantClass}`} key={module.to}>
-                    <div className="staff-tile-ambient" aria-hidden="true" />
+                  <article
+                    className={`staff-module-card ${layoutClass} ${module.id === 'inventory' ? 'staff-card-inventory' : ''}`}
+                    key={module.to}
+                    style={{ '--stagger-idx': index }}
+                  >
+                    <div className="staff-card-ambient" aria-hidden="true" />
                     
-                    <div className="staff-tile-header">
-                      <div className={`staff-tile-icon-box ${module.id === 'inventory' ? 'staff-icon-inventory' : ''}`}>
+                    <div className="staff-card-header">
+                      <div className={`staff-card-icon-box ${module.id === 'inventory' ? 'staff-icon-inventory' : ''}`}>
                         <ModuleIcon type={module.id} />
                       </div>
-                      <div className="staff-tile-meta">
-                        <span className="staff-tile-badge">{module.category}</span>
-                        {variantClass === 'bento-hero' && (
-                          <span className="staff-tile-flagship-tag">Core Command</span>
-                        )}
+                      <div className="staff-card-meta">
+                        <span className="staff-card-badge">{module.category}</span>
                       </div>
                     </div>
 
-                    <div className="staff-tile-body">
-                      <h3>{module.title}</h3>
-                      <p className="staff-tile-desc">{module.description}</p>
+                    <div className="staff-card-body">
+                      <h3 className="staff-card-title">{module.title}</h3>
+                      <p className="staff-card-desc">{module.description}</p>
                     </div>
 
                     {module.quickLinks && module.quickLinks.length > 0 && (
-                      <div className="staff-tile-shortcuts" aria-label={`${module.title} quick links`}>
+                      <div className="staff-card-shortcuts" aria-label={`${module.title} quick links`}>
                         <span className="staff-shortcuts-label">Shortcuts</span>
                         <div className="staff-shortcuts-chips">
                           {module.quickLinks.map((link) => (
@@ -540,7 +540,7 @@ export default function StaffDashboardPage() {
                       </div>
                     )}
 
-                    <div className="staff-tile-footer">
+                    <div className="staff-card-footer">
                       <Link to={module.to} className="staff-primary-link">
                         <span>Open {module.title}</span>
                         <span className="staff-link-arrow" aria-hidden="true">&rarr;</span>
@@ -580,7 +580,7 @@ export default function StaffDashboardPage() {
               </div>
               <div className="staff-rail-title-group">
                 <h3>Quick Actions</h3>
-                <span className="staff-rail-subtitle">Tactical Shortcuts</span>
+                <span className="staff-rail-subtitle">Command Dock</span>
               </div>
             </div>
 
@@ -602,9 +602,7 @@ export default function StaffDashboardPage() {
             <div className="staff-rail-header">
               <div className="staff-rail-icon-wrap" aria-hidden="true">
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
-                  <circle cx="12" cy="12" r="10" />
-                  <line x1="12" y1="16" x2="12" y2="12" />
-                  <line x1="12" y1="8" x2="12.01" y2="8" />
+                  <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10" />
                 </svg>
               </div>
               <div className="staff-rail-title-group">
@@ -619,12 +617,12 @@ export default function StaffDashboardPage() {
 
             <div className="staff-governance-specs">
               <div className="staff-spec-row">
-                <span className="spec-label">Assigned Level:</span>
+                <span className="spec-label">Assigned Level</span>
                 <span className="spec-val">{getRoleDisplay(user?.role)}</span>
               </div>
               {user?.email && (
                 <div className="staff-spec-row">
-                  <span className="spec-label">Provider ID:</span>
+                  <span className="spec-label">Provider ID</span>
                   <span className="spec-val" title={user.email}>{user.email}</span>
                 </div>
               )}
