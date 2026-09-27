@@ -1,243 +1,329 @@
 /* =============================================================================
-   DentCare Staff Dashboard Styling (Production Healthcare SaaS Experience)
-   Scoped to .staff-dashboard-root to prevent styles leaking or affecting
-   the patient dashboard or other public entry components.
+   DentCare Staff Dashboard Styling — Clinic Command Center Edition
+   Scoped to .staff-dashboard-root
    ============================================================================= */
 
 :root {
-  --sd-bg: #f8fafc;
-  --sd-surface: #ffffff;
-  --sd-surface-subtle: #f1f5f9;
-  --sd-ink: #0f172a;
-  --sd-ink-secondary: #334155;
-  --sd-muted: #64748b;
-  --sd-border: #e2e8f0;
-  --sd-border-subtle: #edf2f7;
-  --sd-border-hover: #cbd5e1;
-  --sd-brand: #0284c7;
-  --sd-brand-hover: #0369a1;
-  --sd-brand-light: #f0f9ff;
-  --sd-brand-border: #bae6fd;
-  --sd-radius-sm: 8px;
-  --sd-radius-md: 12px;
-  --sd-radius-lg: 16px;
-  --sd-shadow-sm: 0 1px 2px 0 rgba(15, 23, 42, 0.05);
-  --sd-shadow-card: 0 1px 3px 0 rgba(15, 23, 42, 0.06), 0 1px 2px -1px rgba(15, 23, 42, 0.06);
-  --sd-shadow-hover: 0 10px 25px -5px rgba(15, 23, 42, 0.08), 0 8px 10px -6px rgba(15, 23, 42, 0.04);
-}
+  /* DentCare Command Palette */
+  --cc-navy-950: #060a14;
+  --cc-navy-900: #080e1e;
+  --cc-navy-850: #0b132b;
+  --cc-navy-800: #0f172a;
+  --cc-slate-700: #334155;
+  --cc-slate-600: #475569;
+  --cc-slate-500: #64748b;
+  --cc-slate-400: #94a3b8;
+  --cc-slate-200: #e2e8f0;
+  --cc-slate-100: #f1f5f9;
+  --cc-slate-50: #f8fafc;
 
-.staff-dashboard-root {
-  max-width: 1240px;
-  margin: 0 auto;
-  padding: 1.5rem 1.25rem 3.5rem;
-  width: 100%;
+  /* Signature Clinical Teal */
+  --cc-teal-900: #134e4a;
+  --cc-teal-800: #115e59;
+  --cc-teal-700: #0f766e;
+  --cc-teal-600: #0d9488;
+  --cc-teal-500: #14b8a6;
+  --cc-teal-400: #2dd4bf;
+  --cc-teal-200: #99f6e4;
+  --cc-teal-100: #ccfbf1;
+  --cc-teal-50: #f0fdfa;
+
+  /* Functional Accents */
+  --cc-emerald: #10b981;
+  --cc-emerald-glow: rgba(16, 185, 129, 0.35);
+  --cc-amber: #f59e0b;
+  --cc-blue: #3b82f6;
+  --cc-danger: #ef4444;
+
+  /* Controlled Shadows */
+  --cc-shadow-sm: 0 1px 3px 0 rgba(15, 23, 42, 0.05), 0 1px 2px -1px rgba(15, 23, 42, 0.03);
+  --cc-shadow-md: 0 4px 14px -3px rgba(15, 23, 42, 0.07), 0 2px 6px -2px rgba(15, 23, 42, 0.03);
+  --cc-shadow-lg: 0 14px 28px -6px rgba(15, 23, 42, 0.1), 0 6px 12px -3px rgba(15, 23, 42, 0.04);
+  --cc-shadow-glow: 0 0 20px -3px rgba(45, 212, 191, 0.25);
 }
 
 /* =============================================================================
-   Header & Operational Context Bar
+   PAGE CANVAS (Blueprint Grid & Ambient Illumination)
    ============================================================================= */
-.staff-dashboard-header {
-  background-color: var(--sd-surface);
-  border: 1px solid var(--sd-border);
-  border-radius: var(--sd-radius-lg);
-  box-shadow: var(--sd-shadow-card);
-  padding: 1.75rem 2rem;
-  margin-bottom: 1.5rem;
+.staff-dashboard-root {
+  max-width: 1320px;
+  margin: 0 auto;
+  padding: 1.25rem 1.5rem 4rem;
+  width: 100%;
+  min-height: calc(100vh - 64px);
+  background-color: #f8fafc;
+  background-image: 
+    radial-gradient(at 10% 0%, rgba(15, 118, 110, 0.06) 0%, transparent 45%),
+    radial-gradient(at 90% 20%, rgba(59, 130, 246, 0.03) 0%, transparent 40%),
+    radial-gradient(rgba(15, 118, 110, 0.04) 1px, transparent 1px);
+  background-size: auto, auto, 24px 24px;
+  color: var(--cc-navy-800);
 }
 
-.staff-dashboard-top-bar {
+/* =============================================================================
+   1. PREMIUM COMMAND CENTER HEADER (Dark Navy Foundation)
+   ============================================================================= */
+.staff-command-header {
+  position: relative;
+  background: linear-gradient(135deg, #080e1e 0%, #0b132b 45%, #0f242d 100%);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-top: 1px solid rgba(45, 212, 191, 0.35);
+  border-radius: 16px;
+  padding: 1.35rem 1.65rem;
+  box-shadow: 0 16px 36px -8px rgba(8, 14, 30, 0.35), 0 4px 12px -2px rgba(8, 14, 30, 0.2);
+  margin-bottom: 0.85rem;
+  overflow: hidden;
+  animation: headerGlide 0.45s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+.staff-header-glass-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 100%;
+  background: radial-gradient(800px circle at 0% 0%, rgba(45, 212, 191, 0.08) 0%, transparent 70%);
+  pointer-events: none;
+}
+
+.staff-command-header-inner {
+  position: relative;
+  z-index: 1;
   display: flex;
   align-items: center;
   justify-content: space-between;
   flex-wrap: wrap;
-  gap: 1rem;
-  padding-bottom: 1.25rem;
-  border-bottom: 1px solid var(--sd-border-subtle);
-  margin-bottom: 1.25rem;
-}
-
-.staff-station-status {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.5rem;
-  font-size: 0.8125rem;
-  font-weight: 500;
-  color: var(--sd-muted);
-}
-
-.staff-status-indicator {
-  display: inline-block;
-  width: 8px;
-  height: 8px;
-  border-radius: 50%;
-  background-color: #10b981;
-  box-shadow: 0 0 0 2px rgba(16, 185, 129, 0.2);
-}
-
-.staff-station-date {
-  font-size: 0.8125rem;
-  font-weight: 500;
-  color: var(--sd-muted);
-}
-
-.staff-header-content {
-  display: flex;
-  align-items: flex-start;
-  justify-content: space-between;
-  flex-wrap: wrap;
-  gap: 1.5rem;
-}
-
-.staff-user-identity {
-  display: flex;
-  align-items: center;
   gap: 1.25rem;
 }
 
-.staff-avatar-chip {
+.staff-command-identity {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.staff-avatar-orbit {
+  position: relative;
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 52px;
-  height: 52px;
-  border-radius: var(--sd-radius-md);
-  background: linear-gradient(135deg, #0284c7 0%, #0369a1 100%);
+}
+
+.staff-avatar-orbit::before {
+  content: '';
+  position: absolute;
+  inset: -3px;
+  border-radius: 14px;
+  background: linear-gradient(135deg, #2dd4bf 0%, rgba(45, 212, 191, 0.2) 100%);
+  opacity: 0.75;
+  filter: blur(2px);
+}
+
+.staff-avatar-chip {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 48px;
+  height: 48px;
+  border-radius: 12px;
+  background: linear-gradient(135deg, #0f766e 0%, #080e1e 100%);
   color: #ffffff;
-  font-size: 1.125rem;
-  font-weight: 700;
+  font-size: 1.15rem;
+  font-weight: 800;
   letter-spacing: -0.02em;
-  box-shadow: 0 2px 8px rgba(2, 132, 199, 0.25);
+  border: 1.5px solid rgba(255, 255, 255, 0.25);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
   flex-shrink: 0;
 }
 
-.staff-title-group h1 {
-  margin: 0;
-  font-size: 1.75rem;
-  font-weight: 800;
-  color: var(--sd-ink);
-  letter-spacing: -0.025em;
-  line-height: 1.2;
+.staff-command-text {
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
 }
 
-.staff-title-group p {
-  margin: 0.35rem 0 0;
-  font-size: 0.9375rem;
-  color: var(--sd-muted);
-  line-height: 1.5;
+.staff-header-eyebrow {
+  font-size: 0.6875rem;
+  font-weight: 750;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: #2dd4bf;
+  line-height: 1;
 }
 
-.staff-header-actions {
+.staff-title-row {
   display: flex;
   align-items: center;
   gap: 0.75rem;
   flex-wrap: wrap;
 }
 
-/* Role Badges */
+.staff-title-row h1 {
+  margin: 0;
+  font-size: 1.6rem;
+  font-weight: 850;
+  color: #ffffff;
+  letter-spacing: -0.03em;
+  line-height: 1.15;
+}
+
+.staff-station-status-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  font-size: 0.6875rem;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  color: #34d399;
+  background: rgba(16, 185, 129, 0.15);
+  border: 1px solid rgba(52, 211, 153, 0.3);
+  border-radius: 9999px;
+  padding: 0.15rem 0.6rem;
+  box-shadow: 0 0 10px rgba(16, 185, 129, 0.15);
+}
+
+.staff-status-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background-color: #10b981;
+  box-shadow: 0 0 0 2px rgba(16, 185, 129, 0.3);
+  animation: beaconPulse 2.5s infinite;
+}
+
+@keyframes beaconPulse {
+  0% { box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.5); }
+  70% { box-shadow: 0 0 0 7px rgba(16, 185, 129, 0); }
+  100% { box-shadow: 0 0 0 0 rgba(16, 185, 129, 0); }
+}
+
+.staff-header-subtitle {
+  margin: 0;
+  font-size: 0.8125rem;
+  color: #94a3b8;
+  line-height: 1.4;
+}
+
+.staff-header-subtitle strong {
+  color: #ffffff;
+  font-weight: 700;
+}
+
+.staff-command-controls {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+}
+
+.staff-header-date {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: #cbd5e1;
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 8px;
+  padding: 0.42rem 0.75rem;
+}
+
+.staff-header-date svg {
+  color: #2dd4bf;
+}
+
 .staff-role-badge {
   display: inline-flex;
   align-items: center;
-  gap: 0.375rem;
-  padding: 0.375rem 0.875rem;
+  gap: 0.45rem;
+  padding: 0.42rem 0.85rem;
   border-radius: 9999px;
   font-size: 0.75rem;
-  font-weight: 700;
-  letter-spacing: 0.04em;
+  font-weight: 800;
+  letter-spacing: 0.05em;
   text-transform: uppercase;
+  background: rgba(255, 255, 255, 0.08);
+  color: #ffffff;
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+}
+
+.role-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background-color: #2dd4bf;
+  box-shadow: 0 0 6px #2dd4bf;
 }
 
 .staff-role-badge.role-admin {
-  background-color: #f0fdf4;
-  color: #15803d;
-  border: 1px solid #bbf7d0;
+  background: rgba(15, 118, 110, 0.3);
+  color: #2dd4bf;
+  border-color: rgba(45, 212, 191, 0.4);
 }
 
 .staff-role-badge.role-dentist {
-  background-color: #e0f2fe;
-  color: #0369a1;
-  border: 1px solid #bae6fd;
+  background: rgba(13, 148, 136, 0.3);
+  color: #5eead4;
+  border-color: rgba(94, 234, 212, 0.4);
 }
 
 .staff-role-badge.role-receptionist {
-  background-color: #fefce8;
-  color: #854d0e;
-  border: 1px solid #fde68a;
+  background: rgba(59, 130, 246, 0.25);
+  color: #93c5fd;
+  border-color: rgba(147, 197, 253, 0.4);
+}
+
+.staff-role-badge.role-receptionist .role-dot {
+  background-color: #60a5fa;
+  box-shadow: 0 0 6px #60a5fa;
 }
 
 .staff-role-badge.role-assistant {
-  background-color: #f5f3ff;
-  color: #6d28d9;
-  border: 1px solid #ddd6fe;
+  background: rgba(16, 185, 129, 0.25);
+  color: #6ee7b7;
+  border-color: rgba(110, 231, 183, 0.4);
 }
 
-/* Header Account Link */
+.staff-role-badge.role-assistant .role-dot {
+  background-color: #34d399;
+  box-shadow: 0 0 6px #34d399;
+}
+
 .staff-account-btn {
   display: inline-flex;
   align-items: center;
-  gap: 0.5rem;
-  padding: 0.5rem 1rem;
-  background-color: #ffffff;
-  color: var(--sd-ink-secondary);
-  border: 1px solid var(--sd-border);
-  border-radius: var(--sd-radius-sm);
-  font-size: 0.875rem;
-  font-weight: 600;
+  gap: 0.45rem;
+  padding: 0.42rem 0.9rem;
+  background: rgba(255, 255, 255, 0.1);
+  color: #ffffff;
+  border: 1px solid rgba(255, 255, 255, 0.22);
+  border-radius: 8px;
+  font-size: 0.8125rem;
+  font-weight: 650;
   text-decoration: none;
-  transition: all 0.15s ease-in-out;
+  backdrop-filter: blur(8px);
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 .staff-account-btn:hover {
-  background-color: var(--sd-surface-subtle);
-  border-color: var(--sd-border-hover);
-  color: var(--sd-ink);
+  background: #0f766e;
+  border-color: #2dd4bf;
+  color: #ffffff;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 14px rgba(15, 118, 110, 0.4);
   text-decoration: none;
 }
 
 .staff-account-btn:focus-visible {
-  outline: 2px solid var(--sd-brand);
+  outline: 2px solid #2dd4bf;
   outline-offset: 2px;
 }
 
 /* =============================================================================
-   Operational Context / Role Guidance Banner
-   ============================================================================= */
-.staff-guidance-banner {
-  display: flex;
-  align-items: center;
-  gap: 1rem;
-  background-color: #f8fafc;
-  border: 1px solid #e2e8f0;
-  border-left: 4px solid var(--sd-brand);
-  border-radius: var(--sd-radius-sm);
-  padding: 0.875rem 1.25rem;
-  margin-bottom: 2rem;
-  font-size: 0.875rem;
-  color: var(--sd-ink-secondary);
-  line-height: 1.5;
-}
-
-.staff-guidance-icon {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: 28px;
-  height: 28px;
-  border-radius: 50%;
-  background-color: var(--sd-brand-light);
-  color: var(--sd-brand);
-  flex-shrink: 0;
-}
-
-.staff-guidance-text {
-  margin: 0;
-}
-
-.staff-guidance-text strong {
-  color: var(--sd-ink);
-}
-
-/* =============================================================================
-   Alerts & Notifications
+   Security / Access Denied Notice
    ============================================================================= */
 .staff-dashboard-notice {
   display: flex;
@@ -245,311 +331,819 @@
   gap: 0.75rem;
   background-color: #fef2f2;
   border: 1px solid #fecaca;
-  border-left: 4px solid #ef4444;
+  border-left: 4px solid var(--cc-danger);
   color: #991b1b;
-  border-radius: var(--sd-radius-sm);
-  padding: 1rem 1.25rem;
-  margin-bottom: 1.5rem;
-  font-size: 0.875rem;
-  font-weight: 500;
+  border-radius: 8px;
+  padding: 0.75rem 1rem;
+  margin-bottom: 0.85rem;
+  box-shadow: var(--cc-shadow-sm);
+  animation: headerGlide 0.3s ease-out;
 }
 
-/* =============================================================================
-   Section Header
-   ============================================================================= */
-.staff-section-header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  margin-bottom: 1.25rem;
-}
-
-.staff-section-header-left {
-  display: flex;
-  align-items: baseline;
-  gap: 0.75rem;
-}
-
-.staff-section-header h2 {
-  margin: 0;
-  font-size: 1.25rem;
-  font-weight: 700;
-  color: var(--sd-ink);
-  letter-spacing: -0.015em;
-}
-
-.staff-module-counter {
-  font-size: 0.75rem;
-  font-weight: 600;
-  color: var(--sd-muted);
-  background-color: var(--sd-surface-subtle);
-  border: 1px solid var(--sd-border);
-  border-radius: 9999px;
-  padding: 0.125rem 0.5rem;
-}
-
-/* =============================================================================
-   Practice Module Cards Grid
-   ============================================================================= */
-.staff-cards-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
-  gap: 1.25rem;
-}
-
-.staff-module-card {
-  display: flex;
-  flex-direction: column;
-  background-color: var(--sd-surface);
-  border: 1px solid var(--sd-border);
-  border-radius: var(--sd-radius-lg);
-  box-shadow: var(--sd-shadow-card);
-  padding: 1.5rem;
-  transition: transform 0.18s ease, box-shadow 0.18s ease, border-color 0.18s ease;
-  position: relative;
-}
-
-.staff-module-card:hover {
-  transform: translateY(-2px);
-  box-shadow: var(--sd-shadow-hover);
-  border-color: var(--sd-border-hover);
-}
-
-.staff-module-card:focus-within {
-  border-color: var(--sd-brand);
-  box-shadow: 0 0 0 3px rgba(2, 132, 199, 0.15);
-}
-
-/* Card Top Metadata & Icon */
-.staff-card-top {
-  display: flex;
-  align-items: flex-start;
-  justify-content: space-between;
-  gap: 0.75rem;
-  margin-bottom: 1rem;
-}
-
-.staff-card-icon-wrapper {
+.staff-notice-icon {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 44px;
-  height: 44px;
-  border-radius: var(--sd-radius-md);
   flex-shrink: 0;
+  color: var(--cc-danger);
 }
 
-/* Color theme per module */
-.icon-inventory {
-  background-color: #f0fdf4;
-  color: #16a34a;
-  border: 1px solid #dcfce7;
-}
-
-.icon-clinical {
-  background-color: #f0f9ff;
-  color: #0284c7;
-  border: 1px solid #e0f2fe;
-}
-
-.icon-prescriptions {
-  background-color: #f5f3ff;
-  color: #7c3aed;
-  border: 1px solid #ede9fe;
-}
-
-.icon-billing {
-  background-color: #fefce8;
-  color: #ca8a04;
-  border: 1px solid #fef08a;
-}
-
-.icon-reports {
-  background-color: #ecfdf5;
-  color: #059669;
-  border: 1px solid #a7f3d0;
-}
-
-.icon-admin {
-  background-color: #f8fafc;
-  color: #475569;
-  border: 1px solid #e2e8f0;
-}
-
-.staff-card-badge {
-  font-size: 0.6875rem;
-  font-weight: 700;
-  letter-spacing: 0.04em;
-  text-transform: uppercase;
-  color: var(--sd-muted);
-  background-color: var(--sd-surface-subtle);
-  border: 1px solid var(--sd-border-subtle);
-  border-radius: 9999px;
-  padding: 0.25rem 0.625rem;
-}
-
-/* Card Heading and Description */
-.staff-card-body {
-  flex: 1 1 auto;
-}
-
-.staff-card-body h3 {
-  margin: 0 0 0.5rem;
-  font-size: 1.1875rem;
-  font-weight: 700;
-  color: var(--sd-ink);
-  letter-spacing: -0.015em;
-  line-height: 1.35;
-}
-
-.staff-card-body p {
-  margin: 0 0 1.25rem;
-  font-size: 0.875rem;
-  color: var(--sd-muted);
-  line-height: 1.6;
-}
-
-/* Quick Jump Links */
-.staff-quick-links {
-  margin-top: auto;
-  padding-top: 1rem;
-  border-top: 1px solid var(--sd-border-subtle);
-  display: flex;
-  flex-direction: column;
-  gap: 0.625rem;
-}
-
-.staff-quick-links-label {
-  font-size: 0.6875rem;
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
-  color: var(--sd-muted);
-}
-
-.staff-quick-links-chips {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.375rem;
-}
-
-.staff-quick-chip {
-  display: inline-flex;
-  align-items: center;
-  font-size: 0.75rem;
-  font-weight: 500;
-  color: var(--sd-ink-secondary);
-  background-color: var(--sd-surface-subtle);
-  border: 1px solid var(--sd-border-subtle);
-  border-radius: 6px;
-  padding: 0.25rem 0.625rem;
-  text-decoration: none;
-  transition: all 0.12s ease;
-}
-
-.staff-quick-chip:hover {
-  background-color: var(--sd-brand-light);
-  color: var(--sd-brand);
-  border-color: var(--sd-brand-border);
-  text-decoration: none;
-}
-
-.staff-quick-chip:focus-visible {
-  outline: 2px solid var(--sd-brand);
-  outline-offset: 1px;
-}
-
-/* Card Action Link */
-.staff-card-action {
-  margin-top: 1.25rem;
-  padding-top: 0.875rem;
-  border-top: 1px solid var(--sd-border-subtle);
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-}
-
-.staff-primary-link {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.375rem;
-  font-size: 0.875rem;
-  font-weight: 650;
-  color: var(--sd-brand);
-  text-decoration: none;
-  transition: color 0.15s ease;
-}
-
-.staff-primary-link:hover {
-  color: var(--sd-brand-hover);
-  text-decoration: none;
-}
-
-.staff-primary-link:focus-visible {
-  outline: 2px solid var(--sd-brand);
-  outline-offset: 2px;
-  border-radius: 4px;
-}
-
-.staff-link-arrow {
-  transition: transform 0.15s ease;
-  font-size: 1rem;
-  line-height: 1;
-}
-
-.staff-module-card:hover .staff-link-arrow {
-  transform: translateX(4px);
+.staff-notice-text {
+  font-size: 0.8125rem;
+  line-height: 1.45;
 }
 
 /* =============================================================================
-   Responsive Behavior
+   2. COMMAND TELEMETRY STRIP (Integrated Horizontal Status)
    ============================================================================= */
-@media (max-width: 1024px) {
-  .staff-dashboard-root {
-    padding: 1.25rem 1rem 3rem;
+.staff-command-strip {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background-color: #ffffff;
+  border: 1px solid rgba(226, 232, 240, 0.9);
+  border-radius: 12px;
+  padding: 0.65rem 1.35rem;
+  margin-bottom: 1.35rem;
+  box-shadow: 0 2px 6px -1px rgba(15, 23, 42, 0.04);
+  gap: 1.25rem;
+  flex-wrap: wrap;
+  animation: stripSlide 0.45s cubic-bezier(0.16, 1, 0.3, 1) 0.06s both;
+}
+
+.staff-telemetry-node {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  font-size: 0.8125rem;
+}
+
+.staff-telemetry-beacon {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background-color: #10b981;
+}
+
+.staff-telemetry-node svg {
+  color: #0f766e;
+  flex-shrink: 0;
+}
+
+.staff-telemetry-tag {
+  font-size: 0.6875rem;
+  font-weight: 750;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: #64748b;
+}
+
+.staff-telemetry-data {
+  font-weight: 750;
+  color: #0f172a;
+  letter-spacing: -0.01em;
+}
+
+.staff-telemetry-sep {
+  width: 1px;
+  height: 16px;
+  background-color: #e2e8f0;
+}
+
+/* =============================================================================
+   3. PRIMARY WORKSPACE & COMMAND RAIL LAYOUT
+   ============================================================================= */
+.staff-command-layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 310px;
+  gap: 1.35rem;
+  align-items: start;
+}
+
+.staff-command-primary {
+  min-width: 0;
+}
+
+/* Tactical Command Bar (Search & Filter) */
+.staff-command-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 0.85rem;
+  margin-bottom: 1rem;
+  animation: barSlide 0.48s cubic-bezier(0.16, 1, 0.3, 1) 0.1s both;
+}
+
+.staff-command-bar-title {
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+}
+
+.staff-command-bar-title h2 {
+  margin: 0;
+  font-size: 1.15rem;
+  font-weight: 800;
+  color: #0f172a;
+  letter-spacing: -0.02em;
+}
+
+.staff-module-counter {
+  font-size: 0.6875rem;
+  font-weight: 750;
+  color: #0f766e;
+  background: #f0fdfa;
+  border: 1px solid #ccfbf1;
+  border-radius: 9999px;
+  padding: 0.15rem 0.6rem;
+}
+
+.staff-command-search-wrap {
+  position: relative;
+  display: flex;
+  align-items: center;
+  width: 340px;
+}
+
+.staff-search-icon {
+  position: absolute;
+  left: 0.75rem;
+  color: #94a3b8;
+  pointer-events: none;
+}
+
+.staff-command-search-input {
+  width: 100%;
+  padding: 0.46rem 1.85rem 0.46rem 2.25rem;
+  background-color: #ffffff;
+  border: 1px solid #cbd5e1;
+  border-radius: 8px;
+  font-size: 0.8125rem;
+  color: #0f172a;
+  box-shadow: var(--cc-shadow-sm);
+  transition: all 0.18s ease;
+}
+
+.staff-command-search-input:focus {
+  outline: none;
+  border-color: #0f766e;
+  box-shadow: 0 0 0 3px rgba(15, 118, 110, 0.15);
+}
+
+.staff-search-clear {
+  position: absolute;
+  right: 0.5rem;
+  background: none;
+  border: none;
+  color: #94a3b8;
+  font-size: 1.15rem;
+  line-height: 1;
+  padding: 0.15rem;
+  cursor: pointer;
+  border-radius: 50%;
+  transition: color 0.15s ease;
+}
+
+.staff-search-clear:hover {
+  color: #0f172a;
+}
+
+/* =============================================================================
+   ASYMMETRIC BENTO COMMAND GRID
+   ============================================================================= */
+.staff-bento-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  grid-auto-flow: dense;
+  gap: 1.15rem;
+}
+
+.staff-bento-grid.count-1 .staff-bento-tile {
+  grid-column: span 2;
+}
+
+.staff-bento-tile {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  background-color: #ffffff;
+  background-image: linear-gradient(180deg, #ffffff 0%, #fafcfb 100%);
+  border: 1px solid rgba(15, 118, 110, 0.14);
+  border-radius: 14px;
+  box-shadow: 0 1px 3px 0 rgba(15, 23, 42, 0.04), 0 1px 2px -1px rgba(15, 23, 42, 0.02);
+  padding: 1.25rem;
+  overflow: hidden;
+  transition: transform 0.2s cubic-bezier(0.16, 1, 0.3, 1),
+              box-shadow 0.2s cubic-bezier(0.16, 1, 0.3, 1),
+              border-color 0.2s ease;
+}
+
+/* Stagger entrance */
+.staff-bento-tile:nth-child(1) { animation: bentoPop 0.4s cubic-bezier(0.16, 1, 0.3, 1) 0.08s both; }
+.staff-bento-tile:nth-child(2) { animation: bentoPop 0.4s cubic-bezier(0.16, 1, 0.3, 1) 0.14s both; }
+.staff-bento-tile:nth-child(3) { animation: bentoPop 0.4s cubic-bezier(0.16, 1, 0.3, 1) 0.20s both; }
+.staff-bento-tile:nth-child(4) { animation: bentoPop 0.4s cubic-bezier(0.16, 1, 0.3, 1) 0.26s both; }
+.staff-bento-tile:nth-child(5) { animation: bentoPop 0.4s cubic-bezier(0.16, 1, 0.3, 1) 0.32s both; }
+.staff-bento-tile:nth-child(6) { animation: bentoPop 0.4s cubic-bezier(0.16, 1, 0.3, 1) 0.38s both; }
+
+/* Unified Shared Hover & Focus Language across all module cards */
+.staff-bento-tile:hover {
+  transform: translateY(-2.5px);
+  border-color: rgba(15, 118, 110, 0.35);
+  box-shadow: 0 10px 24px -4px rgba(15, 23, 42, 0.08), 0 2px 6px -1px rgba(15, 118, 110, 0.05);
+}
+
+.staff-bento-tile:focus-within {
+  border-color: #0f766e;
+  box-shadow: 0 0 0 3px rgba(15, 118, 110, 0.16);
+}
+
+/* ── Grid Column Placement (Preserves responsive bento grid structure) ── */
+.staff-bento-tile.bento-hero,
+.staff-bento-tile.bento-wide {
+  grid-column: span 2;
+}
+
+/* Suppress redundant tag so category badges remain completely uniform */
+.staff-tile-flagship-tag {
+  display: none;
+}
+
+/* Inventory Module: subtle teal border tint emphasis while belonging to same design system */
+.staff-bento-tile.bento-teal {
+  border-color: rgba(15, 118, 110, 0.24);
+}
+
+/* ── Tile Internal Anatomy ── */
+.staff-tile-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.85rem;
+  margin-bottom: 0.75rem;
+}
+
+.staff-tile-icon-box {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 42px;
+  height: 42px;
+  border-radius: 10px;
+  flex-shrink: 0;
+  background: #f0fdfa;
+  color: #0f766e;
+  border: 1px solid #ccfbf1;
+  box-shadow: 0 2px 6px rgba(15, 118, 110, 0.06);
+  transition: transform 0.2s ease, background-color 0.2s ease;
+}
+
+.staff-bento-tile:hover .staff-tile-icon-box {
+  transform: scale(1.04);
+}
+
+/* ── Inventory Module Icon Container (Refined Dental Supply Treatment) ── */
+.staff-tile-icon-box.staff-icon-inventory,
+.staff-bento-tile.bento-hero .staff-tile-icon-box.staff-icon-inventory,
+.staff-bento-tile.bento-teal .staff-tile-icon-box.staff-icon-inventory {
+  background: linear-gradient(135deg, #f0fdfa 0%, #e0fbf6 100%);
+  color: #0f766e;
+  border: 1px solid #99f6e4;
+  box-shadow: 0 2px 8px -1px rgba(15, 118, 110, 0.14), inset 0 1px 0 rgba(255, 255, 255, 0.85);
+}
+
+.staff-bento-tile:hover .staff-tile-icon-box.staff-icon-inventory {
+  background: linear-gradient(135deg, #e6fffa 0%, #ccfbf1 100%);
+  border-color: #5eead4;
+  transform: scale(1.04);
+}
+
+.staff-tile-meta {
+  display: flex;
+  align-items: center;
+  gap: 0.45rem;
+}
+
+.staff-tile-badge {
+  font-size: 0.65rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: #475569;
+  background-color: #f1f5f9;
+  border: 1px solid #e2e8f0;
+  border-radius: 9999px;
+  padding: 0.12rem 0.55rem;
+  flex-shrink: 0;
+}
+
+.staff-tile-body {
+  margin-bottom: 0.85rem;
+}
+
+.staff-tile-body h3 {
+  margin: 0 0 0.35rem;
+  font-size: 1.025rem;
+  font-weight: 800;
+  color: #0f172a;
+  letter-spacing: -0.015em;
+}
+
+.staff-tile-desc {
+  margin: 0;
+  font-size: 0.8125rem;
+  color: #475569;
+  line-height: 1.5;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+/* Shortcuts Chips */
+.staff-tile-shortcuts {
+  margin-top: auto;
+  padding-top: 0.75rem;
+  border-top: 1px solid rgba(226, 232, 240, 0.6);
+  display: flex;
+  align-items: center;
+  gap: 0.45rem;
+  flex-wrap: wrap;
+}
+
+.staff-shortcuts-label {
+  font-size: 0.65rem;
+  font-weight: 750;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: #94a3b8;
+}
+
+.staff-shortcuts-chips {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  flex-wrap: wrap;
+}
+
+.staff-shortcut-chip {
+  display: inline-flex;
+  align-items: center;
+  font-size: 0.75rem;
+  font-weight: 650;
+  color: #334155;
+  background-color: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 6px;
+  padding: 0.2rem 0.55rem;
+  text-decoration: none;
+  transition: all 0.16s ease;
+}
+
+.staff-shortcut-chip:hover {
+  background-color: #f0fdfa;
+  border-color: #0f766e;
+  color: #0f766e;
+  transform: translateY(-1px);
+  text-decoration: none;
+}
+
+.staff-shortcut-chip:focus-visible {
+  outline: 2px solid #0f766e;
+  outline-offset: 1px;
+}
+
+/* Primary Action Link */
+.staff-tile-footer {
+  margin-top: 0.85rem;
+}
+
+.staff-primary-link {
+  width: 100%;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.45rem;
+  font-size: 0.8125rem;
+  font-weight: 750;
+  color: #0f766e;
+  text-decoration: none;
+  padding: 0.52rem 0.85rem;
+  border-radius: 8px;
+  background: #f0fdfa;
+  border: 1px solid #ccfbf1;
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.staff-primary-link:hover {
+  text-decoration: none;
+  background: #0f766e;
+  border-color: #0f766e;
+  color: #ffffff;
+  box-shadow: 0 4px 14px rgba(15, 118, 110, 0.25);
+}
+
+.staff-primary-link:focus-visible {
+  outline: 2px solid #0f766e;
+  outline-offset: 2px;
+}
+
+.staff-link-arrow {
+  transition: transform 0.2s ease;
+  font-size: 0.95rem;
+  line-height: 1;
+}
+
+.staff-primary-link:hover .staff-link-arrow {
+  transform: translateX(4px);
+}
+
+/* Empty Search State */
+.staff-empty-search {
+  padding: 3rem 1.5rem;
+  text-align: center;
+  background-color: #ffffff;
+  border: 1px dashed #cbd5e1;
+  border-radius: 14px;
+  color: #64748b;
+  font-size: 0.875rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.staff-empty-search svg {
+  color: #94a3b8;
+}
+
+.staff-clear-btn {
+  padding: 0.42rem 1rem;
+  font-size: 0.8125rem;
+  font-weight: 700;
+  border-radius: 6px;
+  background-color: #0f766e;
+  border: 1px solid #0f766e;
+  color: #ffffff;
+  cursor: pointer;
+  box-shadow: 0 2px 6px rgba(15, 118, 110, 0.2);
+  transition: all 0.18s ease;
+}
+
+.staff-clear-btn:hover {
+  background-color: #115e59;
+  transform: translateY(-1px);
+}
+
+/* =============================================================================
+   4. TACTICAL COMMAND RAIL (Right Column)
+   ============================================================================= */
+.staff-command-rail {
+  display: flex;
+  flex-direction: column;
+  gap: 1.15rem;
+  animation: railSlide 0.55s cubic-bezier(0.16, 1, 0.3, 1) 0.18s both;
+}
+
+.staff-rail-card {
+  background-color: #ffffff;
+  border: 1px solid rgba(226, 232, 240, 0.9);
+  border-radius: 14px;
+  box-shadow: var(--cc-shadow-sm);
+  padding: 1.15rem;
+  overflow: hidden;
+}
+
+.staff-rail-header {
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+  margin-bottom: 0.85rem;
+  padding-bottom: 0.65rem;
+  border-bottom: 1px solid #f1f5f9;
+}
+
+.staff-rail-icon-wrap {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 30px;
+  height: 30px;
+  border-radius: 8px;
+  background: #f0fdfa;
+  color: #0f766e;
+  border: 1px solid #ccfbf1;
+}
+
+.staff-rail-title-group {
+  display: flex;
+  flex-direction: column;
+}
+
+.staff-rail-title-group h3 {
+  margin: 0;
+  font-size: 0.925rem;
+  font-weight: 800;
+  color: #0f172a;
+  line-height: 1.2;
+}
+
+.staff-rail-subtitle {
+  font-size: 0.65rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: #94a3b8;
+}
+
+/* Quick Action Items */
+.staff-action-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+}
+
+.staff-action-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.52rem 0.65rem;
+  border-radius: 8px;
+  text-decoration: none;
+  background-color: #ffffff;
+  border: 1px solid transparent;
+  transition: all 0.16s ease;
+}
+
+.staff-action-item:hover {
+  background-color: #f8fafc;
+  border-color: #e2e8f0;
+  transform: translateX(3px);
+  text-decoration: none;
+}
+
+.staff-action-item:focus-visible {
+  outline: 2px solid #0f766e;
+  outline-offset: 1px;
+}
+
+.staff-action-details {
+  display: flex;
+  flex-direction: column;
+  gap: 0.1rem;
+  min-width: 0;
+}
+
+.staff-action-name {
+  font-size: 0.8125rem;
+  font-weight: 700;
+  color: #0f172a;
+  line-height: 1.3;
+  transition: color 0.15s ease;
+}
+
+.staff-action-item:hover .staff-action-name {
+  color: #0f766e;
+}
+
+.staff-action-sub {
+  font-size: 0.6875rem;
+  color: #64748b;
+  line-height: 1.3;
+}
+
+.staff-action-arrow {
+  font-size: 1.15rem;
+  font-weight: 700;
+  color: #cbd5e1;
+  line-height: 1;
+  padding-left: 0.5rem;
+  transition: transform 0.15s ease, color 0.15s ease;
+}
+
+.staff-action-item:hover .staff-action-arrow {
+  color: #0f766e;
+  transform: translateX(3px);
+}
+
+/* Governance Specs */
+.staff-governance-text {
+  margin: 0 0 0.85rem;
+  font-size: 0.8125rem;
+  color: #475569;
+  line-height: 1.5;
+}
+
+.staff-governance-specs {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+  padding-top: 0.65rem;
+  border-top: 1px solid #f1f5f9;
+  font-size: 0.75rem;
+}
+
+.staff-spec-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+}
+
+.spec-label {
+  color: #64748b;
+  font-weight: 600;
+}
+
+.spec-val {
+  color: #0f172a;
+  font-weight: 750;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 180px;
+}
+
+/* =============================================================================
+   KEYFRAME ANIMATIONS
+   ============================================================================= */
+@keyframes headerGlide {
+  from {
+    opacity: 0;
+    transform: translateY(-8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes stripSlide {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes barSlide {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes bentoPop {
+  from {
+    opacity: 0;
+    transform: translateY(12px) scale(0.98);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+@keyframes railSlide {
+  from {
+    opacity: 0;
+    transform: translateX(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+/* Respect Reduced Motion */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+  .staff-status-dot {
+    animation: none !important;
+  }
+}
+
+/* =============================================================================
+   RESPONSIVE DESIGN BREAKPOINTS
+   ============================================================================= */
+@media (max-width: 1080px) {
+  .staff-command-layout {
+    grid-template-columns: 1fr;
+    gap: 1.35rem;
   }
 
-  .staff-dashboard-header {
-    padding: 1.5rem 1.5rem;
-  }
-
-  .staff-cards-grid {
-    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-    gap: 1rem;
+  .staff-command-rail {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 1.15rem;
   }
 }
 
 @media (max-width: 768px) {
   .staff-dashboard-root {
-    padding: 1rem 0.75rem 2.5rem;
+    padding: 1rem 1rem 3rem;
   }
 
-  .staff-dashboard-header {
-    padding: 1.25rem 1.25rem;
+  .staff-command-header {
+    padding: 1.15rem;
+    border-radius: 14px;
   }
 
-  .staff-header-content {
+  .staff-command-header-inner {
     flex-direction: column;
     align-items: stretch;
+    gap: 1rem;
   }
 
-  .staff-header-actions {
+  .staff-command-controls {
     justify-content: space-between;
     width: 100%;
   }
 
-  .staff-top-bar {
+  .staff-command-strip {
     flex-direction: column;
-    align-items: flex-start;
-    gap: 0.5rem;
+    align-items: stretch;
+    gap: 0.6rem;
+    padding: 0.85rem 1.15rem;
   }
 
-  .staff-cards-grid {
+  .staff-telemetry-sep {
+    display: none;
+  }
+
+  .staff-bento-grid {
     grid-template-columns: 1fr;
     gap: 1rem;
   }
 
-  .staff-title-group h1 {
-    font-size: 1.5rem;
+  .staff-bento-tile.bento-hero,
+  .staff-bento-tile.bento-wide {
+    grid-column: span 1;
+  }
+
+  .staff-command-rail {
+    grid-template-columns: 1fr;
+    gap: 1rem;
+  }
+
+  .staff-command-bar {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .staff-command-search-wrap {
+    width: 100%;
+  }
+}
+
+@media (max-width: 480px) {
+  .staff-dashboard-root {
+    padding: 0.75rem 0.75rem 2.5rem;
+  }
+
+  .staff-command-identity {
+    align-items: flex-start;
+  }
+
+  .staff-avatar-chip {
+    width: 42px;
+    height: 42px;
+    font-size: 1rem;
+  }
+
+  .staff-title-row h1 {
+    font-size: 1.35rem;
+  }
+
+  .staff-command-controls {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 0.5rem;
+  }
+
+  .staff-header-date,
+  .staff-role-badge,
+  .staff-account-btn {
+    justify-content: center;
+    width: 100%;
+  }
+
+  .staff-bento-tile {
+    padding: 1.1rem;
   }
 }

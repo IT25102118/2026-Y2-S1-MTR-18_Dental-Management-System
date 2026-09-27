@@ -175,10 +175,13 @@ export default function AppHeader() {
             </div>
           ) : (
             <div className="auth-action-buttons">
-              <Link to="/login" className="btn btn-sm btn-outline-primary" data-testid="header-login-link">
-                Sign In
+              <Link to="/patient/login" className="btn btn-sm btn-primary header-patient-login-btn" data-testid="header-patient-login-link" id="header-patient-login">
+                Patient Login
               </Link>
-              <Link to="/register" className="btn btn-sm btn-primary" data-testid="header-register-link">
+              <Link to="/staff/login" className="btn btn-sm btn-outline-secondary header-staff-login-btn" data-testid="header-staff-login-link" id="header-staff-login">
+                Staff Login
+              </Link>
+              <Link to="/register" className="btn btn-sm btn-outline-primary header-register-btn" data-testid="header-register-link">
                 <span className="header-register-label-full">Patient Registration</span>
                 <span className="header-register-label-short">Register</span>
               </Link>

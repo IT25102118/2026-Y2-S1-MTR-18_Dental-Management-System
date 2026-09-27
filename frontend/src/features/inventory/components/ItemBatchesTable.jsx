@@ -25,6 +25,9 @@ export function getBatchDerivedStatus(batch, today = new Date()) {
       }
 
       const diffDays = Math.ceil((expDate.getTime() - todayMidnight.getTime()) / (1000 * 60 * 60 * 24));
+      if (diffDays === 0) {
+        return { label: 'Expiring Today', key: 'expiring-today', className: 'badge-batch-expiring-today' };
+      }
       if (diffDays <= 30) {
         return { label: 'Expiring Soon', key: 'expiring', className: 'badge-batch-expiring' };
       }
@@ -146,7 +149,7 @@ export default function ItemBatchesTable({ itemId, refreshTrigger }) {
               <thead>
                 <tr>
                   <th scope="col">Batch Number</th>
-                  <th scope="col">Quantity On Hand</th>
+                  <th scope="col" style={{ textAlign: 'right' }}>Quantity On Hand</th>
                   <th scope="col">Expiry Date</th>
                   <th scope="col">Status</th>
                   <th scope="col">Received Date</th>
@@ -160,19 +163,21 @@ export default function ItemBatchesTable({ itemId, refreshTrigger }) {
                     <tr key={b.id}>
                       <td>
                         {b.batchNumber ? (
-                          <strong>{b.batchNumber}</strong>
+                          <strong className="inv-mono">{b.batchNumber}</strong>
                         ) : (
                           <span className="unbatched-badge">Unbatched Stock</span>
                         )}
                       </td>
-                      <td style={{ fontWeight: 600 }}>{b.quantityOnHand}</td>
-                      <td>{b.expiryDate || 'No expiry'}</td>
+                      <td style={{ fontWeight: 600, textAlign: 'right' }} className="tabular-nums">
+                        {b.quantityOnHand}
+                      </td>
+                      <td className="tabular-nums">{b.expiryDate || 'No expiry'}</td>
                       <td>
                         <span className={`badge ${status.className}`} data-testid={`batch-status-${b.id}`}>
                           {status.label}
                         </span>
                       </td>
-                      <td>{b.receivedDate || '—'}</td>
+                      <td className="tabular-nums">{b.receivedDate || '—'}</td>
                       <td>{b.supplierReference || '—'}</td>
                     </tr>
                   );

@@ -105,6 +105,20 @@ class SecurityConfigTest {
                 .andExpect(status().isForbidden());
     }
 
+    @Test
+    @WithMockUser(roles = "PATIENT")
+    @DisplayName("PATIENT cannot access admin, billing, invoices, or payments APIs")
+    void testPatientCannotAccessAdminOrBillingApis() throws Exception {
+        mockMvc.perform(get("/api/admin/staff"))
+                .andExpect(status().isForbidden());
+        mockMvc.perform(get("/api/invoices"))
+                .andExpect(status().isForbidden());
+        mockMvc.perform(get("/api/billing/reports/income"))
+                .andExpect(status().isForbidden());
+        mockMvc.perform(get("/api/payments"))
+                .andExpect(status().isForbidden());
+    }
+
     @ParameterizedTest
     @ValueSource(strings = {"ADMINISTRATOR", "RECEPTIONIST", "DENTIST", "DENTAL_ASSISTANT"})
     @DisplayName("Every staff role can reach inventory endpoints")
@@ -223,5 +237,23 @@ class SecurityConfigTest {
                 .andExpect(status().isBadRequest());
         mockMvc.perform(get("/api/auth/me"))
                 .andExpect(status().isUnauthorized());
+    }
+
+    @Test
+    @DisplayName("H2 console is accessible without authentication, ignores CSRF, and allows sameOrigin frames")
+    void testH2ConsoleAccessibleWithoutAuthentication() throws Exception {
+        mockMvc.perform(get("/h2-console"))
+                .andExpect(result -> {
+                    int status = result.getResponse().getStatus();
+                    assertThat(status).isNotIn(401, 403);
+                })
+                .andExpect(org.springframework.test.web.servlet.result.MockMvcResultMatchers.header().string("X-Frame-Options", "SAMEORIGIN"));
+
+        mockMvc.perform(post("/h2-console/test")
+                        .contentType(MediaType.APPLICATION_FORM_URLENCODED))
+                .andExpect(result -> {
+                    int status = result.getResponse().getStatus();
+                    assertThat(status).isNotEqualTo(403);
+                });
     }
 }

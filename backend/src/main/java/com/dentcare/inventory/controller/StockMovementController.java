@@ -47,7 +47,7 @@ public class StockMovementController {
             @Valid @RequestBody RecordStockMovementRequest request,
             @AuthenticationPrincipal DentCareUserDetails userDetails
     ) {
-        ResponseEntity<?> authError = authorizeAndBindUser(userDetails, request.getResponsibleUserId(), request::setResponsibleUserId);
+        ResponseEntity<?> authError = authorizeAndBindUser(userDetails, request::setResponsibleUserId);
         if (authError != null) {
             return authError;
         }
@@ -63,7 +63,7 @@ public class StockMovementController {
             @Valid @RequestBody ReverseStockMovementRequest request,
             @AuthenticationPrincipal DentCareUserDetails userDetails
     ) {
-        ResponseEntity<?> authError = authorizeAndBindUser(userDetails, request.getResponsibleUserId(), request::setResponsibleUserId);
+        ResponseEntity<?> authError = authorizeAndBindUser(userDetails, request::setResponsibleUserId);
         if (authError != null) {
             return authError;
         }
@@ -83,24 +83,19 @@ public class StockMovementController {
 
     private ResponseEntity<?> authorizeAndBindUser(
             DentCareUserDetails userDetails,
-            Long requestResponsibleUserId,
             Consumer<Long> userIdConsumer
     ) {
-        if (userDetails != null) {
-            if (userDetails.getRole() == Role.PATIENT) {
-                return ResponseEntity.status(HttpStatus.FORBIDDEN)
-                        .body(InventoryErrorResponse.of(HttpStatus.FORBIDDEN.value(), "Forbidden", "Patients are not authorized to perform stock movements"));
-            }
-            userIdConsumer.accept(userDetails.getId());
-            return null;
+        if (userDetails == null) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                    .body(InventoryErrorResponse.of(HttpStatus.UNAUTHORIZED.value(), "Unauthorized", "Authentication required to perform stock movements"));
         }
 
-        if (requestResponsibleUserId != null) {
-            userIdConsumer.accept(requestResponsibleUserId);
-            return null;
+        if (userDetails.getRole() == Role.PATIENT) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN)
+                    .body(InventoryErrorResponse.of(HttpStatus.FORBIDDEN.value(), "Forbidden", "Patients are not authorized to perform stock movements"));
         }
 
-        return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
-                .body(InventoryErrorResponse.of(HttpStatus.UNAUTHORIZED.value(), "Unauthorized", "Authentication required to perform stock movements"));
+        userIdConsumer.accept(userDetails.getId());
+        return null;
     }
 }

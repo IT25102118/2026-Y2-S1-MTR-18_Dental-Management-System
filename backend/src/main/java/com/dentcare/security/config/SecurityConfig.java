@@ -73,6 +73,10 @@ public class SecurityConfig {
             .csrf(csrf -> csrf
                 .csrfTokenRepository(csrfTokenRepository)
                 .csrfTokenRequestHandler(requestHandler)
+                .ignoringRequestMatchers("/h2-console/**")
+            )
+            .headers(headers -> headers
+                .frameOptions(frame -> frame.sameOrigin())
             )
             .cors(Customizer.withDefaults())
             .sessionManagement(session -> session
@@ -83,6 +87,7 @@ public class SecurityConfig {
                 .securityContextRepository(securityContextRepository)
             )
             .authorizeHttpRequests(auth -> auth
+                .requestMatchers("/h2-console/**").permitAll()
                 .requestMatchers(HttpMethod.GET, "/api/auth/csrf").permitAll()
                 .requestMatchers(HttpMethod.POST, "/api/auth/register/patient").permitAll()
                 .requestMatchers(HttpMethod.POST, "/api/auth/login").permitAll()

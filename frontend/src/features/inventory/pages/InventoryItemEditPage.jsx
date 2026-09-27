@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useParams, useNavigate } from 'react-router-dom';
 import { getItemById, updateItem, InventoryApiError } from '../api/inventoryApi';
+import InventoryPageHeader from '../components/InventoryPageHeader';
 import InventoryItemForm from '../components/InventoryItemForm';
 import '../inventory.css';
 
@@ -126,13 +127,11 @@ export default function InventoryItemEditPage() {
 
   return (
     <div className="inventory-container">
-      <nav className="inventory-nav" aria-label="Breadcrumb">
-        <Link to={`/inventory/items/${id}`}>← Back to Item Detail</Link>
-      </nav>
-
-      <div className="inventory-header">
-        <h1>Edit Inventory Item</h1>
-      </div>
+      <InventoryPageHeader
+        title="Edit Inventory Item"
+        breadcrumb={{ to: `/inventory/items/${id}`, label: '← Back to Item Detail' }}
+        showNav={false}
+      />
 
       <InventoryItemForm
         mode="edit"

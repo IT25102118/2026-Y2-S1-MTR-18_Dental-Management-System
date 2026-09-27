@@ -88,6 +88,14 @@ describe('Frontend Runtime Smoke Tests', () => {
     expect(registerLinks.length).toBeGreaterThanOrEqual(1);
     expect(registerLinks[0]).toHaveAttribute('href', '/register');
 
+    const patientLoginLinks = screen.getAllByRole('link', { name: /Patient Login/i });
+    expect(patientLoginLinks.length).toBeGreaterThanOrEqual(1);
+    expect(patientLoginLinks[0]).toHaveAttribute('href', '/patient/login');
+
+    const staffLoginLinks = screen.getAllByRole('link', { name: /Staff Login/i });
+    expect(staffLoginLinks.length).toBeGreaterThanOrEqual(1);
+    expect(staffLoginLinks[0]).toHaveAttribute('href', '/staff/login');
+
     const loginLinks = screen.getAllByRole('link', { name: /Sign In/i });
     expect(loginLinks.length).toBeGreaterThanOrEqual(1);
     expect(loginLinks[0]).toHaveAttribute('href', '/login');
@@ -152,6 +160,30 @@ describe('Frontend Runtime Smoke Tests', () => {
     expect(screen.getByTestId('login-email-input')).toBeInTheDocument();
     expect(screen.getByTestId('login-password-input')).toBeInTheDocument();
     expect(screen.getByTestId('login-submit-button')).toBeInTheDocument();
+  });
+
+  it('routes /patient/login to the dedicated patient portal login page', async () => {
+    render(
+      <MemoryRouter initialEntries={['/patient/login']}>
+        <App />
+      </MemoryRouter>
+    );
+
+    expect(await screen.findByRole('heading', { name: /Patient Login/i, level: 1 })).toBeInTheDocument();
+    expect(screen.getByText(/Patient Portal/i)).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /Sign In as Patient/i })).toBeInTheDocument();
+  });
+
+  it('routes /staff/login to the dedicated staff portal login page', async () => {
+    render(
+      <MemoryRouter initialEntries={['/staff/login']}>
+        <App />
+      </MemoryRouter>
+    );
+
+    expect(await screen.findByRole('heading', { name: /Staff Login/i, level: 1 })).toBeInTheDocument();
+    expect(screen.getByText(/Authorized Clinic Staff/i)).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /Sign In to Staff Workspace/i })).toBeInTheDocument();
   });
 
   it('routes /register to the patient registration page (public route)', async () => {
@@ -405,6 +437,121 @@ describe('Frontend Runtime Smoke Tests', () => {
     expect(screen.getByRole('link', { name: /Staff Dashboard/i })).toBeInTheDocument();
     expect(screen.queryByRole('link', { name: /^Billing$/i })).not.toBeInTheDocument();
     expect(screen.queryByRole('link', { name: /Staff Management/i })).not.toBeInTheDocument();
+  });
+
+  it('routes a successful PATIENT login on /patient/login to the patient dashboard', async () => {
+    authApi.login.mockResolvedValueOnce({
+      id: 71,
+      email: 'patient.one@dentcare.com',
+      firstName: 'Anoma',
+      lastName: 'Dias',
+      role: 'PATIENT'
+    });
+
+    render(
+      <MemoryRouter initialEntries={['/patient/login']}>
+        <App />
+      </MemoryRouter>
+    );
+
+    fireEvent.change(await screen.findByTestId('login-email-input'), { target: { value: 'patient.one@dentcare.com' } });
+    fireEvent.change(screen.getByTestId('login-password-input'), { target: { value: 'Password123' } });
+    fireEvent.click(screen.getByTestId('login-submit-button'));
+
+    expect(await screen.findByTestId('patient-dashboard')).toBeInTheDocument();
+    expect(screen.getByRole('link', { name: /Patient Dashboard/i })).toBeInTheDocument();
+  });
+
+  it('rejects a staff member on /patient/login and displays unauthorized portal notice', async () => {
+    authApi.login.mockResolvedValueOnce({
+      id: 72,
+      email: 'dentist@dentcare.com',
+      firstName: 'Dr',
+      lastName: 'Dentist',
+      role: 'DENTIST'
+    });
+
+    render(
+      <MemoryRouter initialEntries={['/patient/login']}>
+        <App />
+      </MemoryRouter>
+    );
+
+    fireEvent.change(await screen.findByTestId('login-email-input'), { target: { value: 'dentist@dentcare.com' } });
+    fireEvent.change(screen.getByTestId('login-password-input'), { target: { value: 'Password123' } });
+    fireEvent.click(screen.getByTestId('login-submit-button'));
+
+    expect(await screen.findByTestId('login-error-alert')).toHaveTextContent(
+      'Unauthorized portal for this account. Staff accounts must use the Staff Login.'
+    );
+    expect(authApi.logout).toHaveBeenCalled();
+  });
+
+  it('routes a successful staff login on /staff/login to the staff dashboard', async () => {
+    authApi.login.mockResolvedValueOnce({
+      id: 73,
+      email: 'reception@dentcare.com',
+      firstName: 'Kasun',
+      lastName: 'Silva',
+      role: 'RECEPTIONIST'
+    });
+
+    render(
+      <MemoryRouter initialEntries={['/staff/login']}>
+        <App />
+      </MemoryRouter>
+    );
+
+    fireEvent.change(await screen.findByTestId('login-email-input'), { target: { value: 'reception@dentcare.com' } });
+    fireEvent.change(screen.getByTestId('login-password-input'), { target: { value: 'Password123' } });
+    fireEvent.click(screen.getByTestId('login-submit-button'));
+
+    expect(await screen.findByTestId('staff-dashboard')).toBeInTheDocument();
+  });
+
+  it('rejects a patient on /staff/login and displays unauthorized portal notice', async () => {
+    authApi.login.mockResolvedValueOnce({
+      id: 74,
+      email: 'patient@dentcare.com',
+      firstName: 'Sunil',
+      lastName: 'Perera',
+      role: 'PATIENT'
+    });
+
+    render(
+      <MemoryRouter initialEntries={['/staff/login']}>
+        <App />
+      </MemoryRouter>
+    );
+
+    fireEvent.change(await screen.findByTestId('login-email-input'), { target: { value: 'patient@dentcare.com' } });
+    fireEvent.change(screen.getByTestId('login-password-input'), { target: { value: 'Password123' } });
+    fireEvent.click(screen.getByTestId('login-submit-button'));
+
+    expect(await screen.findByTestId('login-error-alert')).toHaveTextContent(
+      'Unauthorized portal for this account. Patient accounts must use the Patient Login.'
+    );
+    expect(authApi.logout).toHaveBeenCalled();
+  });
+
+  it('denies PATIENT access to /inventory and returns user to the patient dashboard', async () => {
+    authApi.getCurrentUser.mockResolvedValueOnce({
+      id: 75,
+      email: 'patient@dentcare.com',
+      firstName: 'John',
+      lastName: 'Patient',
+      role: 'PATIENT'
+    });
+
+    render(
+      <MemoryRouter initialEntries={['/inventory']}>
+        <App />
+      </MemoryRouter>
+    );
+
+    expect(await screen.findByTestId('patient-dashboard')).toBeInTheDocument();
+    expect(screen.getByRole('alert')).toHaveTextContent(/reserved for authorized clinic staff/i);
+    expect(screen.queryByRole('heading', { name: /Inventory Management/i, level: 1 })).not.toBeInTheDocument();
   });
 
   it.each([

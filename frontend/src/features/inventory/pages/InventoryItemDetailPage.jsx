@@ -1,7 +1,8 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link, useParams } from 'react-router-dom';
 import { getItemById, updateItemStatus, InventoryApiError } from '../api/inventoryApi';
 import { StockStatusBadge, ActiveStatusBadge } from '../components/InventoryStatusBadge';
+import InventoryPageHeader from '../components/InventoryPageHeader';
 import StockMovementHistoryTable from '../components/StockMovementHistoryTable';
 import StockMovementForm from '../components/StockMovementForm';
 import ItemBatchesTable from '../components/ItemBatchesTable';
@@ -178,20 +179,15 @@ export default function InventoryItemDetailPage() {
 
   return (
     <div className="inventory-container">
-      <nav className="inventory-nav" aria-label="Breadcrumb">
-        <Link to="/inventory/items">← Back to Inventory Items</Link>
-      </nav>
-
-      <div className="inventory-header">
-        <div>
-          <h1>{item.name}</h1>
-          <p style={{ margin: '0.25rem 0 0 0', color: '#64748b' }}>Item Code: {item.itemCode}</p>
-        </div>
-        <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
-          <StockStatusBadge currentQuantity={item.currentQuantity} lowStock={item.lowStock} />
-          <ActiveStatusBadge active={item.active} />
-        </div>
-      </div>
+      <InventoryPageHeader
+        title={item.name}
+        subtitle={
+          <span>
+            Item Code: <span className="inv-mono">{item.itemCode}</span>
+          </span>
+        }
+        breadcrumb={{ to: '/inventory/items', label: '← Back to Inventory Items' }}
+      />
 
       {actionError && (
         <div className="error-alert" role="alert">
@@ -206,12 +202,44 @@ export default function InventoryItemDetailPage() {
         </div>
       )}
 
+      {/* Item Detail Hero Stock Card */}
+      <div className="item-hero-stock-card" data-testid="item-hero-stock-card">
+        <div className="hero-stock-main">
+          <span className="hero-stock-label">Current Stock Level</span>
+          <div className="hero-stock-metrics">
+            <span className="hero-stock-value tabular-nums">{item.currentQuantity}</span>
+            <span className="hero-stock-unit">Total {item.unit || 'units'}</span>
+          </div>
+          <div className="hero-stock-status-row">
+            <StockStatusBadge currentQuantity={item.currentQuantity} lowStock={item.lowStock} />
+            <ActiveStatusBadge active={item.active} />
+            <span className="subtext">
+              {item.currentQuantity <= 0
+                ? 'Inventory depleted. Immediate replenishment required.'
+                : (item.lowStock || item.currentQuantity <= item.reorderLevel)
+                ? 'Current level is at or below replenishment threshold.'
+                : 'Stock level is within normal operating parameters.'}
+            </span>
+          </div>
+        </div>
+
+        <div className="hero-reorder-section">
+          <span className="hero-reorder-label">Reorder Threshold</span>
+          <span className="hero-reorder-value tabular-nums">{item.reorderLevel} {item.unit || ''}</span>
+          <span className="subtext">
+            {item.currentQuantity <= item.reorderLevel
+              ? 'Stock is at or below reorder threshold. Replenishment recommended.'
+              : `${item.currentQuantity - item.reorderLevel} ${item.unit || ''} buffer above reorder threshold.`}
+          </span>
+        </div>
+      </div>
+
       <div className="detail-card">
         <h2>Item Specifications</h2>
         <div className="detail-grid">
           <div className="detail-item">
             <span className="detail-label">Item Code</span>
-            <span className="detail-value">{item.itemCode}</span>
+            <span className="detail-value inv-mono">{item.itemCode}</span>
           </div>
           <div className="detail-item">
             <span className="detail-label">Item Name</span>
@@ -227,8 +255,8 @@ export default function InventoryItemDetailPage() {
           </div>
           <div className="detail-item">
             <span className="detail-label">Current Stock Quantity</span>
-            <span className="detail-value" style={{ fontSize: '1.25rem', fontWeight: 700 }}>
-              {item.currentQuantity}
+            <span className="detail-value" style={{ fontWeight: 600 }}>
+              {item.currentQuantity} {item.unit || ''}
             </span>
           </div>
           <div className="detail-item">
@@ -328,6 +356,7 @@ export default function InventoryItemDetailPage() {
         </div>
       )}
 
+      <h2 className="sr-only">Stock Movement and Batch Activity</h2>
       <div className="detail-card tabs-card">
         <div className="tab-navigation" role="tablist" aria-label="Item activity tabs">
           <button
@@ -383,4 +412,3 @@ export default function InventoryItemDetailPage() {
     </div>
   );
 }
-

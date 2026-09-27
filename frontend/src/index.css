@@ -260,15 +260,38 @@ a:focus-visible, button:focus-visible, input:focus-visible, select:focus-visible
   text-decoration: none;
 }
 
+.btn-outline-secondary {
+  background-color: transparent;
+  color: #334155;
+  border: 1px solid #cbd5e1;
+  border-radius: 6px;
+  font-weight: 600;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.15s ease;
+}
+
+.btn-outline-secondary:hover {
+  background-color: #f1f5f9;
+  color: #0f172a;
+  border-color: #94a3b8;
+  text-decoration: none;
+}
+
 .app-header-public .btn-primary {
   color: #ffffff;
-  background-color: #1769aa;
+  background-color: #0f766e;
+  border-color: #0f766e;
+  box-shadow: 0 2px 6px rgba(15, 118, 110, 0.2);
 }
 
 .app-header-public .btn-primary:hover {
   color: #ffffff;
-  background-color: #12578e;
+  background-color: #115e59;
+  border-color: #115e59;
   text-decoration: none;
+  box-shadow: 0 4px 12px rgba(15, 118, 110, 0.28);
 }
 
 .app-header-public .app-header-inner {
@@ -277,15 +300,16 @@ a:focus-visible, button:focus-visible, input:focus-visible, select:focus-visible
 }
 
 .app-header-public .brand-icon {
-  background: #1769aa;
+  background: #0f766e;
   border-radius: 7px;
   box-shadow: none;
 }
 
 .app-header-public .brand-name {
-  color: #102a43;
+  color: #0f172a;
   font-size: 1.18rem;
-  font-weight: 720;
+  font-weight: 750;
+  letter-spacing: -0.015em;
 }
 
 .app-header-public .app-header-nav {
@@ -293,20 +317,25 @@ a:focus-visible, button:focus-visible, input:focus-visible, select:focus-visible
 }
 
 .app-header-public .app-nav-link {
-  color: #486581;
+  color: #475569;
   font-size: 0.875rem;
   font-weight: 600;
+  transition: color 160ms ease;
 }
 
 .app-header-public .app-nav-link.active,
 .app-header-public .app-nav-link:hover {
-  color: #1769aa;
+  color: #0f766e;
   background: transparent;
 }
 
 .app-header-public .app-header-user { margin-left: 0.25rem; }
-.app-header-public .auth-action-buttons { gap: 0.5rem; }
-.app-header-public .auth-action-buttons .btn { min-height: 38px; padding: 0.45rem 0.85rem; border-radius: 6px; }
+.app-header-public .auth-action-buttons { gap: 0.5rem; display: flex; align-items: center; }
+.app-header-public .auth-action-buttons .btn { min-height: 38px; padding: 0.45rem 0.95rem; border-radius: 7px; font-weight: 600; font-size: 0.875rem; transition: all 180ms ease; }
+.app-header-public .header-staff-login-btn { color: #1e293b; background: #f8fafc; border-color: #cbd5e1; }
+.app-header-public .header-staff-login-btn:hover { color: #0f172a; background: #f1f5f9; border-color: #94a3b8; }
+.app-header-public .header-register-btn { color: #0f766e; border-color: #ccfbf1; background: #f0fdfa; }
+.app-header-public .header-register-btn:hover { color: #115e59; background: #e6fffa; border-color: #99f6e4; }
 .header-register-label-short { display: none; }
 
 .app-content-wrapper {

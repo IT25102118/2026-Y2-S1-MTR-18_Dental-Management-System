@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { recordStockMovement, getItemBatches } from '../api/movementApi';
 import { getItems, InventoryApiError } from '../api/inventoryApi';
 import { useAuth } from '../../auth/context/AuthContext';
@@ -110,6 +110,45 @@ export default function StockMovementForm({ item: propItem, onSuccess, onCancel 
   };
 
   const isStaff = isAuthenticated && user && user.role !== 'PATIENT';
+
+  // Identify earliest expiring usable batch for advisory recommendation
+  const earliestExpiryBatchId = useMemo(() => {
+    if (!availableBatches || availableBatches.length === 0) return null;
+    const todayMidnight = new Date();
+    todayMidnight.setHours(0, 0, 0, 0);
+
+    const eligible = availableBatches.filter((b) => {
+      if (b.quantityOnHand <= 0) return false;
+      if (!b.expiryDate) return false;
+      const parts = b.expiryDate.split('-');
+      if (parts.length !== 3) return false;
+      const expDate = new Date(parseInt(parts[0], 10), parseInt(parts[1], 10) - 1, parseInt(parts[2], 10));
+      return expDate >= todayMidnight;
+    });
+
+    if (eligible.length === 0) return null;
+
+    eligible.sort((a, b) => a.expiryDate.localeCompare(b.expiryDate));
+    return eligible[0].id;
+  }, [availableBatches]);
+
+  // Calculation for projected stock balance
+  const projectedCalculation = useMemo(() => {
+    if (!selectedItem) return null;
+    const current = Number(selectedItem.currentQuantity ?? 0);
+    const entered = Number(quantity);
+    if (!quantity || isNaN(entered) || !Number.isInteger(entered) || entered <= 0) {
+      return null;
+    }
+    const delta = isStockOut ? -entered : entered;
+    const projected = current + delta;
+    return {
+      current,
+      delta,
+      projected,
+      isDeficit: projected < 0
+    };
+  }, [selectedItem, quantity, isStockOut]);
 
   const validate = () => {
     const errors = {};
@@ -249,6 +288,28 @@ export default function StockMovementForm({ item: propItem, onSuccess, onCancel 
     );
   }
 
+  // Determine direction metadata for banner
+  let bannerClass = 'direction-in';
+  let bannerTitle = '+ Stock In — Increases inventory balance';
+  let bannerDesc = 'Inbound stock movement • Records incoming clinic inventory into stock balance and registers batch tracking.';
+
+  if (isStockOut) {
+    bannerClass = 'direction-out';
+    bannerTitle = '− Stock Out — Deducts inventory balance';
+    if (movementType === 'USED') {
+      bannerDesc = 'Outbound stock movement • Dispenses clinic stock for operatory use or patient procedure.';
+    } else if (movementType === 'DAMAGED') {
+      bannerDesc = 'Outbound stock movement • Deducts damaged, compromised, or dropped supplies from clinic inventory.';
+    } else if (movementType === 'EXPIRED') {
+      bannerDesc = 'Outbound stock movement • Disposes of expired stock batches past safe medical clinical date.';
+    } else {
+      bannerDesc = 'Outbound stock movement • Reduces stock balance to reconcile with physical inventory deficit.';
+    }
+  } else if (movementType === 'ADJUSTED') {
+    bannerTitle = '+ Stock In — Increases inventory balance';
+    bannerDesc = 'Inbound stock movement • Increases stock balance to reconcile with physical inventory surplus.';
+  }
+
   return (
     <div className="movement-form-card" data-testid="movement-form-section">
       <div className="form-card-header">
@@ -256,6 +317,17 @@ export default function StockMovementForm({ item: propItem, onSuccess, onCancel 
         <span className="acting-user-badge" data-testid="acting-user-badge">
           Acting User: {user.firstName} {user.lastName} ({user.role})
         </span>
+      </div>
+
+      {/* Movement Direction Indicator Banner */}
+      <div className={`movement-direction-banner ${bannerClass}`} data-testid="movement-direction-banner">
+        <div className="direction-icon-wrap" aria-hidden="true">
+          <span style={{ fontSize: '1.5rem', fontWeight: 800 }}>{isStockOut ? '↓' : '↑'}</span>
+        </div>
+        <div className="direction-content">
+          <span className="direction-title">{bannerTitle}</span>
+          <span className="direction-desc">{bannerDesc}</span>
+        </div>
       </div>
 
       {successMessage && (
@@ -337,13 +409,12 @@ export default function StockMovementForm({ item: propItem, onSuccess, onCancel 
           </select>
         </div>
 
-        {/* Adjustment Direction (only for ADJUSTED) */}
         {movementType === 'ADJUSTED' && (
-          <div className="form-group" data-testid="adjustment-direction-group">
-            <label>
+          <fieldset className="form-group radio-fieldset" data-testid="adjustment-direction-group" style={{ border: 'none', padding: 0, margin: '0 0 1rem 0' }}>
+            <legend className="form-label" style={{ fontWeight: 600, fontSize: '0.875rem', marginBottom: '0.5rem', display: 'block' }}>
               Adjustment Direction <span className="required-star">*</span>
-            </label>
-            <div className="radio-group">
+            </legend>
+            <div className="radio-group" role="radiogroup" aria-label="Adjustment direction">
               <label className="radio-label">
                 <input
                   type="radio"
@@ -368,9 +439,9 @@ export default function StockMovementForm({ item: propItem, onSuccess, onCancel 
               </label>
             </div>
             {clientErrors.adjustmentDirection && (
-              <span className="field-error">{clientErrors.adjustmentDirection}</span>
+              <span className="field-error" role="alert">{clientErrors.adjustmentDirection}</span>
             )}
-          </div>
+          </fieldset>
         )}
 
         {/* Quantity */}
@@ -391,13 +462,61 @@ export default function StockMovementForm({ item: propItem, onSuccess, onCancel 
             disabled={submitting}
             placeholder="e.g. 10"
             className={`form-control ${clientErrors.quantity ? 'is-invalid' : ''}`}
+            aria-invalid={Boolean(clientErrors.quantity)}
+            aria-describedby={clientErrors.quantity ? 'quantity-error' : undefined}
           />
           {clientErrors.quantity && (
-            <span className="field-error" data-testid="quantity-error">
+            <span id="quantity-error" className="field-error" role="alert" data-testid="quantity-error">
               {clientErrors.quantity}
             </span>
           )}
         </div>
+
+        {/* Projected Balance Calculator (Presentation-only) */}
+        {projectedCalculation && (
+          <div className="projected-balance-card" data-testid="projected-balance-card">
+            <div className="projected-balance-header">
+              <span className="projected-label">Projected Stock Impact</span>
+              <span className="projected-disclaimer">Preview only — actual ledger balance recorded upon submission</span>
+            </div>
+            <div className="projected-balance-display">
+              <div className="balance-step">
+                <span className="step-label">Current Balance</span>
+                <span className="step-val">
+                  {projectedCalculation.current} {selectedItem?.unit || ''}
+                </span>
+              </div>
+              <span className="balance-arrow">→</span>
+              <div className="balance-step">
+                <span className="step-label">Transaction Delta</span>
+                <span
+                  className="step-val"
+                  style={{ color: projectedCalculation.delta < 0 ? '#dc2626' : '#166534' }}
+                >
+                  {projectedCalculation.delta > 0
+                    ? `+${projectedCalculation.delta}`
+                    : `${projectedCalculation.delta}`}{' '}
+                  {selectedItem?.unit || ''}
+                </span>
+              </div>
+              <span className="balance-arrow">→</span>
+              <div className="balance-step highlight">
+                <span className="step-label">Projected Balance</span>
+                <span
+                  className="step-val"
+                  style={{ color: projectedCalculation.isDeficit ? '#dc2626' : '#0f172a' }}
+                >
+                  {projectedCalculation.projected} {selectedItem?.unit || ''}
+                </span>
+              </div>
+            </div>
+            {projectedCalculation.isDeficit && (
+              <div className="projected-deficit-warning" role="alert">
+                ⚠️ Warning: Projected stock balance is negative ({projectedCalculation.projected}). Incurring negative stock will violate inventory invariants and will be rejected by the server.
+              </div>
+            )}
+          </div>
+        )}
 
         {/* Reason / Reference */}
         <div className="form-group">
@@ -420,9 +539,11 @@ export default function StockMovementForm({ item: propItem, onSuccess, onCancel 
                 : 'e.g. PO-8823 / Operatory restocking'
             }
             className={`form-control ${clientErrors.reason ? 'is-invalid' : ''}`}
+            aria-invalid={Boolean(clientErrors.reason)}
+            aria-describedby={clientErrors.reason ? 'reason-error' : undefined}
           />
           {clientErrors.reason && (
-            <span className="field-error" data-testid="reason-error">
+            <span id="reason-error" className="field-error" role="alert" data-testid="reason-error">
               {clientErrors.reason}
             </span>
           )}
@@ -436,22 +557,9 @@ export default function StockMovementForm({ item: propItem, onSuccess, onCancel 
                 <label htmlFor="movement-batch-select">
                   Allocate From Batch {availableBatches.length > 1 ? <span className="required-star">*</span> : '(Optional)'}
                 </label>
-                <select
-                  id="movement-batch-select"
-                  value={selectedBatchId}
-                  onChange={(e) => {
-                    setSelectedBatchId(e.target.value);
-                    setClientErrors((prev) => ({ ...prev, batchId: null }));
-                  }}
-                  disabled={submitting || loadingBatches}
-                  className={`form-control ${clientErrors.batchId ? 'is-invalid' : ''}`}
-                  data-testid="movement-batch-select"
-                >
-                  <option value="">
-                    {availableBatches.length > 1
-                      ? '-- Select Batch (Required: Multiple Batches Available) --'
-                      : '-- Select Batch (Optional) --'}
-                  </option>
+
+                {/* Visual Selectable Batch Cards Grid */}
+                <div className="batch-selection-grid" data-testid="batch-selection-grid">
                   {availableBatches.map((b) => {
                     let isExpired = false;
                     if (b.expiryDate) {
@@ -463,20 +571,115 @@ export default function StockMovementForm({ item: propItem, onSuccess, onCancel 
                         isExpired = expDate < todayMidnight;
                       }
                     }
-                    const disableOption = movementType === 'USED' && isExpired;
+                    const isCardDisabled = movementType === 'USED' && isExpired;
+                    const isSelected = String(selectedBatchId) === String(b.id);
+                    const isRecommended = String(b.id) === String(earliestExpiryBatchId) && !isCardDisabled;
+
                     return (
-                      <option key={b.id} value={b.id} disabled={disableOption}>
-                        {b.batchNumber ? b.batchNumber : 'Unbatched Stock'} (Qty: {b.quantityOnHand}, Exp: {b.expiryDate || 'No expiry'}{isExpired ? ' - EXPIRED' : ''}){disableOption ? ' [Expired - Cannot Use]' : ''}
-                      </option>
+                      <div
+                        key={b.id}
+                        role="button"
+                        tabIndex={isCardDisabled ? -1 : 0}
+                        aria-pressed={isSelected}
+                        aria-disabled={isCardDisabled}
+                        className={`batch-select-card ${isSelected ? 'selected' : ''} ${isCardDisabled ? 'disabled' : ''}`}
+                        onClick={() => {
+                          if (isCardDisabled || submitting || loadingBatches) return;
+                          setSelectedBatchId((prev) => (String(prev) === String(b.id) ? '' : String(b.id)));
+                          setClientErrors((prev) => ({ ...prev, batchId: null }));
+                        }}
+                        onKeyDown={(e) => {
+                          if (e.key === 'Enter' || e.key === ' ') {
+                            e.preventDefault();
+                            if (!isCardDisabled && !submitting && !loadingBatches) {
+                              setSelectedBatchId((prev) => (String(prev) === String(b.id) ? '' : String(b.id)));
+                              setClientErrors((prev) => ({ ...prev, batchId: null }));
+                            }
+                          }
+                        }}
+                        data-testid={`batch-card-${b.id}`}
+                      >
+                        <div className="batch-card-top">
+                          <div className="batch-card-lot">
+                            <strong>{b.batchNumber ? b.batchNumber : 'Unbatched Stock'}</strong>
+                            {isRecommended && (
+                              <span className="earliest-expiry-pill" title="Recommended: Earliest expiring batch lot">
+                                ⭐ Recommended — Earliest Expiry
+                              </span>
+                            )}
+                          </div>
+                          <div className="batch-card-qty">
+                            <span className="batch-qty-label">On Hand</span>
+                            <span className="batch-qty-val">{b.quantityOnHand}</span>
+                          </div>
+                        </div>
+                        <div className="batch-card-bottom">
+                          <span>Exp: {b.expiryDate || 'No expiry'}</span>
+                          {isCardDisabled ? (
+                            <span className="batch-expired-warning">Expired — Cannot Use</span>
+                          ) : isExpired ? (
+                            <span className="badge badge-batch-expired">Expired (Eligible for Write-off)</span>
+                          ) : (
+                            <span className="badge badge-batch-valid">Valid Stock</span>
+                          )}
+                        </div>
+                      </div>
                     );
                   })}
-                </select>
+                </div>
+
+                {/* Synchronized accessible select element */}
+                <div className="accessible-batch-fallback">
+                  <select
+                    id="movement-batch-select"
+                    value={selectedBatchId}
+                    onChange={(e) => {
+                      setSelectedBatchId(e.target.value);
+                      setClientErrors((prev) => ({ ...prev, batchId: null }));
+                    }}
+                    disabled={submitting || loadingBatches}
+                    className={`form-control ${clientErrors.batchId ? 'is-invalid' : ''}`}
+                    data-testid="movement-batch-select"
+                    aria-invalid={Boolean(clientErrors.batchId)}
+                    aria-describedby={clientErrors.batchId ? 'batch-error' : undefined}
+                  >
+                    <option value="">
+                      {availableBatches.length > 1
+                        ? '-- Select Batch (Required: Multiple Batches Available) --'
+                        : '-- Select Batch (Optional) --'}
+                    </option>
+                    {availableBatches.map((b) => {
+                      let isExpired = false;
+                      if (b.expiryDate) {
+                        const parts = b.expiryDate.split('-');
+                        if (parts.length === 3) {
+                           const expDate = new Date(parseInt(parts[0], 10), parseInt(parts[1], 10) - 1, parseInt(parts[2], 10));
+                          const todayMidnight = new Date();
+                          todayMidnight.setHours(0, 0, 0, 0);
+                          isExpired = expDate < todayMidnight;
+                        }
+                      }
+                      const disableOption = movementType === 'USED' && isExpired;
+                      return (
+                        <option key={b.id} value={b.id} disabled={disableOption}>
+                          {b.batchNumber ? b.batchNumber : 'Unbatched Stock'} (Qty: {b.quantityOnHand}, Exp: {b.expiryDate || 'No expiry'}{isExpired ? ' - EXPIRED' : ''}){disableOption ? ' [Expired - Cannot Use]' : ''}
+                        </option>
+                      );
+                    })}
+                  </select>
+                </div>
+
                 {clientErrors.batchId && (
-                  <span className="field-error" data-testid="batch-error">{clientErrors.batchId}</span>
+                  <span id="batch-error" className="field-error" role="alert" data-testid="batch-error">{clientErrors.batchId}</span>
                 )}
                 {availableBatches.length > 1 && (
-                  <span className="subtext" style={{ marginTop: '0.25rem' }}>
+                  <span className="subtext" style={{ marginTop: '0.25rem', display: 'block' }}>
                     Staff must select the specific physical batch lot used in clinic operatory.
+                  </span>
+                )}
+                {movementType === 'USED' && (
+                  <span className="subtext" style={{ marginTop: '0.25rem', display: 'block', color: '#64748b' }}>
+                    Expired stock cannot be used clinically. To discard or dispose of expired materials, record an EXPIRED movement instead.
                   </span>
                 )}
               </>
@@ -569,4 +772,3 @@ export default function StockMovementForm({ item: propItem, onSuccess, onCancel 
     </div>
   );
 }
-

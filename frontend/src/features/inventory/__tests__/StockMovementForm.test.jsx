@@ -260,4 +260,122 @@ describe('StockMovementForm', () => {
     const validOption = options.find((opt) => opt.value === '104');
     expect(validOption).not.toBeDisabled();
   });
+
+  it('renders direction indicator banner dynamically reflecting inbound vs outbound movements', () => {
+    render(<StockMovementForm item={sampleItem} />);
+
+    // Default is RECEIVED (Inbound)
+    const banner = screen.getByTestId('movement-direction-banner');
+    expect(banner).toHaveClass('direction-in');
+    expect(banner).toHaveTextContent(/inbound stock movement/i);
+
+    // Change to USED (Outbound)
+    const typeSelect = screen.getByLabelText(/movement type/i);
+    fireEvent.change(typeSelect, { target: { value: 'USED' } });
+
+    expect(banner).toHaveClass('direction-out');
+    expect(banner).toHaveTextContent(/outbound stock movement/i);
+  });
+
+  it('renders projected balance calculation and warns upon negative balance', () => {
+    render(<StockMovementForm item={sampleItem} />);
+
+    // Inbound: 40 + 10 = 50
+    const qtyInput = screen.getByLabelText(/quantity/i);
+    fireEvent.change(qtyInput, { target: { value: '10' } });
+
+    const balanceCard = screen.getByTestId('projected-balance-card');
+    expect(balanceCard).toBeInTheDocument();
+    expect(balanceCard).toHaveTextContent(/40 box/i);
+    expect(balanceCard).toHaveTextContent(/\+10 box/i);
+    expect(balanceCard).toHaveTextContent(/50 box/i);
+
+    // Switch to USED: 40 - 50 = -10 (negative deficit)
+    const typeSelect = screen.getByLabelText(/movement type/i);
+    fireEvent.change(typeSelect, { target: { value: 'USED' } });
+    fireEvent.change(qtyInput, { target: { value: '50' } });
+
+    expect(balanceCard).toHaveTextContent(/40 box/i);
+    expect(balanceCard).toHaveTextContent(/-50 box/i);
+    expect(balanceCard).toHaveTextContent(/-10 box/i);
+    expect(screen.getByRole('alert')).toHaveTextContent(/projected stock balance is negative/i);
+  });
+
+  it('renders interactive batch cards and displays earliest-expiry recommendation on earliest valid batch', async () => {
+    const batches = [
+      { id: 201, batchNumber: 'LOT-EARLY', quantityOnHand: 15, expiryDate: '2027-02-15' },
+      { id: 202, batchNumber: 'LOT-LATER', quantityOnHand: 25, expiryDate: '2028-11-20' }
+    ];
+    movementApi.getItemBatches.mockResolvedValueOnce({ content: batches });
+
+    render(<StockMovementForm item={sampleItem} />);
+
+    const typeSelect = screen.getByLabelText(/movement type/i);
+    fireEvent.change(typeSelect, { target: { value: 'USED' } });
+
+    await waitFor(() => {
+      expect(screen.getByTestId('batch-selection-grid')).toBeInTheDocument();
+    });
+
+    // Card 201 has earlier expiry: should have the recommended pill
+    const cardEarly = screen.getByTestId('batch-card-201');
+    const cardLater = screen.getByTestId('batch-card-202');
+    expect(cardEarly).toHaveTextContent(/recommended — earliest expiry/i);
+    expect(cardLater).not.toHaveTextContent(/recommended — earliest expiry/i);
+
+    // Clicking cardEarly selects it and syncs with batch select element
+    fireEvent.click(cardEarly);
+    expect(cardEarly).toHaveClass('selected');
+    expect(screen.getByTestId('movement-batch-select')).toHaveValue('201');
+
+    // Clicking cardLater selects it instead
+    fireEvent.click(cardLater);
+    expect(cardEarly).not.toHaveClass('selected');
+    expect(cardLater).toHaveClass('selected');
+    expect(screen.getByTestId('movement-batch-select')).toHaveValue('202');
+  });
+
+  it('dynamically updates direction banner when ADJUSTED direction is toggled between INCREASE and DECREASE', () => {
+    render(<StockMovementForm item={sampleItem} />);
+
+    const typeSelect = screen.getByLabelText(/movement type/i);
+    fireEvent.change(typeSelect, { target: { value: 'ADJUSTED' } });
+
+    const banner = screen.getByTestId('movement-direction-banner');
+    // Default adjustment direction is INCREASE
+    expect(banner).toHaveClass('direction-in');
+    expect(banner).toHaveTextContent(/increases inventory balance/i);
+
+    // Switch adjustment direction to DECREASE
+    const decreaseRadio = screen.getByLabelText(/decrease stock/i);
+    fireEvent.click(decreaseRadio);
+
+    expect(banner).toHaveClass('direction-out');
+    expect(banner).toHaveTextContent(/deducts inventory balance/i);
+  });
+
+  it('permits selection of expired batches for EXPIRED disposal write-off movements', async () => {
+    const expiredBatch = { id: 301, batchNumber: 'LOT-OLD-DISPOSAL', quantityOnHand: 8, expiryDate: '2020-01-01' };
+    movementApi.getItemBatches.mockResolvedValueOnce({ content: [expiredBatch] });
+
+    render(<StockMovementForm item={sampleItem} />);
+
+    const typeSelect = screen.getByLabelText(/movement type/i);
+    fireEvent.change(typeSelect, { target: { value: 'EXPIRED' } });
+
+    await waitFor(() => {
+      expect(screen.getByTestId('batch-selection-grid')).toBeInTheDocument();
+    });
+
+    const card = screen.getByTestId('batch-card-301');
+    expect(card).not.toHaveClass('disabled');
+    expect(card).toHaveAttribute('aria-disabled', 'false');
+
+    // Click to select the expired batch for disposal
+    fireEvent.click(card);
+    expect(card).toHaveClass('selected');
+    expect(screen.getByTestId('movement-batch-select')).toHaveValue('301');
+  });
 });
+
+

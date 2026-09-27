@@ -361,5 +361,28 @@ describe('InventoryItemDetailPage', () => {
         expect(screen.getByText('40')).toBeInTheDocument();
       });
     });
+
+    it('renders prominent hero stock metric card with stock level and reorder threshold', async () => {
+      inventoryApi.getItemById.mockResolvedValueOnce(sampleItem);
+
+      render(
+        <MemoryRouter initialEntries={['/inventory/items/1']}>
+          <Routes>
+            <Route path="/inventory/items/:id" element={<InventoryItemDetailPage />} />
+          </Routes>
+        </MemoryRouter>
+      );
+
+      await waitFor(() => {
+        expect(screen.getByTestId('item-hero-stock-card')).toBeInTheDocument();
+      });
+
+      const heroCard = screen.getByTestId('item-hero-stock-card');
+      expect(heroCard).toHaveTextContent(/current stock level/i);
+      expect(heroCard).toHaveTextContent('25');
+      expect(heroCard).toHaveTextContent(/reorder threshold/i);
+      expect(heroCard).toHaveTextContent('10 piece');
+    });
   });
 });
+

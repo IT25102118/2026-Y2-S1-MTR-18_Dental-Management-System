@@ -65,11 +65,23 @@ describe('InventoryOverviewPage', () => {
       expect(screen.getByTestId('overview-card-low-stock')).toHaveTextContent('5');
     });
 
-    // Expiry monitoring card shows user horizon without hardcoded 30-day metric
+    // Expiry monitoring card shows Date Horizon without hardcoded 30-day metric
     const expiryCard = screen.getByTestId('overview-card-expiry');
-    expect(expiryCard).toHaveTextContent(/User Horizon/i);
+    expect(expiryCard).toHaveTextContent(/Date Horizon/i);
     expect(expiryCard).toHaveTextContent(/Inspect Expiry Alerts/i);
     expect(expiryCard).not.toHaveTextContent(/30 days/i);
+
+    // Attention banner renders when low stock > 0
+    expect(screen.getByRole('region', { name: /low-stock attention required/i })).toBeInTheDocument();
+    expect(screen.getByRole('heading', { level: 4, name: /attention required: low-stock threshold reached/i })).toBeInTheDocument();
+    expect(screen.getByText(/supply items are currently at or below minimum reorder levels/i)).toBeInTheDocument();
+
+    // Quick navigation renders with valid routes
+    expect(screen.getByRole('heading', { level: 2, name: /quick operational navigation/i })).toBeInTheDocument();
+    expect(screen.getByRole('link', { name: /register catalog item/i })).toHaveAttribute('href', '/inventory/items/new');
+    expect(screen.getByRole('link', { name: /browse & filter catalog/i })).toHaveAttribute('href', '/inventory/items');
+    expect(screen.getByRole('link', { name: /batch & lot search/i })).toHaveAttribute('href', '/inventory/batches');
+    expect(screen.getByRole('link', { name: /operational alerts center/i })).toHaveAttribute('href', '/inventory/alerts');
   });
 
   it('renders consistent MF-06 navigation with Overview active', async () => {
@@ -105,6 +117,8 @@ describe('InventoryOverviewPage', () => {
 
     await waitFor(() => {
       expect(screen.getByTestId('overview-card-items')).toHaveTextContent('0');
+      expect(screen.getByRole('region', { name: /stock status healthy/i })).toBeInTheDocument();
+      expect(screen.getByRole('heading', { level: 4, name: /stock levels healthy/i })).toBeInTheDocument();
     });
   });
 
