@@ -11,6 +11,7 @@ function LocationDisplay() {
     <div>
       <div data-testid="current-path">{location.pathname}</div>
       <div data-testid="location-from">{location.state?.from || 'no-from'}</div>
+      <div data-testid="access-denied">{location.state?.accessDenied ? 'denied' : 'not-denied'}</div>
     </div>
   );
 }
@@ -140,5 +141,62 @@ describe('ProtectedRoute guard', () => {
     );
 
     expect(screen.getByTestId('protected-content')).toHaveTextContent('Authenticated User Portal');
+  });
+
+  it('renders child content when user role matches allowedRoles', () => {
+    vi.spyOn(AuthContextModule, 'useAuth').mockReturnValue({
+      status: 'authenticated',
+      isLoading: false,
+      isError: false,
+      isAuthenticated: true,
+      user: { id: 1, email: 'admin@dentcare.com', role: 'ADMINISTRATOR' }
+    });
+
+    render(
+      <MemoryRouter initialEntries={['/staff-only']}>
+        <Routes>
+          <Route
+            path="/staff-only"
+            element={
+              <ProtectedRoute allowedRoles={['ADMINISTRATOR', 'RECEPTIONIST']}>
+                <div data-testid="staff-content">Staff Portal</div>
+              </ProtectedRoute>
+            }
+          />
+        </Routes>
+      </MemoryRouter>
+    );
+
+    expect(screen.getByTestId('staff-content')).toHaveTextContent('Staff Portal');
+  });
+
+  it('redirects a disallowed PATIENT to the patient dashboard with access-denied state', () => {
+    vi.spyOn(AuthContextModule, 'useAuth').mockReturnValue({
+      status: 'authenticated',
+      isLoading: false,
+      isError: false,
+      isAuthenticated: true,
+      user: { id: 5, email: 'patient@dentcare.com', role: 'PATIENT' }
+    });
+
+    render(
+      <MemoryRouter initialEntries={['/staff-only']}>
+        <Routes>
+          <Route
+            path="/staff-only"
+            element={
+              <ProtectedRoute allowedRoles={['ADMINISTRATOR', 'RECEPTIONIST']}>
+                <div data-testid="staff-content">Staff Portal</div>
+              </ProtectedRoute>
+            }
+          />
+          <Route path="/patient/dashboard" element={<LocationDisplay />} />
+        </Routes>
+      </MemoryRouter>
+    );
+
+    expect(screen.queryByTestId('staff-content')).not.toBeInTheDocument();
+    expect(screen.getByTestId('current-path')).toHaveTextContent('/patient/dashboard');
+    expect(screen.getByTestId('access-denied')).toHaveTextContent('denied');
   });
 });

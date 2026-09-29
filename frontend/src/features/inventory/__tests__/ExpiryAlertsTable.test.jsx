@@ -217,4 +217,113 @@ describe('ExpiryAlertsTable', () => {
       expect(screen.getByRole('table')).toBeInTheDocument();
     });
   });
+
+  it('updates horizon when quick preset buttons are clicked', async () => {
+    alertApi.getExpiryAlerts.mockResolvedValue({
+      content: sampleBatches,
+      number: 0,
+      size: 20,
+      totalPages: 1,
+      totalElements: 2,
+      first: true,
+      last: true,
+      empty: false
+    });
+
+    render(
+      <MemoryRouter>
+        <ExpiryAlertsTable />
+      </MemoryRouter>
+    );
+
+    await waitFor(() => {
+      expect(screen.getByRole('table')).toBeInTheDocument();
+    });
+
+    const preset7Btn = screen.getByRole('button', { name: /7 days/i });
+    fireEvent.click(preset7Btn);
+
+    await waitFor(() => {
+      expect(alertApi.getExpiryAlerts).toHaveBeenCalled();
+    });
+
+    const preset90Btn = screen.getByRole('button', { name: /90 days/i });
+    fireEvent.click(preset90Btn);
+
+    await waitFor(() => {
+      expect(alertApi.getExpiryAlerts).toHaveBeenCalled();
+    });
+  });
+
+  it('renders expiring today badge and text when daysRemaining is 0', async () => {
+    const today = new Date();
+    const todayStr = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`;
+    const todayBatch = {
+      batchId: 205,
+      itemId: 5,
+      itemCode: 'ITM-005',
+      itemName: 'Surgical Gloves M',
+      category: 'PPE',
+      unit: 'box',
+      batchNumber: 'LOT-TODAY-01',
+      quantityOnHand: 8,
+      expiryDate: todayStr,
+      status: 'EXPIRING',
+      daysRemaining: 0,
+      supplierReference: 'SUPP-GLOVE'
+    };
+
+    alertApi.getExpiryAlerts.mockResolvedValueOnce({
+      content: [todayBatch],
+      number: 0,
+      size: 20,
+      totalPages: 1,
+      totalElements: 1,
+      first: true,
+      last: true,
+      empty: false
+    });
+
+    render(
+      <MemoryRouter>
+        <ExpiryAlertsTable />
+      </MemoryRouter>
+    );
+
+    await waitFor(() => {
+      expect(screen.getByRole('table')).toBeInTheDocument();
+    });
+
+    expect(screen.getByText('[EXPIRING] Expiring Today')).toBeInTheDocument();
+    expect(screen.getByText('Expiring today')).toBeInTheDocument();
+    expect(screen.getByText('LOT-TODAY-01')).toBeInTheDocument();
+  });
+
+  it('renders View Item action links in table rows', async () => {
+    alertApi.getExpiryAlerts.mockResolvedValueOnce({
+      content: sampleBatches,
+      number: 0,
+      size: 20,
+      totalPages: 1,
+      totalElements: 2,
+      first: true,
+      last: true,
+      empty: false
+    });
+
+    render(
+      <MemoryRouter>
+        <ExpiryAlertsTable />
+      </MemoryRouter>
+    );
+
+    await waitFor(() => {
+      expect(screen.getByRole('table')).toBeInTheDocument();
+    });
+
+    const viewLinks = screen.getAllByRole('link', { name: /view details for/i });
+    expect(viewLinks).toHaveLength(2);
+    expect(viewLinks[0]).toHaveAttribute('href', '/inventory/items/1');
+    expect(viewLinks[1]).toHaveAttribute('href', '/inventory/items/2');
+  });
 });

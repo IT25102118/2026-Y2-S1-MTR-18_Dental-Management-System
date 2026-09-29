@@ -69,6 +69,23 @@ class InventoryItemRepositoryFilteringTest {
         );
         Page<InventoryItem> codeResults = inventoryItemRepository.findAll(specCode, PageRequest.of(0, 10));
         assertThat(codeResults.getContent()).extracting(InventoryItem::getItemCode).containsExactly("ITM-001");
+
+        Specification<InventoryItem> specCategory = InventoryItemSpecifications.buildSpecification(
+                "diagnostic", null, null, null
+        );
+        Page<InventoryItem> categoryResults = inventoryItemRepository.findAll(specCategory, PageRequest.of(0, 10));
+        assertThat(categoryResults.getContent()).extracting(InventoryItem::getItemCode).containsExactly("ITM-001");
+    }
+
+    @Test
+    @DisplayName("AC-8: Build specification with all null filters returns all items")
+    void testNullFiltersMatchAll() {
+        Specification<InventoryItem> allNullSpec = InventoryItemSpecifications.buildSpecification(
+                null, null, null, null
+        );
+        Page<InventoryItem> results = inventoryItemRepository.findAll(allNullSpec, PageRequest.of(0, 10));
+        assertThat(results.getContent()).extracting(InventoryItem::getItemCode)
+                .containsExactlyInAnyOrder("ITM-001", "ITM-002", "ITM-003");
     }
 
     @Test

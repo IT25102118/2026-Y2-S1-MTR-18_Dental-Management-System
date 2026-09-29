@@ -38,4 +38,28 @@ public class StaffProvisioningController {
         StaffProvisioningResponse response = staffProvisioningService.provisionStaff(request);
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
+
+    @org.springframework.web.bind.annotation.GetMapping("/staff")
+    public ResponseEntity<java.util.List<StaffProvisioningResponse>> getAllStaff() {
+        return ResponseEntity.ok(staffProvisioningService.getAllStaff());
+    }
+
+    @org.springframework.web.bind.annotation.GetMapping("/staff/{id}")
+    public ResponseEntity<StaffProvisioningResponse> getStaffById(@org.springframework.web.bind.annotation.PathVariable Long id) {
+        return ResponseEntity.ok(staffProvisioningService.getStaffById(id));
+    }
+
+    @org.springframework.web.bind.annotation.PutMapping("/staff/{id}")
+    public ResponseEntity<StaffProvisioningResponse> updateStaff(
+            @org.springframework.web.bind.annotation.PathVariable Long id,
+            @Valid @RequestBody com.dentcare.security.dto.UpdateStaffRequest request) {
+        return ResponseEntity.ok(staffProvisioningService.updateStaff(id, request));
+    }
+
+    @org.springframework.web.bind.annotation.PatchMapping("/staff/{id}/status")
+    public ResponseEntity<StaffProvisioningResponse> updateStaffStatus(
+            @org.springframework.web.bind.annotation.PathVariable Long id,
+            @Valid @RequestBody com.dentcare.security.dto.UpdateStaffStatusRequest request) {
+        return ResponseEntity.ok(staffProvisioningService.updateStaffStatus(id, request));
+    }
 }

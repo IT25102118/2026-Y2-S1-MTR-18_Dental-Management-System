@@ -200,4 +200,74 @@ describe('InventoryBatchesPage', () => {
       expect(screen.getByText('LOT-DM-01')).toBeInTheDocument();
     });
   });
+
+  it('renders status badges in batches table', async () => {
+    movementApi.searchBatches.mockResolvedValueOnce({
+      content: sampleBatches,
+      number: 0,
+      size: 20,
+      totalPages: 1,
+      totalElements: 2,
+      first: true,
+      last: true,
+      empty: false
+    });
+
+    render(
+      <MemoryRouter>
+        <InventoryBatchesPage />
+      </MemoryRouter>
+    );
+
+    await waitFor(() => {
+      expect(screen.getByTestId('batch-status-101')).toHaveTextContent('Valid');
+      expect(screen.getByTestId('batch-status-102')).toHaveTextContent('Valid');
+    });
+  });
+
+  it('navigates to next page when pagination next button is clicked', async () => {
+    movementApi.searchBatches.mockResolvedValueOnce({
+      content: sampleBatches,
+      number: 0,
+      size: 20,
+      totalPages: 2,
+      totalElements: 40,
+      first: true,
+      last: false,
+      empty: false
+    });
+
+    render(
+      <MemoryRouter>
+        <InventoryBatchesPage />
+      </MemoryRouter>
+    );
+
+    await waitFor(() => {
+      expect(screen.getByRole('heading', { level: 1 })).toBeInTheDocument();
+    });
+
+    const nextBtn = screen.getByRole('button', { name: /next page/i });
+    expect(nextBtn).toBeEnabled();
+
+    movementApi.searchBatches.mockResolvedValueOnce({
+      content: [sampleBatches[0]],
+      number: 1,
+      size: 20,
+      totalPages: 2,
+      totalElements: 40,
+      first: false,
+      last: true,
+      empty: false
+    });
+
+    fireEvent.click(nextBtn);
+
+    await waitFor(() => {
+      expect(movementApi.searchBatches).toHaveBeenCalledWith(expect.objectContaining({
+        page: 1
+      }));
+    });
+  });
 });
+

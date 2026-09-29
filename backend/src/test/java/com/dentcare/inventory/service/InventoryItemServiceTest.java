@@ -69,7 +69,7 @@ class InventoryItemServiceTest {
                 "DentPro"
         );
 
-        when(inventoryItemRepository.existsByItemCode("ITM-200")).thenReturn(false);
+        when(inventoryItemRepository.existsByItemCodeIgnoreCase("ITM-200")).thenReturn(false);
         when(inventoryItemRepository.save(any(InventoryItem.class))).thenAnswer(invocation -> {
             InventoryItem item = invocation.getArgument(0);
             return item;
@@ -106,11 +106,30 @@ class InventoryItemServiceTest {
                 null
         );
 
-        when(inventoryItemRepository.existsByItemCode("ITM-DUP")).thenReturn(true);
+        when(inventoryItemRepository.existsByItemCodeIgnoreCase("ITM-DUP")).thenReturn(true);
 
         assertThatThrownBy(() -> inventoryItemService.createItem(request))
                 .isInstanceOf(DuplicateItemCodeException.class)
                 .hasMessageContaining("ITM-DUP");
+    }
+
+    @Test
+    @DisplayName("AC-2: Create item with duplicate itemCode ignoring case throws DuplicateItemCodeException")
+    void testCreateItemDuplicateCodeIgnoreCaseThrows() {
+        CreateInventoryItemRequest request = new CreateInventoryItemRequest(
+                "itm-dup",
+                "Composite Syringe",
+                "Restorative",
+                "syringe",
+                5,
+                null
+        );
+
+        when(inventoryItemRepository.existsByItemCodeIgnoreCase("itm-dup")).thenReturn(true);
+
+        assertThatThrownBy(() -> inventoryItemService.createItem(request))
+                .isInstanceOf(DuplicateItemCodeException.class)
+                .hasMessageContaining("itm-dup");
     }
 
     @Test

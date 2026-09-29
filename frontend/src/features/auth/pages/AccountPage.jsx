@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
+import { getDashboardPath } from '../roleAccess';
 import '../auth.css';
 
 /**
@@ -104,8 +105,8 @@ export default function AccountPage() {
         </div>
 
         <div className="account-footer-links">
-          <Link to="/inventory" className="auth-link">
-            Go to Inventory Management &rarr;
+          <Link to={getDashboardPath(user?.role)} className="auth-link">
+            Return to Dashboard &rarr;
           </Link>
         </div>
       </div>

@@ -1,13 +1,14 @@
 import React from 'react';
 import { Navigate, useLocation, Outlet } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
+import { getDashboardPath } from '../roleAccess';
 
 /**
  * Route guard component protecting authenticated routes.
  * Handles loading, error with retry, and unauthenticated redirects with full URI preservation.
  */
-export default function ProtectedRoute({ children }) {
-  const { isAuthenticated, isLoading, isError, error, retryHydration } = useAuth();
+export default function ProtectedRoute({ children, allowedRoles }) {
+  const { isAuthenticated, user, isLoading, isError, error, retryHydration } = useAuth();
   const location = useLocation();
 
   if (isLoading) {
@@ -43,6 +44,18 @@ export default function ProtectedRoute({ children }) {
   if (!isAuthenticated) {
     const destination = location.pathname + location.search + location.hash;
     return <Navigate to="/login" state={{ from: destination }} replace />;
+  }
+
+  if (allowedRoles && allowedRoles.length > 0) {
+    if (!user || !allowedRoles.includes(user.role)) {
+      return (
+        <Navigate
+          to={getDashboardPath(user?.role)}
+          state={{ accessDenied: true }}
+          replace
+        />
+      );
+    }
   }
 
   return children ? children : <Outlet />;

@@ -152,6 +152,59 @@ describe('InventoryItemCreatePage', () => {
       expect(screen.getAllByText(/already exists/i).length).toBeGreaterThan(0);
     });
   });
+
+  it('navigates back to /inventory/items on cancel button click in create page', () => {
+    render(
+      <MemoryRouter initialEntries={['/inventory/items/new']}>
+        <Routes>
+          <Route path="/inventory/items/new" element={<InventoryItemCreatePage />} />
+          <Route path="/inventory/items" element={<div>Items List Page</div>} />
+        </Routes>
+      </MemoryRouter>
+    );
+
+    const cancelBtn = screen.getByRole('button', { name: /cancel/i });
+    fireEvent.click(cancelBtn);
+
+    expect(screen.getByText('Items List Page')).toBeInTheDocument();
+  });
+
+  it('accepts reorderLevel of zero as valid and submits successfully', async () => {
+    inventoryApi.createItem.mockResolvedValueOnce({
+      id: 99,
+      itemCode: 'ITM-099',
+      name: 'Zero Reorder Tool',
+      category: 'Diagnostic',
+      unit: 'piece',
+      reorderLevel: 0,
+      currentQuantity: 0,
+      active: true
+    });
+
+    render(
+      <MemoryRouter initialEntries={['/inventory/items/new']}>
+        <Routes>
+          <Route path="/inventory/items/new" element={<InventoryItemCreatePage />} />
+          <Route path="/inventory/items/:id" element={<div>Detail Page for 99</div>} />
+        </Routes>
+      </MemoryRouter>
+    );
+
+    fireEvent.change(screen.getByLabelText(/item code/i), { target: { value: 'ITM-099' } });
+    fireEvent.change(screen.getByLabelText(/item name/i), { target: { value: 'Zero Reorder Tool' } });
+    fireEvent.change(screen.getByLabelText(/category/i), { target: { value: 'Diagnostic' } });
+    fireEvent.change(screen.getByLabelText(/unit of measurement/i), { target: { value: 'piece' } });
+    fireEvent.change(screen.getByLabelText(/reorder level/i), { target: { value: '0' } });
+
+    fireEvent.click(screen.getByRole('button', { name: /register item/i }));
+
+    await waitFor(() => {
+      expect(inventoryApi.createItem).toHaveBeenCalledWith(
+        expect.objectContaining({ reorderLevel: 0 })
+      );
+      expect(screen.getByText('Detail Page for 99')).toBeInTheDocument();
+    });
+  });
 });
 
 describe('InventoryItemEditPage', () => {
@@ -231,6 +284,46 @@ describe('InventoryItemEditPage', () => {
         }
       );
       expect(screen.getByText('Detail Page for 10')).toBeInTheDocument();
+    });
+  });
+
+  it('navigates back to item detail on cancel button click in edit page', async () => {
+    inventoryApi.getItemById.mockResolvedValueOnce(existingItem);
+
+    render(
+      <MemoryRouter initialEntries={['/inventory/items/10/edit']}>
+        <Routes>
+          <Route path="/inventory/items/:id/edit" element={<InventoryItemEditPage />} />
+          <Route path="/inventory/items/:id" element={<div>Detail Page for 10</div>} />
+        </Routes>
+      </MemoryRouter>
+    );
+
+    await waitFor(() => {
+      expect(screen.getByDisplayValue('Surgical Mask Box')).toBeInTheDocument();
+    });
+
+    const cancelBtn = screen.getByRole('button', { name: /cancel/i });
+    fireEvent.click(cancelBtn);
+
+    expect(screen.getByText('Detail Page for 10')).toBeInTheDocument();
+  });
+
+  it('renders not-found state when editing non-existent item', async () => {
+    inventoryApi.getItemById.mockRejectedValueOnce(
+      new inventoryApi.InventoryApiError(404, 'Item not found', {}, 'Not Found')
+    );
+
+    render(
+      <MemoryRouter initialEntries={['/inventory/items/999/edit']}>
+        <Routes>
+          <Route path="/inventory/items/:id/edit" element={<InventoryItemEditPage />} />
+        </Routes>
+      </MemoryRouter>
+    );
+
+    await waitFor(() => {
+      expect(screen.getByText('Item Not Found')).toBeInTheDocument();
     });
   });
 });

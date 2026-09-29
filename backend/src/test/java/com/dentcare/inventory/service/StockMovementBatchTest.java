@@ -273,4 +273,101 @@ class StockMovementBatchTest {
         assertThatThrownBy(() -> stockMovementService.reverseMovement(testItem.getId(), receivedResp.id(), revReq))
                 .isInstanceOf(InsufficientStockException.class);
     }
+
+    @Test
+    @DisplayName("MF6-F3 AC-5: USED movement on expired batch is strictly rejected")
+    void testUsedMovementRejectedForExpiredBatch() {
+        // Receive a batch with past expiry (yesterday)
+        LocalDate yesterday = LocalDate.now().minusDays(1);
+        RecordStockMovementRequest recReq = new RecordStockMovementRequest(
+                StockMovementType.RECEIVED, null, 10, "Past lot receipt", 101L, "LOT-EXPIRED", yesterday, null
+        );
+        StockMovementResponse recResp = stockMovementService.recordMovement(testItem.getId(), recReq);
+        Long batchId = recResp.inventoryBatchId();
+
+        // Attempting to consume (USED) from expired batch must throw InvalidMovementException
+        RecordStockMovementRequest useReq = new RecordStockMovementRequest(
+                StockMovementType.USED, null, 2, "Try clinical usage", 101L, null, null, null, batchId, null, null
+        );
+
+        assertThatThrownBy(() -> stockMovementService.recordMovement(testItem.getId(), useReq))
+                .isInstanceOf(InvalidMovementException.class)
+                .hasMessageContaining("Cannot consume expired batch");
+    }
+
+    @Test
+    @DisplayName("MF6-F3 AC-5: EXPIRED stock-out movement on expired batch succeeds for write-off")
+    void testExpiredStockOutAllowedForExpiredBatch() {
+        LocalDate pastDate = LocalDate.now().minusDays(15);
+        RecordStockMovementRequest recReq = new RecordStockMovementRequest(
+                StockMovementType.RECEIVED, null, 8, "Expired batch", 101L, "LOT-DISCARD", pastDate, null
+        );
+        StockMovementResponse recResp = stockMovementService.recordMovement(testItem.getId(), recReq);
+        Long batchId = recResp.inventoryBatchId();
+
+        // Discarding expired stock using EXPIRED movement type must succeed
+        RecordStockMovementRequest discardReq = new RecordStockMovementRequest(
+                StockMovementType.EXPIRED, null, 8, "Dispose expired composite", 101L, null, null, null, batchId, null, null
+        );
+        StockMovementResponse discardResp = stockMovementService.recordMovement(testItem.getId(), discardReq);
+
+        assertThat(discardResp.resultingQuantity()).isEqualTo(0);
+        InventoryBatch batch = inventoryBatchRepository.findById(batchId).orElseThrow();
+        assertThat(batch.getQuantityOnHand()).isEqualTo(0);
+    }
+
+    @Test
+    @DisplayName("MF6-F3 AC-5: Boundary test on consumption expiry dates (today vs tomorrow vs yesterday vs null)")
+    void testBoundaryExpiryDatesOnConsumption() {
+        LocalDate today = LocalDate.now();
+        LocalDate tomorrow = today.plusDays(1);
+
+        // 1. Batch expiring today: not before today -> can be used
+        StockMovementResponse todayBatch = stockMovementService.recordMovement(testItem.getId(), new RecordStockMovementRequest(
+                StockMovementType.RECEIVED, null, 5, "Today lot", 101L, "LOT-TODAY", today, null
+        ));
+        StockMovementResponse useToday = stockMovementService.recordMovement(testItem.getId(), new RecordStockMovementRequest(
+                StockMovementType.USED, null, 2, "Use today lot", 101L, null, null, null, todayBatch.inventoryBatchId(), null, null
+        ));
+        assertThat(useToday.resultingQuantity()).isEqualTo(3);
+
+        // 2. Batch expiring tomorrow: can be used
+        StockMovementResponse tomorrowBatch = stockMovementService.recordMovement(testItem.getId(), new RecordStockMovementRequest(
+                StockMovementType.RECEIVED, null, 5, "Tomorrow lot", 101L, "LOT-TOMORROW", tomorrow, null
+        ));
+        StockMovementResponse useTomorrow = stockMovementService.recordMovement(testItem.getId(), new RecordStockMovementRequest(
+                StockMovementType.USED, null, 2, "Use tomorrow lot", 101L, null, null, null, tomorrowBatch.inventoryBatchId(), null, null
+        ));
+        assertThat(useTomorrow.resultingQuantity()).isEqualTo(6);
+
+        // 3. Batch with null expiry (unbatched or non-expiring): can be used
+        InventoryItem item2 = new InventoryItem("ITM-NOEXP", "Gauze", "Consumables", "pack", 10, 0, null);
+        item2.setActive(true);
+        item2 = inventoryItemRepository.save(item2);
+
+        StockMovementResponse unbatchedResp = stockMovementService.recordMovement(item2.getId(), new RecordStockMovementRequest(
+                StockMovementType.RECEIVED, null, 10, "Unbatched receipt", 101L, null, null, null
+        ));
+        StockMovementResponse useUnbatched = stockMovementService.recordMovement(item2.getId(), new RecordStockMovementRequest(
+                StockMovementType.USED, null, 3, "Use unbatched", 101L, null, null, null
+        ));
+        assertThat(useUnbatched.resultingQuantity()).isEqualTo(7);
+    }
+
+    @Test
+    @DisplayName("MF6-F3: Conflicting batch ID and batch number in request is rejected")
+    void testConflictingBatchIdAndBatchNumberRejected() {
+        StockMovementResponse recResp = stockMovementService.recordMovement(testItem.getId(), new RecordStockMovementRequest(
+                StockMovementType.RECEIVED, null, 10, "Lot 1 receipt", 101L, "LOT-REAL", LocalDate.now().plusMonths(6), null
+        ));
+        Long batchId = recResp.inventoryBatchId();
+
+        RecordStockMovementRequest conflictReq = new RecordStockMovementRequest(
+                StockMovementType.USED, null, 2, "Conflict use", 101L, "LOT-DIFFERENT", null, null, batchId, null, null
+        );
+
+        assertThatThrownBy(() -> stockMovementService.recordMovement(testItem.getId(), conflictReq))
+                .isInstanceOf(InvalidMovementException.class)
+                .hasMessageContaining("Conflicting batch number for batch ID");
+    }
 }

@@ -356,4 +356,85 @@ class StaffProvisioningServiceTest {
         verify(userRepository).saveAndFlush(captor.capture());
         assertNull(captor.getValue().getPhone());
     }
+
+    @Test
+    @DisplayName("getAllStaff returns only staff roles and maps to response DTOs")
+    void getAllStaff_returnsOnlyStaffMembers() {
+        User admin = new User("admin@dentcare.com", "hash", "Admin", "User", null, Role.ADMINISTRATOR);
+        admin.setId(1L);
+        User dentist = new User("dentist@dentcare.com", "hash", "Dentist", "User", null, Role.DENTIST);
+        dentist.setId(2L);
+        User patient = new User("patient@dentcare.com", "hash", "Patient", "User", null, Role.PATIENT);
+        patient.setId(3L);
+
+        when(userRepository.findAll()).thenReturn(java.util.List.of(admin, dentist, patient));
+
+        var result = staffProvisioningService.getAllStaff();
+
+        assertEquals(2, result.size());
+        assertEquals("admin@dentcare.com", result.get(0).email());
+        assertEquals("dentist@dentcare.com", result.get(1).email());
+    }
+
+    @Test
+    @DisplayName("getStaffById returns staff member when found")
+    void getStaffById_found_returnsResponse() {
+        User dentist = new User("dentist@dentcare.com", "hash", "Dentist", "User", "+1 555-0199", Role.DENTIST);
+        dentist.setId(2L);
+
+        when(userRepository.findById(2L)).thenReturn(java.util.Optional.of(dentist));
+
+        var response = staffProvisioningService.getStaffById(2L);
+
+        assertNotNull(response);
+        assertEquals(2L, response.id());
+        assertEquals("dentist@dentcare.com", response.email());
+        assertEquals(Role.DENTIST, response.role());
+    }
+
+    @Test
+    @DisplayName("getStaffById throws UserNotFoundException when not found or is PATIENT")
+    void getStaffById_notFound_throwsUserNotFoundException() {
+        when(userRepository.findById(99L)).thenReturn(java.util.Optional.empty());
+
+        assertThrows(com.dentcare.security.exception.UserNotFoundException.class,
+                () -> staffProvisioningService.getStaffById(99L));
+    }
+
+    @Test
+    @DisplayName("updateStaff updates allowed fields and preserves immutable email")
+    void updateStaff_validUpdate_updatesAndReturns() {
+        User user = new User("original@dentcare.com", "hash", "Original", "Name", null, Role.RECEPTIONIST);
+        user.setId(5L);
+        user.setActive(true);
+
+        when(userRepository.findById(5L)).thenReturn(java.util.Optional.of(user));
+        when(userRepository.save(any(User.class))).thenAnswer(i -> i.getArgument(0));
+
+        var request = new com.dentcare.security.dto.UpdateStaffRequest("Updated", "Staff", "+1 555-9999", Role.DENTIST);
+
+        var response = staffProvisioningService.updateStaff(5L, request);
+
+        assertEquals("Updated", response.firstName());
+        assertEquals("Staff", response.lastName());
+        assertEquals("+1 555-9999", response.phone());
+        assertEquals(Role.DENTIST, response.role());
+        assertEquals("original@dentcare.com", response.email());
+    }
+
+    @Test
+    @DisplayName("updateStaffStatus toggles active status")
+    void updateStaffStatus_validStatus_updatesAndReturns() {
+        User user = new User("user@dentcare.com", "hash", "Active", "User", null, Role.DENTAL_ASSISTANT);
+        user.setId(8L);
+        user.setActive(true);
+
+        when(userRepository.findById(8L)).thenReturn(java.util.Optional.of(user));
+        when(userRepository.save(any(User.class))).thenAnswer(i -> i.getArgument(0));
+
+        var request = new com.dentcare.security.dto.UpdateStaffStatusRequest(false);
+        var response = staffProvisioningService.updateStaffStatus(8L, request);
+
+        assertFalse(response.active());
+    }
 }

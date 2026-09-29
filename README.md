@@ -44,6 +44,42 @@ DentCare consists of six major functional modules:
 - IntelliJ IDEA / VS Code
 - MySQL Workbench
 
+## Quick Start (Windows, macOS, or Linux)
+
+Prerequisites: Java 21, Node.js 20+, and Docker Desktop (or Docker Engine with Compose).
+
+1. Start MySQL from the repository root:
+
+   ```bash
+   docker compose up -d mysql
+   ```
+
+2. Start the backend in a second terminal:
+
+   ```bash
+   cd backend
+   ./mvnw spring-boot:run
+   ```
+
+   On Windows Command Prompt or PowerShell, use `mvnw.cmd spring-boot:run`.
+
+3. Start the frontend in a third terminal:
+
+   ```bash
+   cd frontend
+   npm install
+   npm run dev
+   ```
+
+4. Open `http://localhost:3000`.
+
+Flyway automatically creates and upgrades every database table when the backend
+starts. Manual execution of files under `database/migrations` is no longer
+required. To use an existing MySQL installation instead of Docker, set
+`DB_HOST`, `DB_PORT`, `DB_NAME`, `DB_USERNAME`, and `DB_PASSWORD`. Copy
+`.env.example` to `.env` only for Docker Compose overrides; `.env` is ignored by
+Git.
+
 ## ✨ Key Features
 
 - Patient registration and record management

@@ -76,7 +76,7 @@ export default function InventoryItemForm({
       errors.unit = 'Unit must not exceed 50 characters';
     }
 
-    const reorderVal = formData.reorderLevel.trim();
+    const reorderVal = String(formData.reorderLevel ?? '').trim();
     if (reorderVal === '') {
       errors.reorderLevel = 'Reorder level is required';
     } else {

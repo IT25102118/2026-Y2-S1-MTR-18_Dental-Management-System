@@ -32,7 +32,7 @@ public class InventoryItemServiceImpl implements InventoryItemService {
     @Transactional
     public InventoryItemResponse createItem(CreateInventoryItemRequest request) {
         String code = request.getItemCode().trim();
-        if (inventoryItemRepository.existsByItemCode(code)) {
+        if (inventoryItemRepository.existsByItemCodeIgnoreCase(code)) {
             throw new DuplicateItemCodeException(code);
         }
 

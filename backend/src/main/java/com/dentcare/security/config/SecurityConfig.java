@@ -73,11 +73,10 @@ public class SecurityConfig {
             .csrf(csrf -> csrf
                 .csrfTokenRepository(csrfTokenRepository)
                 .csrfTokenRequestHandler(requestHandler)
-                // Temporary compatibility debt (removed in PR-D4): allow unmigrated frontend mutations to succeed
-                .ignoringRequestMatchers(
-                    "/api/auth/register/patient",
-                    "/api/inventory/**"
-                )
+                .ignoringRequestMatchers("/h2-console/**")
+            )
+            .headers(headers -> headers
+                .frameOptions(frame -> frame.sameOrigin())
             )
             .cors(Customizer.withDefaults())
             .sessionManagement(session -> session
@@ -88,12 +87,21 @@ public class SecurityConfig {
                 .securityContextRepository(securityContextRepository)
             )
             .authorizeHttpRequests(auth -> auth
+                .requestMatchers("/h2-console/**").permitAll()
                 .requestMatchers(HttpMethod.GET, "/api/auth/csrf").permitAll()
                 .requestMatchers(HttpMethod.POST, "/api/auth/register/patient").permitAll()
                 .requestMatchers(HttpMethod.POST, "/api/auth/login").permitAll()
                 .requestMatchers(HttpMethod.GET, "/api/auth/me").authenticated()
                 .requestMatchers("/api/admin/**").hasRole("ADMINISTRATOR")
-                .requestMatchers("/api/inventory/**").permitAll()
+                .requestMatchers("/api/invoices", "/api/invoices/**").hasAnyRole("ADMINISTRATOR", "RECEPTIONIST")
+                .requestMatchers("/api/payments", "/api/payments/**").hasAnyRole("ADMINISTRATOR", "RECEPTIONIST")
+                .requestMatchers("/api/billing", "/api/billing/**").hasAnyRole("ADMINISTRATOR", "RECEPTIONIST")
+                .requestMatchers(HttpMethod.GET, "/api/inventory/**", "/api/clinical/**", "/api/prescriptions/**")
+                    .hasAnyRole("ADMINISTRATOR", "RECEPTIONIST", "DENTIST", "DENTAL_ASSISTANT")
+                .requestMatchers("/api/inventory/**")
+                    .hasAnyRole("ADMINISTRATOR", "RECEPTIONIST", "DENTIST", "DENTAL_ASSISTANT")
+                .requestMatchers("/api/clinical/**", "/api/prescriptions/**")
+                    .hasRole("DENTIST")
                 .requestMatchers("/error").permitAll()
                 .anyRequest().authenticated()
             )

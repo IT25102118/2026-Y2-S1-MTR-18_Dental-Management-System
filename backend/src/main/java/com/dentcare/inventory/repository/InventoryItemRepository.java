@@ -31,6 +31,16 @@ public interface InventoryItemRepository extends JpaRepository<InventoryItem, Lo
     boolean existsByItemCode(String itemCode);
 
     /**
+     * Checks if an inventory item exists with the specified item code, ignoring case.
+     */
+    boolean existsByItemCodeIgnoreCase(String itemCode);
+
+    /**
+     * Finds an inventory item by its item code, ignoring case.
+     */
+    Optional<InventoryItem> findByItemCodeIgnoreCase(String itemCode);
+
+    /**
      * Retrieves all active inventory items.
      */
     List<InventoryItem> findByActiveTrue();

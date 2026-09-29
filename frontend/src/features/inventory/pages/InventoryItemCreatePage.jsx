@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import { createItem, InventoryApiError } from '../api/inventoryApi';
+import InventoryPageHeader from '../components/InventoryPageHeader';
 import InventoryItemForm from '../components/InventoryItemForm';
 import '../inventory.css';
 
@@ -49,13 +50,11 @@ export default function InventoryItemCreatePage() {
 
   return (
     <div className="inventory-container">
-      <nav className="inventory-nav" aria-label="Breadcrumb">
-        <Link to="/inventory/items">← Back to Inventory Items</Link>
-      </nav>
-
-      <div className="inventory-header">
-        <h1>Register New Inventory Item</h1>
-      </div>
+      <InventoryPageHeader
+        title="Register New Inventory Item"
+        breadcrumb={{ to: '/inventory/items', label: '← Back to Inventory Items' }}
+        showNav={false}
+      />
 
       <InventoryItemForm
         mode="create"
