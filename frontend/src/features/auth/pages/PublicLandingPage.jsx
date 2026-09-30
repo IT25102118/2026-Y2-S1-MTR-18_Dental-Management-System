@@ -159,6 +159,8 @@ export default function PublicLandingPage() {
   const [openFaq, setOpenFaq] = useState(0);
 
   useEffect(() => {
+    if (isLoading) return;
+
     if (typeof window === 'undefined' || typeof window.IntersectionObserver === 'undefined') {
       document.querySelectorAll('.scroll-reveal').forEach((el) => el.classList.add('is-revealed'));
       return;
@@ -173,14 +175,14 @@ export default function PublicLandingPage() {
           }
         });
       },
-      { threshold: 0.1, rootMargin: '0px 0px -40px 0px' }
+      { threshold: 0.05, rootMargin: '0px 0px 40px 0px' }
     );
 
     const elements = document.querySelectorAll('.scroll-reveal');
     elements.forEach((el) => observer.observe(el));
 
     return () => observer.disconnect();
-  }, []);
+  }, [isLoading]);
 
   if (isLoading) {
     return (
