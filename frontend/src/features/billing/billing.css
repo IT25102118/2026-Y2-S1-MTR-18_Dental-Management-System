@@ -4,6 +4,15 @@
    Only affects the Billing & Invoices module.
    ============================================================================= */
 
+/* Visible Soft Ocean Blue Canvas (#e0f2fe to #eef8ff) for Billing Module */
+:root:has(.billing-container),
+body:has(.billing-container),
+.app-content-wrapper:has(.billing-container) {
+  background-color: #eaf5fc !important;
+  background-image: linear-gradient(180deg, #e0f2fe 0%, #edf6fd 60%, #f0f9ff 100%) !important;
+  background-attachment: fixed !important;
+}
+
 .billing-container {
   /* Ocean Blue & Cyan Theme Variables */
   --billing-primary: #0284c7;          /* Ocean Blue 600 */
@@ -17,12 +26,27 @@
   --billing-gradient: linear-gradient(135deg, #0284c7 0%, #0891b2 50%, #06b6d4 100%);
   --billing-gradient-hover: linear-gradient(135deg, #0369a1 0%, #0e7490 50%, #0891b2 100%);
   --billing-border: #bae6fd;
-  --billing-card-border: #e0f2fe;
+  --billing-card-border: #cbd5e1;
 
-  max-width: 1100px;
+  position: relative;
+  max-width: 1200px;
   margin: 0 auto;
-  padding: 1.5rem;
+  padding: 1.75rem 2rem 4.5rem;
+  min-height: calc(100vh - 64px);
   color: #1e293b;
+}
+
+/* Bulletproof full-viewport backdrop (works in 100% of browsers) */
+.billing-container::before {
+  content: "";
+  position: fixed;
+  top: 64px;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: linear-gradient(180deg, #e0f2fe 0%, #edf6fd 60%, #f0f9ff 100%);
+  z-index: -1;
+  pointer-events: none;
 }
 
 /* Header & Module Brand */
@@ -33,8 +57,8 @@
   flex-wrap: wrap;
   gap: 1rem;
   margin-bottom: 1.5rem;
-  padding-bottom: 0.75rem;
-  border-bottom: 2px solid var(--billing-border);
+  padding-bottom: 0.85rem;
+  border-bottom: 2px solid rgba(2, 132, 199, 0.18);
 }
 
 .billing-header h1 {
@@ -51,24 +75,32 @@
 }
 
 .billing-nav {
-  margin-bottom: 1rem;
+  margin-bottom: 1.25rem;
 }
 
 .billing-nav a {
   color: var(--billing-primary);
+  background-color: rgba(255, 255, 255, 0.85);
+  border: 1px solid rgba(2, 132, 199, 0.22);
   text-decoration: none;
-  font-size: 0.9rem;
+  font-size: 0.875rem;
   font-weight: 600;
   display: inline-flex;
   align-items: center;
-  gap: 0.35rem;
+  gap: 0.4rem;
   transition: all 0.15s ease;
+  padding: 0.35rem 0.85rem;
+  border-radius: 8px;
+  box-shadow: 0 1px 3px rgba(2, 132, 199, 0.08);
 }
 
 .billing-nav a:hover {
-  color: var(--billing-accent-hover);
+  color: var(--billing-primary-hover);
+  background-color: #ffffff;
+  border-color: var(--billing-primary);
   text-decoration: none;
   transform: translateX(-2px);
+  box-shadow: 0 4px 12px rgba(2, 132, 199, 0.18);
 }
 
 /* Action Buttons Scoped to Billing */
@@ -166,13 +198,13 @@
 
 /* Filter Card */
 .filter-card {
-  background: linear-gradient(180deg, #ffffff 0%, #f0f9ff 100%);
-  border: 1px solid var(--billing-border);
-  border-top: 3.5px solid var(--billing-accent);
-  border-radius: 8px;
-  padding: 1.25rem;
-  margin-bottom: 1.5rem;
-  box-shadow: 0 4px 14px -3px rgba(2, 132, 199, 0.08);
+  background: #ffffff;
+  border: 1px solid #bae6fd;
+  border-top: 4px solid var(--billing-primary);
+  border-radius: 14px;
+  padding: 1.35rem 1.65rem;
+  margin-bottom: 1.75rem;
+  box-shadow: 0 4px 20px -4px rgba(2, 132, 199, 0.12), 0 2px 6px -1px rgba(15, 23, 42, 0.04);
 }
 
 .filter-form {
@@ -200,31 +232,36 @@
   text-align: left;
   font-size: 0.875rem;
   background-color: #ffffff;
-  border: 1px solid var(--billing-card-border);
-  border-radius: 8px;
+  border: 1px solid #bae6fd;
+  border-radius: 14px;
   overflow: hidden;
-  box-shadow: 0 2px 8px rgba(2, 132, 199, 0.04);
+  box-shadow: 0 4px 20px -4px rgba(2, 132, 199, 0.12), 0 2px 6px -1px rgba(15, 23, 42, 0.04);
 }
 
 .billing-table th {
   background: linear-gradient(180deg, #f0f9ff 0%, #e0f2fe 100%);
-  padding: 0.85rem 1rem;
+  padding: 0.85rem 1.15rem;
   font-weight: 700;
-  font-size: 0.8rem;
+  font-size: 0.78rem;
   text-transform: uppercase;
   letter-spacing: 0.04em;
   color: var(--billing-primary-dark);
-  border-bottom: 2px solid var(--billing-border);
+  border-bottom: 1.5px solid var(--billing-border);
 }
 
 .billing-table td {
-  padding: 0.85rem 1rem;
+  padding: 0.85rem 1.15rem;
   border-bottom: 1px solid #f1f5f9;
   vertical-align: middle;
+  background-color: #ffffff;
+}
+
+.billing-table tr:last-child td {
+  border-bottom: none;
 }
 
 .billing-table tr:hover td {
-  background-color: #f0fdfa; /* Subtle ocean cyan hover */
+  background-color: #f8fafc; /* Clean slate hover */
 }
 
 .billing-table td a {
