@@ -507,7 +507,7 @@ export default function StaffDashboardPage() {
               {displayModules.map((module) => {
                 const variantClass = getBentoVariant(module);
                 return (
-                  <article className={`staff-bento-tile ${variantClass}`} key={module.to}>
+                  <article className={`staff-bento-tile ${variantClass} staff-tile-${module.id}`} key={module.to}>
                     <div className="staff-tile-ambient" aria-hidden="true" />
                     
                     <div className="staff-tile-header">
