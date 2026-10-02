@@ -251,28 +251,39 @@
   color: #dc2626;
 }
 
-.form-input {
+.form-input,
+.form-select {
   padding: 0.5rem 0.75rem;
   border: 1px solid #cbd5e1;
   border-radius: 4px;
   font-size: 0.875rem;
   color: #0f172a;
   background-color: #ffffff;
+  width: 100%;
+  box-sizing: border-box;
 }
 
-.form-input:focus {
+.form-select {
+  cursor: pointer;
+}
+
+.form-input:focus,
+.form-select:focus {
   outline: 2px solid #2563eb;
   outline-offset: -1px;
   border-color: #2563eb;
 }
 
-.form-input:disabled, .form-input[readonly] {
+.form-input:disabled,
+.form-select:disabled,
+.form-input[readonly] {
   background-color: #f1f5f9;
   color: #64748b;
   cursor: not-allowed;
 }
 
-.form-input[aria-invalid="true"] {
+.form-input[aria-invalid="true"],
+.form-select[aria-invalid="true"] {
   border-color: #dc2626;
 }
 

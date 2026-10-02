@@ -236,46 +236,21 @@ export default function StaffDashboardPage() {
     });
   }, [modules, searchQuery]);
 
-  // Dynamic Bento tile style variation based on role context
-  const getBentoVariant = (module) => {
-    const role = user?.role;
-    if (role === 'ADMINISTRATOR') {
-      if (module.id === 'clinical') return 'bento-hero';
-      if (module.id === 'billing') return 'bento-dark';
-      if (module.id === 'inventory') return 'bento-teal';
-      if (module.id === 'staff-admin') return 'bento-wide';
-      return 'bento-standard';
+  // Dynamic layout class: If odd count (e.g., 5 or 3), allow the lead module to span 2 columns on desktop
+  // Dynamic Bento layout class for editorial healthcare composition:
+  // On ADMINISTRATOR (6 modules): Inventory is featured wide (7/12 cols), Clinical (5/12 cols);
+  // Prescriptions (6 cols) & Billing (6 cols); Income Reports (6 cols) & Staff Admin (6 cols).
+  // On RECEPTIONIST (5 modules): Inventory (7 cols), Clinical (5 cols); Prescriptions (6 cols), Billing (6 cols); Income Reports (12 cols).
+  // On DENTIST & ASSISTANT (3 modules): Inventory (12 cols full width flagship); Clinical (6 cols), Prescriptions (6 cols).
+  const getBentoLayoutClass = (moduleId, totalCount) => {
+    if (moduleId === 'inventory') {
+      return totalCount === 3 ? 'bento-inventory-full' : 'bento-inventory-wide';
     }
-    if (role === 'DENTIST') {
-      if (module.id === 'clinical') return 'bento-hero';
-      if (module.id === 'prescriptions') return 'bento-dark';
-      return 'bento-teal';
-    }
-    if (role === 'RECEPTIONIST') {
-      if (module.id === 'billing') return 'bento-hero';
-      if (module.id === 'reports') return 'bento-dark';
-      if (module.id === 'inventory') return 'bento-teal';
-      return 'bento-standard';
-    }
-    if (role === 'DENTAL_ASSISTANT') {
-      if (module.id === 'inventory') return 'bento-hero';
-      if (module.id === 'clinical') return 'bento-dark';
-      return 'bento-teal';
+    if (totalCount === 5 && moduleId === 'reports') {
+      return 'bento-reports-full';
     }
     return 'bento-standard';
   };
-
-  // Ensure hero tile sits cleanly at the top of the command bento grid
-  const displayModules = useMemo(() => {
-    if (searchQuery.trim()) return filteredModules;
-    return [...filteredModules].sort((a, b) => {
-      const aHero = getBentoVariant(a) === 'bento-hero';
-      const bHero = getBentoVariant(b) === 'bento-hero';
-      if (aHero && !bHero) return -1;
-      if (!aHero && bHero) return 1;
-      return 0;
-    });
-  }, [filteredModules, user?.role, searchQuery]);
 
   // Contextual quick actions based on active staff role
   const quickActions = useMemo(() => {
@@ -342,35 +317,65 @@ export default function StaffDashboardPage() {
   return (
     <main className="staff-dashboard-root" data-testid="staff-dashboard">
       {/* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-          1. COMMAND CENTER HEADER (Dark Navy Foundation)
+          1. REFINED LUXURY WORKSPACE HEADER (Light Foundation)
           ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */}
-      <header className="staff-command-header">
-        <div className="staff-header-glass-overlay" aria-hidden="true" />
-        
-        <div className="staff-command-header-inner">
-          <div className="staff-command-identity">
-            <div className="staff-avatar-orbit">
-              <div className="staff-avatar-chip" aria-hidden="true">
-                {initials}
-              </div>
-            </div>
-            
-            <div className="staff-command-text">
-              <span className="staff-header-eyebrow">Dental Practice Management System</span>
-              <div className="staff-title-row">
-                <h1>Staff dashboard</h1>
-                <span className="staff-station-status-pill" title="Clinic workstation connected">
-                  <span className="staff-status-dot" aria-hidden="true" />
-                  <span>Station Online</span>
+      <header className="staff-workspace-header staff-command-header">
+        <div className="staff-header-ambient" aria-hidden="true" />
+
+        {/* Subtle, abstract clinical geometric line motif */}
+        <svg
+          className="staff-header-clinical-motif"
+          width="200"
+          height="160"
+          viewBox="0 0 100 80"
+          fill="none"
+          xmlns="http://www.w3.org/2000/svg"
+          aria-hidden="true"
+        >
+          <path
+            d="M50 10 C36 10 26 20 26 34 C26 48 30 60 36 76 C38 80 43 80 45 74 C47 68 49 58 50 58 C51 58 53 68 55 74 C57 80 62 80 64 76 C70 60 74 48 74 34 C74 20 64 10 50 10 Z"
+            stroke="rgba(15, 118, 110, 0.08)"
+            strokeWidth="1.2"
+          />
+          <circle cx="50" cy="40" r="32" stroke="rgba(15, 118, 110, 0.05)" strokeWidth="0.8" />
+        </svg>
+
+        <div className="staff-workspace-header-inner">
+          <div className="staff-workspace-identity">
+            <div className="staff-header-titles">
+              <div className="staff-eyebrow-row">
+                <span className="staff-header-eyebrow">DentCare Practice Workspace</span>
+                <span
+                  className={`staff-role-badge ${getRoleBadgeClass(user?.role)}`}
+                  data-testid="staff-role-badge"
+                >
+                  <span className="role-dot" aria-hidden="true" />
+                  {user?.role}
                 </span>
               </div>
+              <h1 className="staff-page-title">Staff dashboard</h1>
               <p className="staff-header-subtitle">
-                Welcome back, <strong>{user?.firstName || 'team member'}</strong>. Clinical operations &amp; practice command center.
+                Welcome back, <strong>{user?.firstName || 'team member'}</strong>. Manage your clinical and practice workspace.
               </p>
             </div>
           </div>
 
-          <div className="staff-command-controls">
+          <div className="staff-workspace-controls">
+            <div className="staff-user-chip-wrap">
+              <div className="staff-avatar-chip" aria-hidden="true">
+                {initials}
+              </div>
+              <div className="staff-user-info-wrap">
+                <span className="staff-user-display-name">
+                  {[user?.firstName, user?.lastName].filter(Boolean).join(' ') || 'Staff Member'}
+                </span>
+                <span className="staff-station-pill" title="Clinic workstation connected">
+                  <span className="staff-status-dot" aria-hidden="true" />
+                  <span>Station Online</span>
+                </span>
+              </div>
+            </div>
+
             {currentDateStr && (
               <span className="staff-header-date" title="Current session date">
                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
@@ -382,14 +387,6 @@ export default function StaffDashboardPage() {
                 <span>{currentDateStr}</span>
               </span>
             )}
-            
-            <span
-              className={`staff-role-badge ${getRoleBadgeClass(user?.role)}`}
-              data-testid="staff-role-badge"
-            >
-              <span className="role-dot" aria-hidden="true" />
-              {user?.role}
-            </span>
 
             <Link to="/account" className="staff-account-btn">
               <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
@@ -419,116 +416,145 @@ export default function StaffDashboardPage() {
       )}
 
       {/* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-          2. COMMAND TELEMETRY STRIP (Integrated Horizontal Status)
+          2. ELEGANT INFORMATION STRIP (Quiet, Unified Summary)
           ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */}
-      <section className="staff-command-strip" aria-label="Operational telemetry">
-        <div className="staff-telemetry-node">
-          <span className="staff-telemetry-beacon" aria-hidden="true" />
-          <span className="staff-telemetry-tag">Workstation:</span>
-          <span className="staff-telemetry-data">Online &bull; Ready</span>
+      <section className="staff-summary-strip" aria-label="Workspace overview">
+        <div className="staff-strip-item">
+          <div className="staff-strip-icon-wrap" aria-hidden="true">
+            <span className="staff-strip-beacon" />
+          </div>
+          <div className="staff-strip-text">
+            <span className="staff-strip-label">Workstation</span>
+            <span className="staff-strip-value">Online &bull; Ready</span>
+          </div>
         </div>
 
-        <div className="staff-telemetry-sep" aria-hidden="true" />
+        <div className="staff-strip-divider" aria-hidden="true" />
 
-        <div className="staff-telemetry-node">
-          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-            <rect width="7" height="7" x="3" y="3" rx="1" />
-            <rect width="7" height="7" x="14" y="3" rx="1" />
-            <rect width="7" height="7" x="14" y="14" rx="1" />
-            <rect width="7" height="7" x="3" y="14" rx="1" />
-          </svg>
-          <span className="staff-telemetry-tag">Permitted Tools:</span>
-          <span className="staff-telemetry-data">{modules.length} {modules.length === 1 ? 'Module' : 'Modules'}</span>
+        <div className="staff-strip-item">
+          <div className="staff-strip-icon-wrap" aria-hidden="true">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <rect width="7" height="7" x="3" y="3" rx="1" />
+              <rect width="7" height="7" x="14" y="3" rx="1" />
+              <rect width="7" height="7" x="14" y="14" rx="1" />
+              <rect width="7" height="7" x="3" y="14" rx="1" />
+            </svg>
+          </div>
+          <div className="staff-strip-text">
+            <span className="staff-strip-label">Authorized Tools</span>
+            <span className="staff-strip-value">{modules.length} {modules.length === 1 ? 'Module' : 'Modules'}</span>
+          </div>
         </div>
 
-        <div className="staff-telemetry-sep" aria-hidden="true" />
+        <div className="staff-strip-divider" aria-hidden="true" />
 
-        <div className="staff-telemetry-node">
-          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-            <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10" />
-          </svg>
-          <span className="staff-telemetry-tag">Access Scope:</span>
-          <span className="staff-telemetry-data">{getRoleDisplay(user?.role)}</span>
+        <div className="staff-strip-item">
+          <div className="staff-strip-icon-wrap" aria-hidden="true">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10" />
+            </svg>
+          </div>
+          <div className="staff-strip-text">
+            <span className="staff-strip-label">Access Scope</span>
+            <span className="staff-strip-value">{getRoleDisplay(user?.role)}</span>
+          </div>
         </div>
 
-        <div className="staff-telemetry-sep" aria-hidden="true" />
-
-        <div className="staff-telemetry-node staff-telemetry-session">
-          <span className="staff-telemetry-tag">Station Mode:</span>
-          <span className="staff-telemetry-data">Chairside Primary</span>
-        </div>
+        {currentDateStr && (
+          <>
+            <div className="staff-strip-divider" aria-hidden="true" />
+            <div className="staff-strip-item">
+              <div className="staff-strip-icon-wrap" aria-hidden="true">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <rect x="3" y="4" width="18" height="18" rx="2" ry="2" />
+                  <line x1="16" y1="2" x2="16" y2="6" />
+                  <line x1="8" y1="2" x2="8" y2="6" />
+                  <line x1="3" y1="10" x2="21" y2="10" />
+                </svg>
+              </div>
+              <div className="staff-strip-text">
+                <span className="staff-strip-label">Session Date</span>
+                <span className="staff-strip-value">{currentDateStr}</span>
+              </div>
+            </div>
+          </>
+        )}
       </section>
 
       {/* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-          3. PRIMARY WORKSPACE & COMMAND RAIL
+          3. PRIMARY WORKSPACE & COMMAND RAIL LAYOUT
           ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */}
-      <div className="staff-command-layout">
+      <div className="staff-workspace-layout">
         {/* Main Workstation Column */}
-        <section className="staff-command-primary" aria-labelledby="staff-tools-title">
-          {/* Tactical Command Bar (Search & Filter) */}
-          <div className="staff-command-bar">
-            <div className="staff-command-bar-title">
-              <h2 id="staff-tools-title">Practice tools</h2>
+        <section className="staff-workspace-primary" aria-labelledby="staff-tools-title">
+          {/* Workspace Section Header Bar */}
+          <div className="staff-workspace-bar">
+            <div className="staff-workspace-titles">
+              <h2 id="staff-tools-title">Practice Workspace</h2>
+              <p className="staff-workspace-subtitle">Open the tools available for your role.</p>
+            </div>
+
+            <div className="staff-workspace-controls-group">
+              <div className="staff-search-input-wrap">
+                <svg className="staff-search-icon" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                  <circle cx="11" cy="11" r="8" />
+                  <line x1="21" y1="21" x2="16.65" y2="16.65" />
+                </svg>
+                <input
+                  ref={searchInputRef}
+                  type="text"
+                  className="staff-search-input"
+                  placeholder="Search tools, modules, or actions… [/]"
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  aria-label="Filter practice tools"
+                />
+                {searchQuery && (
+                  <button
+                    type="button"
+                    className="staff-search-clear"
+                    onClick={() => setSearchQuery('')}
+                    aria-label="Clear search"
+                  >
+                    &times;
+                  </button>
+                )}
+              </div>
               <span className="staff-module-counter">
                 {filteredModules.length} of {modules.length} Authorized
               </span>
             </div>
-
-            <div className="staff-command-search-wrap">
-              <svg className="staff-search-icon" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-                <circle cx="11" cy="11" r="8" />
-                <line x1="21" y1="21" x2="16.65" y2="16.65" />
-              </svg>
-              <input
-                ref={searchInputRef}
-                type="text"
-                className="staff-command-search-input"
-                placeholder="Search tools, modules, or direct actions... [/]"
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                aria-label="Filter practice tools"
-              />
-              {searchQuery && (
-                <button
-                  type="button"
-                  className="staff-search-clear"
-                  onClick={() => setSearchQuery('')}
-                  aria-label="Clear search"
-                >
-                  &times;
-                </button>
-              )}
-            </div>
           </div>
 
-          {/* Bento Command Grid */}
-          {displayModules.length > 0 ? (
-            <div className={`staff-bento-grid count-${displayModules.length}`}>
-              {displayModules.map((module) => {
-                const variantClass = getBentoVariant(module);
+          {/* Unified Light Module Grid */}
+          {filteredModules.length > 0 ? (
+            <div className={`staff-modules-grid grid-count-${filteredModules.length}`}>
+              {filteredModules.map((module, index) => {
+                const bentoClass = getBentoLayoutClass(module.id, filteredModules.length);
                 return (
-                  <article className={`staff-bento-tile ${variantClass} staff-tile-${module.id}`} key={module.to}>
-                    <div className="staff-tile-ambient" aria-hidden="true" />
+                  <article
+                    className={`staff-module-card staff-bento-tile ${bentoClass} ${module.id === 'inventory' ? 'staff-card-inventory' : ''} staff-tile-${module.id}`}
+                    key={module.to}
+                    style={{ '--stagger-idx': index }}
+                  >
+                    <div className="staff-card-ambient" aria-hidden="true" />
                     
-                    <div className="staff-tile-header">
-                      <div className={`staff-tile-icon-box ${module.id === 'inventory' ? 'staff-icon-inventory' : ''}`}>
+                    <div className="staff-card-header">
+                      <div className={`staff-card-icon-box ${module.id === 'inventory' ? 'staff-icon-inventory' : ''}`}>
                         <ModuleIcon type={module.id} />
                       </div>
-                      <div className="staff-tile-meta">
-                        <span className="staff-tile-badge">{module.category}</span>
-                        {variantClass === 'bento-hero' && (
-                          <span className="staff-tile-flagship-tag">Core Command</span>
-                        )}
+                      <div className="staff-card-meta">
+                        <span className="staff-card-badge">{module.category}</span>
                       </div>
                     </div>
 
-                    <div className="staff-tile-body">
-                      <h3>{module.title}</h3>
-                      <p className="staff-tile-desc">{module.description}</p>
+                    <div className="staff-card-body">
+                      <h3 className="staff-card-title">{module.title}</h3>
+                      <p className="staff-card-desc">{module.description}</p>
                     </div>
 
                     {module.quickLinks && module.quickLinks.length > 0 && (
-                      <div className="staff-tile-shortcuts" aria-label={`${module.title} quick links`}>
+                      <div className="staff-card-shortcuts" aria-label={`${module.title} quick links`}>
                         <span className="staff-shortcuts-label">Shortcuts</span>
                         <div className="staff-shortcuts-chips">
                           {module.quickLinks.map((link) => (
@@ -540,7 +566,7 @@ export default function StaffDashboardPage() {
                       </div>
                     )}
 
-                    <div className="staff-tile-footer">
+                    <div className="staff-card-footer">
                       <Link to={module.to} className="staff-primary-link">
                         <span>Open {module.title}</span>
                         <span className="staff-link-arrow" aria-hidden="true">&rarr;</span>
@@ -568,9 +594,9 @@ export default function StaffDashboardPage() {
           )}
         </section>
 
-        {/* Tactical Command Rail (Right Column) */}
-        <aside className="staff-command-rail" aria-label="Operational shortcuts and governance">
-          {/* Tactical Quick Actions Dock */}
+        {/* Side Rail (Quick Actions & Governance) */}
+        <aside className="staff-workspace-rail" aria-label="Operational shortcuts and governance">
+          {/* Quick Actions Panel */}
           <div className="staff-rail-card staff-rail-actions">
             <div className="staff-rail-header">
               <div className="staff-rail-icon-wrap" aria-hidden="true">
@@ -580,7 +606,7 @@ export default function StaffDashboardPage() {
               </div>
               <div className="staff-rail-title-group">
                 <h3>Quick Actions</h3>
-                <span className="staff-rail-subtitle">Tactical Shortcuts</span>
+                <span className="staff-rail-subtitle">Frequent Workflows</span>
               </div>
             </div>
 
@@ -602,9 +628,7 @@ export default function StaffDashboardPage() {
             <div className="staff-rail-header">
               <div className="staff-rail-icon-wrap" aria-hidden="true">
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
-                  <circle cx="12" cy="12" r="10" />
-                  <line x1="12" y1="16" x2="12" y2="12" />
-                  <line x1="12" y1="8" x2="12.01" y2="8" />
+                  <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10" />
                 </svg>
               </div>
               <div className="staff-rail-title-group">
@@ -619,15 +643,19 @@ export default function StaffDashboardPage() {
 
             <div className="staff-governance-specs">
               <div className="staff-spec-row">
-                <span className="spec-label">Assigned Level:</span>
+                <span className="spec-label">Assigned Level</span>
                 <span className="spec-val">{getRoleDisplay(user?.role)}</span>
               </div>
               {user?.email && (
                 <div className="staff-spec-row">
-                  <span className="spec-label">Provider ID:</span>
+                  <span className="spec-label">Provider ID</span>
                   <span className="spec-val" title={user.email}>{user.email}</span>
                 </div>
               )}
+              <div className="staff-spec-row">
+                <span className="spec-label">Workstation</span>
+                <span className="spec-val">Chairside Primary</span>
+              </div>
             </div>
           </div>
         </aside>

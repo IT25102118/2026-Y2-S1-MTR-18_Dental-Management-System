@@ -2,6 +2,7 @@ package com.dentcare.inventory.dto;
 
 import com.dentcare.inventory.entity.AdjustmentDirection;
 import com.dentcare.inventory.entity.StockMovementType;
+import jakarta.validation.constraints.FutureOrPresent;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
@@ -30,6 +31,7 @@ public class RecordStockMovementRequest {
     @Size(max = 100, message = "Batch number must not exceed 100 characters")
     private String batchNumber;
 
+    @FutureOrPresent(message = "Expiry date cannot be earlier than today")
     private LocalDate expiryDate;
 
     private Long treatmentProcedureId;

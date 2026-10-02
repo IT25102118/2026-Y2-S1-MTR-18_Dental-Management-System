@@ -7,6 +7,10 @@ import InventoryItemEditPage from './features/inventory/pages/InventoryItemEditP
 import InventoryBatchesPage from './features/inventory/pages/InventoryBatchesPage';
 import InventoryAlertsPage from './features/inventory/pages/InventoryAlertsPage';
 import InventoryOverviewPage from './features/inventory/pages/InventoryOverviewPage';
+import PatientListPage from './features/patient/pages/PatientListPage';
+import PatientCreatePage from './features/patient/pages/PatientCreatePage';
+import PatientDetailPage from './features/patient/pages/PatientDetailPage';
+import PatientEditPage from './features/patient/pages/PatientEditPage';
 import PatientRegistrationPage from './features/auth/pages/PatientRegistrationPage';
 import LoginPage from './features/auth/pages/LoginPage';
 import AccountPage from './features/auth/pages/AccountPage';
@@ -87,6 +91,38 @@ export default function App() {
               element={
                 <ProtectedRoute allowedRoles={['ADMINISTRATOR']}>
                   <StaffManagementPage />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/patients"
+              element={
+                <ProtectedRoute allowedRoles={STAFF_ROLES}>
+                  <PatientListPage />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/patients/new"
+              element={
+                <ProtectedRoute allowedRoles={STAFF_ROLES}>
+                  <PatientCreatePage />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/patients/:id"
+              element={
+                <ProtectedRoute allowedRoles={STAFF_ROLES}>
+                  <PatientDetailPage />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/patients/:id/edit"
+              element={
+                <ProtectedRoute allowedRoles={STAFF_ROLES}>
+                  <PatientEditPage />
                 </ProtectedRoute>
               }
             />

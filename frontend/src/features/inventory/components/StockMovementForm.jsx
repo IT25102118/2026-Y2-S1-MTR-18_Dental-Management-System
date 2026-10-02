@@ -11,8 +11,17 @@ const MOVEMENT_TYPES = [
   { value: 'ADJUSTED', label: 'Adjustment (Stock Reconciliation)', isOut: null }
 ];
 
+export function getTodayLocalString() {
+  const d = new Date();
+  const year = d.getFullYear();
+  const month = String(d.getMonth() + 1).padStart(2, '0');
+  const day = String(d.getDate()).padStart(2, '0');
+  return `${year}-${month}-${day}`;
+}
+
 export default function StockMovementForm({ item: propItem, onSuccess, onCancel }) {
   const { user, isAuthenticated } = useAuth();
+  const today = useMemo(() => getTodayLocalString(), []);
 
   const [items, setItems] = useState([]);
   const [selectedItemId, setSelectedItemId] = useState(propItem?.id ? String(propItem.id) : '');
@@ -188,6 +197,11 @@ export default function StockMovementForm({ item: propItem, onSuccess, onCancel 
             }
           }
         }
+      }
+    } else if (expiryDate) {
+      const todayStr = getTodayLocalString();
+      if (expiryDate < todayStr) {
+        errors.expiryDate = 'Expiry date cannot be earlier than today.';
       }
     }
 
@@ -721,11 +735,27 @@ export default function StockMovementForm({ item: propItem, onSuccess, onCancel 
                 <input
                   id="movement-expiry-date"
                   type="date"
+                  min={today}
                   value={expiryDate}
-                  onChange={(e) => setExpiryDate(e.target.value)}
+                  onChange={(e) => {
+                    setExpiryDate(e.target.value);
+                    setClientErrors((prev) => ({ ...prev, expiryDate: null }));
+                  }}
                   disabled={submitting}
-                  className="form-control"
+                  className={`form-control ${clientErrors.expiryDate ? 'is-invalid' : ''}`}
+                  aria-invalid={Boolean(clientErrors.expiryDate)}
+                  aria-describedby={clientErrors.expiryDate ? 'movement-expiry-date-error' : undefined}
                 />
+                {clientErrors.expiryDate && (
+                  <span
+                    id="movement-expiry-date-error"
+                    className="field-error"
+                    role="alert"
+                    data-testid="movement-expiry-date-error"
+                  >
+                    {clientErrors.expiryDate}
+                  </span>
+                )}
               </div>
             </div>
 
