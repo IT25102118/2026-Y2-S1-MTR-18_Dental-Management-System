@@ -86,7 +86,7 @@ describe('InventoryItemCreatePage', () => {
       itemCode: 'ITM-055',
       name: 'Composite Resin',
       category: 'Restorative',
-      unit: 'syringe',
+      unit: 'bottle',
       reorderLevel: 5,
       currentQuantity: 0,
       active: true
@@ -104,7 +104,7 @@ describe('InventoryItemCreatePage', () => {
     fireEvent.change(screen.getByLabelText(/item code/i), { target: { value: 'ITM-055' } });
     fireEvent.change(screen.getByLabelText(/item name/i), { target: { value: 'Composite Resin' } });
     fireEvent.change(screen.getByLabelText(/category/i), { target: { value: 'Restorative' } });
-    fireEvent.change(screen.getByLabelText(/unit of measurement/i), { target: { value: 'syringe' } });
+    fireEvent.change(screen.getByLabelText(/unit of measurement/i), { target: { value: 'bottle' } });
     fireEvent.change(screen.getByLabelText(/reorder level/i), { target: { value: '5' } });
     fireEvent.change(screen.getByLabelText(/default supplier reference/i), { target: { value: 'SUPP-RESIN' } });
 
@@ -115,12 +115,86 @@ describe('InventoryItemCreatePage', () => {
         itemCode: 'ITM-055',
         name: 'Composite Resin',
         category: 'Restorative',
-        unit: 'syringe',
+        unit: 'bottle',
         reorderLevel: 5,
         defaultSupplierReference: 'SUPP-RESIN'
       });
       expect(screen.getByText('Detail Page for 55')).toBeInTheDocument();
     });
+  });
+
+  it('renders Unit of Measurement as a dropdown select with Select unit placeholder and four unit options', () => {
+    render(
+      <MemoryRouter>
+        <InventoryItemCreatePage />
+      </MemoryRouter>
+    );
+
+    const unitSelect = screen.getByLabelText(/unit of measurement/i);
+    expect(unitSelect.tagName).toBe('SELECT');
+    expect(unitSelect).toHaveValue('');
+    expect(unitSelect).toBeRequired();
+
+    const options = unitSelect.querySelectorAll('option');
+    expect(options).toHaveLength(5);
+    expect(options[0]).toHaveTextContent('Select unit');
+    expect(options[0]).toHaveValue('');
+    expect(options[1]).toHaveTextContent('Piece');
+    expect(options[1]).toHaveValue('piece');
+    expect(options[2]).toHaveTextContent('Box');
+    expect(options[2]).toHaveValue('box');
+    expect(options[3]).toHaveTextContent('Bottle');
+    expect(options[3]).toHaveValue('bottle');
+    expect(options[4]).toHaveTextContent('Pack');
+    expect(options[4]).toHaveValue('pack');
+  });
+
+  it('submits correctly for each permitted unit option: piece, box, bottle, pack', async () => {
+    const units = [
+      { label: 'Piece', value: 'piece' },
+      { label: 'Box', value: 'box' },
+      { label: 'Bottle', value: 'bottle' },
+      { label: 'Pack', value: 'pack' }
+    ];
+
+    for (const { value } of units) {
+      vi.clearAllMocks();
+      inventoryApi.createItem.mockResolvedValueOnce({
+        id: 101,
+        itemCode: `ITM-${value}`,
+        name: `Test ${value}`,
+        category: 'Supplies',
+        unit: value,
+        reorderLevel: 1,
+        currentQuantity: 0,
+        active: true
+      });
+
+      const { unmount } = render(
+        <MemoryRouter initialEntries={['/inventory/items/new']}>
+          <Routes>
+            <Route path="/inventory/items/new" element={<InventoryItemCreatePage />} />
+            <Route path="/inventory/items/:id" element={<div>Detail Page</div>} />
+          </Routes>
+        </MemoryRouter>
+      );
+
+      fireEvent.change(screen.getByLabelText(/item code/i), { target: { value: `ITM-${value}` } });
+      fireEvent.change(screen.getByLabelText(/item name/i), { target: { value: `Test ${value}` } });
+      fireEvent.change(screen.getByLabelText(/category/i), { target: { value: 'Supplies' } });
+      fireEvent.change(screen.getByLabelText(/unit of measurement/i), { target: { value } });
+      fireEvent.change(screen.getByLabelText(/reorder level/i), { target: { value: '1' } });
+
+      fireEvent.click(screen.getByRole('button', { name: /register item/i }));
+
+      await waitFor(() => {
+        expect(inventoryApi.createItem).toHaveBeenCalledWith(
+          expect.objectContaining({ unit: value })
+        );
+      });
+
+      unmount();
+    }
   });
 
   it('surfaces 409 duplicate itemCode error on itemCode input', async () => {
@@ -309,13 +383,11 @@ describe('InventoryItemEditPage', () => {
     expect(screen.getByText('Detail Page for 10')).toBeInTheDocument();
   });
 
-  it('renders not-found state when editing non-existent item', async () => {
-    inventoryApi.getItemById.mockRejectedValueOnce(
-      new inventoryApi.InventoryApiError(404, 'Item not found', {}, 'Not Found')
-    );
+  it('pre-selects existing standard unit in edit mode', async () => {
+    inventoryApi.getItemById.mockResolvedValueOnce(existingItem);
 
     render(
-      <MemoryRouter initialEntries={['/inventory/items/999/edit']}>
+      <MemoryRouter initialEntries={['/inventory/items/10/edit']}>
         <Routes>
           <Route path="/inventory/items/:id/edit" element={<InventoryItemEditPage />} />
         </Routes>
@@ -323,7 +395,53 @@ describe('InventoryItemEditPage', () => {
     );
 
     await waitFor(() => {
-      expect(screen.getByText('Item Not Found')).toBeInTheDocument();
+      expect(screen.getByDisplayValue('Surgical Mask Box')).toBeInTheDocument();
+    });
+
+    const unitSelect = screen.getByLabelText(/unit of measurement/i);
+    expect(unitSelect).toHaveValue('box');
+  });
+
+  it('safely preserves legacy unit in edit mode and allows updating or keeping it without data corruption', async () => {
+    const legacyItem = {
+      ...existingItem,
+      id: 33,
+      itemCode: 'SGWEEFS',
+      name: 'Special Tool',
+      unit: 'WERFW'
+    };
+    inventoryApi.getItemById.mockResolvedValueOnce(legacyItem);
+    inventoryApi.updateItem.mockResolvedValueOnce({
+      ...legacyItem,
+      name: 'Special Tool Updated'
+    });
+
+    render(
+      <MemoryRouter initialEntries={['/inventory/items/33/edit']}>
+        <Routes>
+          <Route path="/inventory/items/:id/edit" element={<InventoryItemEditPage />} />
+          <Route path="/inventory/items/:id" element={<div>Detail Page for 33</div>} />
+        </Routes>
+      </MemoryRouter>
+    );
+
+    await waitFor(() => {
+      expect(screen.getByDisplayValue('Special Tool')).toBeInTheDocument();
+    });
+
+    const unitSelect = screen.getByLabelText(/unit of measurement/i);
+    expect(unitSelect).toHaveValue('WERFW');
+
+    // Updating name without touching unit preserves 'WERFW'
+    fireEvent.change(screen.getByLabelText(/item name/i), { target: { value: 'Special Tool Updated' } });
+    fireEvent.click(screen.getByRole('button', { name: /save changes/i }));
+
+    await waitFor(() => {
+      expect(inventoryApi.updateItem).toHaveBeenCalledWith(
+        '33',
+        expect.objectContaining({ unit: 'WERFW', name: 'Special Tool Updated' })
+      );
     });
   });
 });
+
