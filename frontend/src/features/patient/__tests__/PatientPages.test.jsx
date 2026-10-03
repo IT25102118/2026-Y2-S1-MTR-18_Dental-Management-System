@@ -237,7 +237,7 @@ describe('Patient Feature Pages', () => {
 
       await waitFor(() => {
         expect(screen.getByRole('heading', { name: 'James Bond', level: 1 })).toBeInTheDocument();
-        expect(screen.getByText('PAT-007')).toBeInTheDocument();
+        expect(screen.getAllByText('PAT-007').length).toBeGreaterThanOrEqual(1);
         expect(screen.getByText('+44 20 7946 0999')).toBeInTheDocument();
         expect(screen.getByText('Penicillin')).toBeInTheDocument();
         expect(screen.getByTestId('patient-status-badge')).toHaveTextContent('Active');

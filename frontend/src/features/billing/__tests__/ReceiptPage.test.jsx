@@ -737,7 +737,7 @@ describe('Receipt View & Browser Print (UI-BIL-04)', () => {
       );
 
       await waitFor(() => {
-        expect(screen.getByText(/Dental Practice Management System/i)).toBeInTheDocument();
+        expect(screen.getByTestId('staff-dashboard')).toBeInTheDocument();
       });
       expect(screen.queryByTestId('receipt-content')).not.toBeInTheDocument();
     });
@@ -758,7 +758,7 @@ describe('Receipt View & Browser Print (UI-BIL-04)', () => {
       );
 
       await waitFor(() => {
-        expect(screen.getByText(/Dental Practice Management System/i)).toBeInTheDocument();
+        expect(screen.getByTestId('staff-dashboard')).toBeInTheDocument();
       });
       expect(screen.queryByTestId('receipt-content')).not.toBeInTheDocument();
     });
