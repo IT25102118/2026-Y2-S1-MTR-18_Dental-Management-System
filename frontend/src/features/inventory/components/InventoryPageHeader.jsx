@@ -25,9 +25,10 @@ export default function InventoryPageHeader({
 
       <div className="inventory-header">
         <div className="inventory-header-titles">
+          <span className="inventory-header-eyebrow">Clinical Inventory Workspace</span>
           <h1>{title}</h1>
           {subtitle && (
-            <p className="inventory-header-subtitle" style={{ margin: '0.25rem 0 0 0', color: '#64748b' }}>
+            <p className="inventory-header-subtitle">
               {subtitle}
             </p>
           )}

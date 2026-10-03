@@ -119,6 +119,37 @@ class SecurityConfigTest {
                 .andExpect(status().isForbidden());
     }
 
+    @Test
+    @WithMockUser(roles = "PATIENT")
+    @DisplayName("PATIENT cannot access staff patient management APIs")
+    void testPatientCannotAccessStaffPatientManagementApis() throws Exception {
+        mockMvc.perform(get("/api/patients"))
+                .andExpect(status().isForbidden());
+        mockMvc.perform(get("/api/patients/1"))
+                .andExpect(status().isForbidden());
+        mockMvc.perform(post("/api/patients")
+                        .with(csrf())
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{}"))
+                .andExpect(status().isForbidden());
+    }
+
+    @ParameterizedTest
+    @ValueSource(strings = {"ADMINISTRATOR", "RECEPTIONIST", "DENTIST", "DENTAL_ASSISTANT"})
+    @DisplayName("Staff roles cannot access patient-scoped /api/patient/me endpoints")
+    void testStaffRolesDeniedOnPatientPortal(String role) throws Exception {
+        mockMvc.perform(get("/api/patient/me/dashboard")
+                        .with(org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.user("staff").roles(role)))
+                .andExpect(status().isForbidden());
+    }
+
+    @Test
+    @DisplayName("Anonymous user calling /api/patient/me/dashboard is unauthorized")
+    void testAnonymousUserCallingPatientPortalIsUnauthorized() throws Exception {
+        mockMvc.perform(get("/api/patient/me/dashboard"))
+                .andExpect(status().isUnauthorized());
+    }
+
     @ParameterizedTest
     @ValueSource(strings = {"ADMINISTRATOR", "RECEPTIONIST", "DENTIST", "DENTAL_ASSISTANT"})
     @DisplayName("Every staff role can reach inventory endpoints")

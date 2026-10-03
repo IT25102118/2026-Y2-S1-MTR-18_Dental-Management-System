@@ -501,6 +501,12 @@ class StockMovementControllerTest {
                 .andExpect(jsonPath("$.error", is("Forbidden")));
     }
 
+    /**
+     * Past Expiry Date Validation:
+     * Verifies that attempting to bypass frontend validation with an expiry date in the past
+     * triggers Bean Validation (@FutureOrPresent) and returns HTTP 400 Bad Request with
+     * repository-standard fieldErrors mapping.
+     */
     @Test
     @DisplayName("Prompt 35: POST with past expiryDate returns 400 Bad Request")
     void testRecordMovementPastExpiryDateReturns400() throws Exception {

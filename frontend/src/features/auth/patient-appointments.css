@@ -1,0 +1,505 @@
+/* =============================================================================
+   DentCare Patient Appointments Styles
+   Theme: Pearl / warm-white canvas, DentCare teal (#0f766e), soft mint/aqua,
+          deep navy/slate typography, clean rounded cards, restrained shadows.
+   ============================================================================= */
+
+.patient-appointments-page {
+  min-height: calc(100vh - 68px);
+  background-color: #fafaf9;
+  background-image:
+    radial-gradient(1200px 500px at 15% 0%, rgba(15, 118, 110, 0.06) 0%, transparent 70%),
+    radial-gradient(1000px 400px at 85% 15%, rgba(20, 184, 166, 0.04) 0%, transparent 60%);
+  padding: 40px 24px 64px;
+  box-sizing: border-box;
+}
+
+.patient-appointments-container {
+  max-width: 1160px;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  gap: 32px;
+}
+
+/* Success Banner */
+.appointment-success-banner {
+  background: #f0fdf4;
+  border: 1px solid #bbf7d0;
+  border-left: 5px solid #16a34a;
+  border-radius: 14px;
+  padding: 20px 24px;
+  display: flex;
+  align-items: flex-start;
+  gap: 16px;
+  color: #166534;
+  box-shadow: 0 4px 12px -2px rgba(22, 101, 52, 0.08);
+  animation: apptFadeIn 250ms ease;
+}
+
+.appointment-success-icon {
+  width: 28px;
+  height: 28px;
+  flex-shrink: 0;
+  color: #16a34a;
+  margin-top: 2px;
+}
+
+.appointment-success-content {
+  flex: 1;
+}
+
+.appointment-success-content h3 {
+  font-size: 17px;
+  font-weight: 750;
+  color: #14532d;
+  margin: 0 0 4px;
+}
+
+.appointment-success-content p {
+  font-size: 14px;
+  line-height: 1.5;
+  color: #166534;
+  margin: 0;
+}
+
+.appointment-success-dismiss {
+  background: transparent;
+  border: none;
+  color: #16a34a;
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+  padding: 6px 12px;
+  border-radius: 6px;
+  min-height: 44px;
+  min-width: 44px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 150ms ease;
+}
+
+.appointment-success-dismiss:hover {
+  background: rgba(22, 163, 74, 0.1);
+}
+
+/* Main Grid Layout: Form on Left/Top, List on Right/Bottom */
+.patient-appointments-layout {
+  display: grid;
+  grid-template-columns: 440px 1fr;
+  gap: 28px;
+  align-items: start;
+}
+
+/* Booking Form Card */
+.appointment-form-card {
+  background: #ffffff;
+  border: 1px solid rgba(226, 232, 240, 0.9);
+  border-radius: 18px;
+  padding: 30px;
+  box-shadow: 0 6px 20px -6px rgba(15, 23, 42, 0.05), 0 2px 4px rgba(15, 23, 42, 0.02);
+}
+
+.appointment-form-card-header {
+  margin-bottom: 22px;
+}
+
+.appointment-form-card-header h2 {
+  font-size: 20px;
+  font-weight: 750;
+  color: #0f172a;
+  letter-spacing: -0.02em;
+  margin: 0 0 6px;
+}
+
+.appointment-form-card-header p {
+  font-size: 13.5px;
+  color: #64748b;
+  line-height: 1.5;
+  margin: 0;
+}
+
+.appointment-booking-form {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+
+.form-group-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 14px;
+}
+
+.appointment-form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.appointment-form-group label {
+  font-size: 13px;
+  font-weight: 650;
+  color: #334155;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.appointment-required-star {
+  color: #dc2626;
+  font-weight: 700;
+}
+
+.appointment-form-input,
+.appointment-form-textarea {
+  width: 100%;
+  padding: 11px 14px;
+  border: 1px solid #cbd5e1;
+  border-radius: 10px;
+  font-size: 14px;
+  color: #0f172a;
+  background-color: #f8fafc;
+  box-sizing: border-box;
+  min-height: 44px;
+  font-family: inherit;
+  transition: border-color 150ms ease, box-shadow 150ms ease, background-color 150ms ease;
+}
+
+.appointment-form-input:focus,
+.appointment-form-textarea:focus {
+  outline: none;
+  border-color: #0f766e;
+  background-color: #ffffff;
+  box-shadow: 0 0 0 3px rgba(15, 118, 110, 0.15);
+}
+
+.appointment-form-input.input-error,
+.appointment-form-textarea.input-error {
+  border-color: #ef4444;
+  background-color: #fef2f2;
+}
+
+.appointment-form-input.input-error:focus,
+.appointment-form-textarea.input-error:focus {
+  box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.15);
+}
+
+.appointment-form-textarea {
+  min-height: 80px;
+  resize: vertical;
+}
+
+.appointment-input-hint {
+  font-size: 11.5px;
+  color: #64748b;
+  margin-top: 2px;
+}
+
+.appointment-field-error {
+  font-size: 12px;
+  color: #dc2626;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  margin-top: 2px;
+}
+
+.appointment-form-alert {
+  background: #fef2f2;
+  border: 1px solid #fecaca;
+  border-radius: 10px;
+  padding: 12px 14px;
+  font-size: 13px;
+  color: #991b1b;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.appointment-submit-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 12px 22px;
+  border-radius: 10px;
+  font-size: 14.5px;
+  font-weight: 700;
+  color: #ffffff;
+  background: #0f766e;
+  border: 1px solid #0f766e;
+  box-shadow: 0 2px 8px rgba(15, 118, 110, 0.25);
+  cursor: pointer;
+  min-height: 46px;
+  transition: all 180ms ease;
+  margin-top: 6px;
+}
+
+.appointment-submit-btn:hover:not(:disabled) {
+  background: #115e59;
+  border-color: #115e59;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(15, 118, 110, 0.32);
+}
+
+.appointment-submit-btn:disabled {
+  opacity: 0.65;
+  cursor: not-allowed;
+  transform: none;
+}
+
+/* Appointment List Card */
+.appointment-list-card {
+  background: #ffffff;
+  border: 1px solid rgba(226, 232, 240, 0.9);
+  border-radius: 18px;
+  padding: 30px;
+  box-shadow: 0 6px 20px -6px rgba(15, 23, 42, 0.05), 0 2px 4px rgba(15, 23, 42, 0.02);
+  display: flex;
+  flex-direction: column;
+}
+
+.appointment-list-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 22px;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+.appointment-list-header h2 {
+  font-size: 20px;
+  font-weight: 750;
+  color: #0f172a;
+  letter-spacing: -0.02em;
+  margin: 0;
+}
+
+.appointment-count-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 12px;
+  border-radius: 9999px;
+  font-size: 12px;
+  font-weight: 700;
+  background: #f0fdfa;
+  color: #0f766e;
+  border: 1px solid #ccfbf1;
+}
+
+.appointment-cards-stack {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.appointment-record-item {
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 14px;
+  padding: 18px 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  transition: all 180ms ease;
+}
+
+.appointment-record-item:hover {
+  background: #ffffff;
+  border-color: #cbd5e1;
+  box-shadow: 0 4px 12px -2px rgba(15, 23, 42, 0.05);
+}
+
+.appointment-item-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.appointment-date-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 15px;
+  font-weight: 750;
+  color: #0f172a;
+}
+
+.appointment-date-icon {
+  width: 18px;
+  height: 18px;
+  color: #0f766e;
+}
+
+.appointment-time-tag {
+  font-size: 13px;
+  color: #475569;
+  font-weight: 600;
+  background: #ffffff;
+  padding: 2px 8px;
+  border-radius: 6px;
+  border: 1px solid #e2e8f0;
+}
+
+.appointment-reason-row {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.appointment-reason-title {
+  font-size: 14.5px;
+  font-weight: 650;
+  color: #1e293b;
+  margin: 0;
+}
+
+.appointment-item-notes {
+  font-size: 13px;
+  color: #64748b;
+  line-height: 1.5;
+  margin: 0;
+}
+
+.appointment-item-meta {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 12.5px;
+  color: #64748b;
+  padding-top: 8px;
+  border-top: 1px solid #f1f5f9;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.appointment-assigned-dentist {
+  color: #0f766e;
+  font-weight: 650;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+
+/* Status Chips */
+.appointment-status-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 3px 10px;
+  border-radius: 9999px;
+  font-size: 11.5px;
+  font-weight: 700;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+}
+
+.status-chip-pending {
+  background: #fffbeb;
+  color: #b45309;
+  border: 1px solid #fef3c7;
+}
+
+.status-chip-confirmed {
+  background: #f0fdf4;
+  color: #166534;
+  border: 1px solid #bbf7d0;
+}
+
+.status-chip-cancelled {
+  background: #f1f5f9;
+  color: #475569;
+  border: 1px solid #e2e8f0;
+}
+
+/* Empty State */
+.appointments-empty-box {
+  background: #f8fafc;
+  border: 2px dashed #cbd5e1;
+  border-radius: 14px;
+  padding: 36px 24px;
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  margin: 10px 0;
+}
+
+.appointments-empty-icon {
+  width: 42px;
+  height: 42px;
+  color: #94a3b8;
+}
+
+.appointments-empty-title {
+  font-size: 16px;
+  font-weight: 700;
+  color: #334155;
+  margin: 0;
+}
+
+.appointments-empty-desc {
+  font-size: 13.5px;
+  color: #64748b;
+  line-height: 1.5;
+  margin: 0;
+  max-width: 420px;
+}
+
+@keyframes apptFadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(-6px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Responsive Breakpoints */
+@media (max-width: 980px) {
+  .patient-appointments-layout {
+    grid-template-columns: 1fr;
+    gap: 24px;
+  }
+}
+
+@media (max-width: 560px) {
+  .patient-appointments-page {
+    padding: 20px 16px 40px;
+  }
+
+  .appointment-form-card,
+  .appointment-list-card {
+    padding: 20px;
+  }
+
+  .form-group-row {
+    grid-template-columns: 1fr;
+  }
+
+  .appointment-item-top {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .patient-appointments-page *,
+  .appointment-record-item,
+  .appointment-submit-btn,
+  .appointment-success-banner {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+    transform: none !important;
+  }
+}

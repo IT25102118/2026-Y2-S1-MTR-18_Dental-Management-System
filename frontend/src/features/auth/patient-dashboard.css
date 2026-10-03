@@ -1,0 +1,597 @@
+/* =============================================================================
+   DentCare Patient Portal Dashboard Styles
+   Modern premium dental patient onboarding & dashboard theme
+   Colors: Pearl white, clinical teal (#0f766e), soft mint/aqua (#f0fdfa, #ccfbf1),
+           slate/navy typography (#0f172a, #334155), subtle border/shadow depth.
+   ============================================================================= */
+
+.patient-portal-page {
+  min-height: calc(100vh - 68px);
+  background-color: #fafaf9;
+  background-image:
+    radial-gradient(1200px 500px at 15% 0%, rgba(15, 118, 110, 0.06) 0%, transparent 70%),
+    radial-gradient(1000px 400px at 85% 15%, rgba(20, 184, 166, 0.04) 0%, transparent 60%);
+  padding: 40px 24px 64px;
+  box-sizing: border-box;
+}
+
+.patient-portal-container {
+  max-width: 1160px;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  gap: 32px;
+}
+
+/* =============================================================================
+   Portal Hero Header
+   ============================================================================= */
+.patient-portal-hero {
+  background: #ffffff;
+  border: 1px solid rgba(226, 232, 240, 0.9);
+  border-radius: 20px;
+  padding: 36px 40px;
+  box-shadow: 0 10px 30px -10px rgba(15, 23, 42, 0.05), 0 2px 6px -2px rgba(15, 23, 42, 0.03);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 24px;
+  position: relative;
+  overflow: hidden;
+}
+
+.patient-portal-hero::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 5px;
+  height: 100%;
+  background: linear-gradient(180deg, #0f766e 0%, #2dd4bf 100%);
+}
+
+.patient-hero-left {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  max-width: 680px;
+}
+
+.patient-portal-kicker {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 11.5px;
+  font-weight: 750;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: #0f766e;
+}
+
+.patient-portal-kicker-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: #0d9488;
+}
+
+.patient-portal-hero h1 {
+  font-size: clamp(26px, 3.5vw, 36px);
+  font-weight: 800;
+  color: #0f172a;
+  letter-spacing: -0.03em;
+  margin: 0;
+  line-height: 1.2;
+}
+
+.patient-portal-desc {
+  font-size: 15px;
+  color: #475569;
+  line-height: 1.6;
+  margin: 4px 0 0;
+}
+
+.patient-hero-meta-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 12px;
+  margin-top: 12px;
+}
+
+.patient-badge-portal {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 12px;
+  border-radius: 9999px;
+  font-size: 12px;
+  font-weight: 700;
+  background: #f0fdfa;
+  color: #0f766e;
+  border: 1px solid #ccfbf1;
+}
+
+.patient-badge-portal-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: #14b8a6;
+  box-shadow: 0 0 0 2px rgba(20, 184, 166, 0.25);
+}
+
+.patient-code-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 12px;
+  border-radius: 9999px;
+  font-size: 12px;
+  font-weight: 650;
+  background: #f8fafc;
+  color: #334155;
+  border: 1px solid #e2e8f0;
+}
+
+.patient-hero-actions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.patient-hero-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 18px;
+  border-radius: 10px;
+  font-size: 14px;
+  font-weight: 650;
+  text-decoration: none;
+  transition: all 180ms ease;
+  cursor: pointer;
+  border: 1px solid transparent;
+}
+
+.patient-hero-btn-primary {
+  background: #0f766e;
+  color: #ffffff !important;
+  border-color: #0f766e;
+  box-shadow: 0 2px 8px rgba(15, 118, 110, 0.2);
+}
+
+.patient-hero-btn-primary:hover {
+  background: #115e59;
+  border-color: #115e59;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(15, 118, 110, 0.28);
+}
+
+.patient-hero-btn-secondary {
+  background: #ffffff;
+  color: #334155 !important;
+  border-color: #cbd5e1;
+}
+
+.patient-hero-btn-secondary:hover:not(:disabled) {
+  background: #f8fafc;
+  border-color: #94a3b8;
+  color: #0f172a !important;
+}
+
+/* =============================================================================
+   Access Denied & Notice Banners
+   ============================================================================= */
+.patient-access-notice {
+  background: #fef2f2;
+  border: 1px solid #fecaca;
+  border-left: 4px solid #ef4444;
+  border-radius: 12px;
+  padding: 14px 20px;
+  color: #991b1b;
+  font-size: 14px;
+  line-height: 1.5;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.patient-access-notice-icon {
+  width: 20px;
+  height: 20px;
+  flex-shrink: 0;
+  color: #dc2626;
+}
+
+/* =============================================================================
+   Dashboard Content Grid
+   ============================================================================= */
+.patient-portal-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 24px;
+}
+
+.patient-portal-card {
+  background: #ffffff;
+  border: 1px solid rgba(226, 232, 240, 0.9);
+  border-radius: 16px;
+  padding: 28px;
+  box-shadow: 0 4px 16px -4px rgba(15, 23, 42, 0.04), 0 1px 3px rgba(15, 23, 42, 0.02);
+  display: flex;
+  flex-direction: column;
+  transition: transform 180ms ease, box-shadow 180ms ease;
+}
+
+.patient-portal-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 24px -4px rgba(15, 23, 42, 0.08), 0 2px 6px rgba(15, 23, 42, 0.03);
+}
+
+.patient-card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 18px;
+}
+
+.patient-card-icon-wrap {
+  width: 42px;
+  height: 42px;
+  border-radius: 10px;
+  background: #f0fdfa;
+  border: 1px solid #ccfbf1;
+  color: #0f766e;
+  display: grid;
+  place-items: center;
+  flex-shrink: 0;
+}
+
+.patient-card-icon-wrap svg {
+  width: 22px;
+  height: 22px;
+}
+
+.patient-card-status-chip {
+  padding: 3px 10px;
+  border-radius: 9999px;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.status-chip-available {
+  background: #f0fdfa;
+  color: #0f766e;
+  border: 1px solid #ccfbf1;
+}
+
+.status-chip-pending {
+  background: #fffbeb;
+  color: #b45309;
+  border: 1px solid #fef3c7;
+}
+
+.status-chip-soon {
+  background: #f1f5f9;
+  color: #475569;
+  border: 1px solid #e2e8f0;
+}
+
+.patient-card-title-wrap {
+  margin-bottom: 14px;
+}
+
+.patient-card-kicker {
+  font-size: 11px;
+  font-weight: 750;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: #0d9488;
+  display: block;
+  margin-bottom: 4px;
+}
+
+.patient-card-title-wrap h2 {
+  font-size: 20px;
+  font-weight: 750;
+  color: #0f172a;
+  letter-spacing: -0.02em;
+  margin: 0;
+}
+
+.patient-card-body {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.patient-detail-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  background: #f8fafc;
+  border: 1px solid #f1f5f9;
+  border-radius: 12px;
+  padding: 14px 16px;
+}
+
+.patient-detail-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 13.5px;
+}
+
+.patient-detail-label {
+  color: #64748b;
+  font-weight: 550;
+}
+
+.patient-detail-value {
+  color: #0f172a;
+  font-weight: 650;
+  text-align: right;
+}
+
+.patient-card-desc {
+  font-size: 14px;
+  color: #475569;
+  line-height: 1.55;
+  margin: 0;
+}
+
+/* Prescriptions list & empty state */
+.patient-prescriptions-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.patient-prescription-item {
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 10px;
+  padding: 12px 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.prescription-item-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 13.5px;
+  font-weight: 700;
+  color: #0f172a;
+}
+
+.prescription-item-dentist {
+  font-size: 12.5px;
+  color: #0f766e;
+  font-weight: 600;
+}
+
+.prescription-medicines {
+  font-size: 13px;
+  color: #334155;
+  line-height: 1.4;
+}
+
+.patient-empty-state {
+  background: #f8fafc;
+  border: 1px dashed #cbd5e1;
+  border-radius: 12px;
+  padding: 20px 16px;
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+}
+
+.patient-empty-state-icon {
+  width: 32px;
+  height: 32px;
+  color: #94a3b8;
+}
+
+.patient-empty-state-text {
+  font-size: 13.5px;
+  color: #475569;
+  line-height: 1.5;
+  margin: 0;
+  max-width: 420px;
+}
+
+/* Notice box inside upcoming cards */
+.patient-feature-notice {
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-left: 3px solid #0d9488;
+  border-radius: 8px;
+  padding: 12px 14px;
+  font-size: 13px;
+  color: #475569;
+  line-height: 1.5;
+}
+
+.patient-feature-notice p {
+  margin: 0;
+}
+
+.patient-feature-contact {
+  margin-top: 8px;
+  font-weight: 650;
+  color: #0f172a;
+}
+
+.patient-card-footer {
+  margin-top: 20px;
+  padding-top: 14px;
+  border-top: 1px solid #f1f5f9;
+}
+
+.patient-card-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 13.5px;
+  font-weight: 700;
+  color: #0f766e;
+  text-decoration: none;
+  transition: color 150ms ease, transform 150ms ease;
+}
+
+.patient-card-link:hover {
+  color: #115e59;
+  transform: translateX(2px);
+}
+
+/* =============================================================================
+   Portal Footer
+   ============================================================================= */
+.patient-portal-footer {
+  background: #ffffff;
+  border: 1px solid rgba(226, 232, 240, 0.9);
+  border-radius: 16px;
+  padding: 24px 32px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 16px;
+  font-size: 13.5px;
+  color: #64748b;
+}
+
+.patient-footer-security {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.patient-footer-security svg {
+  width: 18px;
+  height: 18px;
+  color: #0d9488;
+  flex-shrink: 0;
+}
+
+.patient-footer-security p {
+  margin: 0;
+}
+
+/* Loading & Error Skeletons */
+.patient-loading-shell {
+  min-height: 380px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+  color: #0f766e;
+}
+
+.patient-spinner {
+  width: 38px;
+  height: 38px;
+  border: 3.5px solid #ccfbf1;
+  border-top-color: #0f766e;
+  border-radius: 50%;
+  animation: patientSpin 0.75s linear infinite;
+}
+
+@keyframes patientSpin {
+  to { transform: rotate(360deg); }
+}
+
+.patient-error-shell {
+  background: #fef2f2;
+  border: 1px solid #fecaca;
+  border-radius: 16px;
+  padding: 32px;
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 14px;
+}
+
+.patient-error-shell h2 {
+  font-size: 20px;
+  color: #991b1b;
+  margin: 0;
+}
+
+.patient-error-shell p {
+  font-size: 14px;
+  color: #7f1d1d;
+  margin: 0;
+  max-width: 480px;
+}
+
+/* =============================================================================
+   Responsive Breakpoints
+   ============================================================================= */
+@media (max-width: 960px) {
+  .patient-portal-page {
+    padding: 24px 16px 48px;
+  }
+
+  .patient-portal-hero {
+    padding: 28px 24px;
+  }
+
+  .patient-portal-grid {
+    grid-template-columns: 1fr;
+    gap: 20px;
+  }
+}
+
+@media (max-width: 560px) {
+  .patient-portal-hero {
+    padding: 24px 20px;
+  }
+
+  .patient-portal-hero h1 {
+    font-size: 24px;
+  }
+
+  .patient-hero-actions {
+    width: 100%;
+    flex-direction: column;
+  }
+
+  .patient-hero-btn {
+    width: 100%;
+    justify-content: center;
+  }
+
+  .patient-portal-card {
+    padding: 20px;
+  }
+
+  .patient-portal-footer {
+    padding: 20px;
+    flex-direction: column;
+    align-items: flex-start;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .patient-portal-page *,
+  .patient-portal-card {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+    transform: none !important;
+  }
+
+  .patient-spinner {
+    animation: none !important;
+  }
+}
