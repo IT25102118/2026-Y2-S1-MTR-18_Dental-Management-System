@@ -147,6 +147,21 @@ describe('Patient Feature Pages', () => {
         expect(patientApi.reactivatePatient).toHaveBeenCalledWith(2);
       });
     });
+
+    it('passes gender and status filters to the API', async () => {
+      patientApi.getPatients.mockResolvedValue({ content: [], number: 0, size: 20, totalPages: 0, totalElements: 0, first: true, last: true, empty: true });
+      render(<MemoryRouter><PatientListPage /></MemoryRouter>);
+      fireEvent.change(screen.getByTestId('patient-status-filter'), { target: { value: 'INACTIVE' } });
+      fireEvent.change(screen.getByTestId('patient-gender-filter'), { target: { value: 'FEMALE' } });
+      await waitFor(() => expect(patientApi.getPatients).toHaveBeenCalledWith(expect.objectContaining({ active: false, gender: 'FEMALE', page: 0 })));
+    });
+
+    it('shows an API error without presenting an empty database as success', async () => {
+      patientApi.getPatients.mockRejectedValue(new Error('Patient service unavailable'));
+      render(<MemoryRouter><PatientListPage /></MemoryRouter>);
+      expect(await screen.findByRole('alert')).toHaveTextContent('Patient service unavailable');
+      expect(screen.queryByText('No patient records found.')).not.toBeInTheDocument();
+    });
   });
 
   describe('PatientCreatePage', () => {
@@ -237,7 +252,7 @@ describe('Patient Feature Pages', () => {
 
       await waitFor(() => {
         expect(screen.getByRole('heading', { name: 'James Bond', level: 1 })).toBeInTheDocument();
-        expect(screen.getByText('PAT-007')).toBeInTheDocument();
+        expect(screen.getAllByText('PAT-007')).toHaveLength(2);
         expect(screen.getByText('+44 20 7946 0999')).toBeInTheDocument();
         expect(screen.getByText('Penicillin')).toBeInTheDocument();
         expect(screen.getByTestId('patient-status-badge')).toHaveTextContent('Active');

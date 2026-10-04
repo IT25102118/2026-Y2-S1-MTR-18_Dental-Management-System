@@ -73,7 +73,7 @@ export default function PatientDetailPage() {
     );
   }
 
-  if (error || !patient) {
+  if (!patient) {
     return (
       <div className="patient-container">
         <nav className="patient-nav">
@@ -82,6 +82,7 @@ export default function PatientDetailPage() {
         <div className="error-alert" role="alert">
           <p>{error || 'Patient record not found.'}</p>
         </div>
+        <button type="button" className="btn btn-secondary" onClick={fetchPatient}>Retry</button>
       </div>
     );
   }
@@ -95,11 +96,11 @@ export default function PatientDetailPage() {
       <div className="patient-header">
         <div>
           <h1>{`${patient.firstName} ${patient.lastName}`}</h1>
-          <p style={{ margin: '0.25rem 0 0 0', color: '#64748b' }}>
+          <p className="patient-subtitle">
             Patient Code: <strong>{patient.patientCode}</strong>
           </p>
         </div>
-        <div style={{ display: 'flex', gap: '0.75rem', alignItems: 'center' }}>
+        <div className="patient-header-actions">
           <PatientStatusBadge active={patient.active} />
           <Link
             to={`/patients/${patient.id}/edit`}
@@ -137,6 +138,7 @@ export default function PatientDetailPage() {
           {actionSuccess}
         </div>
       )}
+      {error && <div className="error-alert" role="alert">{error}</div>}
 
       {/* Deactivation banner if inactive */}
       {!patient.active && (

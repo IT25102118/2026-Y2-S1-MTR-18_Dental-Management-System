@@ -73,6 +73,11 @@ public class PatientExceptionHandler {
         return error(HttpStatus.CONFLICT, "Patient record conflicts with existing data");
     }
 
+    @ExceptionHandler(Exception.class)
+    public ResponseEntity<PatientErrorResponse> handleUnexpected(Exception ex) {
+        return error(HttpStatus.INTERNAL_SERVER_ERROR, "Unable to process the patient record request");
+    }
+
     private ResponseEntity<PatientErrorResponse> error(HttpStatus status, String message) {
         return ResponseEntity.status(status).body(PatientErrorResponse.of(status, message, null));
     }

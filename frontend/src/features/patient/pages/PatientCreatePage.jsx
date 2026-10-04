@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { createPatient } from '../api/patientApi';
+import { validatePatientForm } from '../patientValidation';
 import '../patient.css';
 
 export default function PatientCreatePage() {
@@ -47,61 +48,11 @@ export default function PatientCreatePage() {
     }
   };
 
-  const validateClient = () => {
-    const errors = {};
-    if (!formData.patientCode?.trim()) {
-      errors.patientCode = 'Patient code is required';
-    } else if (formData.patientCode.trim().length > 30) {
-      errors.patientCode = 'Patient code cannot exceed 30 characters';
-    }
-
-    if (!formData.firstName?.trim()) {
-      errors.firstName = 'First name is required';
-    } else if (formData.firstName.trim().length > 60) {
-      errors.firstName = 'First name cannot exceed 60 characters';
-    }
-
-    if (!formData.lastName?.trim()) {
-      errors.lastName = 'Last name is required';
-    } else if (formData.lastName.trim().length > 60) {
-      errors.lastName = 'Last name cannot exceed 60 characters';
-    }
-
-    if (!formData.dateOfBirth) {
-      errors.dateOfBirth = 'Date of birth is required';
-    } else {
-      const today = new Date().toISOString().split('T')[0];
-      if (formData.dateOfBirth > today) {
-        errors.dateOfBirth = 'Date of birth cannot be in the future';
-      }
-    }
-
-    if (!formData.gender) {
-      errors.gender = 'Gender is required';
-    }
-
-    if (!formData.phone?.trim()) {
-      errors.phone = 'Phone number is required';
-    } else if (formData.phone.trim().length > 25) {
-      errors.phone = 'Phone number cannot exceed 25 characters';
-    }
-
-    if (formData.email?.trim()) {
-      if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email.trim())) {
-        errors.email = 'Email must be a valid email address';
-      } else if (formData.email.trim().length > 150) {
-        errors.email = 'Email cannot exceed 150 characters';
-      }
-    }
-
-    return errors;
-  };
-
   const handleSubmit = async (e) => {
     e.preventDefault();
     setGeneralError(null);
 
-    const clientErrors = validateClient();
+    const clientErrors = validatePatientForm(formData, true);
     if (Object.keys(clientErrors).length > 0) {
       setFieldErrors(clientErrors);
       return;
@@ -221,7 +172,7 @@ export default function PatientCreatePage() {
                 name="dateOfBirth"
                 type="date"
                 className="form-input"
-                max={new Date().toISOString().split('T')[0]}
+                max={new Date(Date.now() - new Date().getTimezoneOffset() * 60000).toISOString().split('T')[0]}
                 value={formData.dateOfBirth}
                 onChange={handleChange}
                 disabled={submitting}
@@ -253,6 +204,7 @@ export default function PatientCreatePage() {
                 <option value="MALE">Male</option>
                 <option value="FEMALE">Female</option>
                 <option value="OTHER">Other</option>
+                <option value="PREFER_NOT_TO_SAY">Prefer not to say</option>
               </select>
               {fieldErrors.gender && (
                 <span className="field-error" data-testid="error-gender">
@@ -341,6 +293,7 @@ export default function PatientCreatePage() {
                 onChange={handleChange}
                 disabled={submitting}
               />
+              {fieldErrors.addressLine2 && <span className="field-error">{fieldErrors.addressLine2}</span>}
             </div>
 
             <div className="form-group">
@@ -355,6 +308,7 @@ export default function PatientCreatePage() {
                 onChange={handleChange}
                 disabled={submitting}
               />
+              {fieldErrors.city && <span className="field-error">{fieldErrors.city}</span>}
             </div>
           </div>
         </section>
@@ -375,6 +329,7 @@ export default function PatientCreatePage() {
                 onChange={handleChange}
                 disabled={submitting}
               />
+              {fieldErrors.emergencyContactName && <span className="field-error">{fieldErrors.emergencyContactName}</span>}
             </div>
 
             <div className="form-group">
@@ -389,6 +344,7 @@ export default function PatientCreatePage() {
                 onChange={handleChange}
                 disabled={submitting}
               />
+              {fieldErrors.emergencyContactPhone && <span className="field-error">{fieldErrors.emergencyContactPhone}</span>}
             </div>
 
             <div className="form-group">
@@ -404,13 +360,14 @@ export default function PatientCreatePage() {
                 onChange={handleChange}
                 disabled={submitting}
               />
+              {fieldErrors.emergencyContactRelationship && <span className="field-error">{fieldErrors.emergencyContactRelationship}</span>}
             </div>
           </div>
         </section>
 
         {/* Section 4: Clinical & Medical History */}
         <section className="form-section">
-          <h2>Clinical & Medical History</h2>
+          <h2>Medical & Dental Information</h2>
           <div className="form-grid">
             <div className="form-group">
               <label htmlFor="allergies">Allergies</label>
@@ -464,6 +421,12 @@ export default function PatientCreatePage() {
               />
             </div>
 
+          </div>
+        </section>
+
+        <section className="form-section">
+          <h2>Notes</h2>
+          <div className="form-grid">
             <div className="form-group full-width">
               <label htmlFor="notes">Notes</label>
               <textarea

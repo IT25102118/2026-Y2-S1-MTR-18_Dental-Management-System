@@ -22,6 +22,13 @@
   color: #0f172a;
 }
 
+.patient-subtitle { margin: 0.25rem 0 0; color: #64748b; }
+.patient-header-actions { display: flex; gap: 0.75rem; align-items: center; flex-wrap: wrap; }
+.patient-code-link { font-weight: 600; }
+.patient-pagination { display: flex; justify-content: space-between; align-items: center; gap: 1rem; margin-top: 1rem; flex-wrap: wrap; }
+.patient-pagination-actions { display: flex; gap: 0.5rem; }
+.patient-modal-reason { margin-bottom: 1rem; }
+
 .patient-nav {
   margin-bottom: 1rem;
 }
@@ -189,6 +196,7 @@
   display: flex;
   gap: 0.5rem;
   align-items: center;
+  flex-wrap: wrap;
 }
 
 /* Forms */

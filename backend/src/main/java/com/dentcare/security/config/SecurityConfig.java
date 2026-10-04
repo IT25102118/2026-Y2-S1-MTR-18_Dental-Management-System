@@ -93,6 +93,8 @@ public class SecurityConfig {
                 .requestMatchers(HttpMethod.POST, "/api/auth/login").permitAll()
                 .requestMatchers(HttpMethod.GET, "/api/auth/me").authenticated()
                 .requestMatchers("/api/admin/**").hasRole("ADMINISTRATOR")
+                .requestMatchers("/api/patients", "/api/patients/**")
+                    .hasAnyRole("ADMINISTRATOR", "RECEPTIONIST", "DENTIST", "DENTAL_ASSISTANT")
                 .requestMatchers("/api/invoices", "/api/invoices/**").hasAnyRole("ADMINISTRATOR", "RECEPTIONIST")
                 .requestMatchers("/api/payments", "/api/payments/**").hasAnyRole("ADMINISTRATOR", "RECEPTIONIST")
                 .requestMatchers("/api/billing", "/api/billing/**").hasAnyRole("ADMINISTRATOR", "RECEPTIONIST")

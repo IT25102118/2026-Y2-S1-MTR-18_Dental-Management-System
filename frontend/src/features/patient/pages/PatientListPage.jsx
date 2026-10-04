@@ -16,7 +16,11 @@ export default function PatientListPage() {
     empty: true
   });
   const [search, setSearch] = useState('');
+  const [appliedSearch, setAppliedSearch] = useState('');
   const [activeFilter, setActiveFilter] = useState('');
+  const [genderFilter, setGenderFilter] = useState('');
+  const [page, setPage] = useState(0);
+  const [refresh, setRefresh] = useState(0);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [actionSuccess, setActionSuccess] = useState(null);
@@ -26,17 +30,22 @@ export default function PatientListPage() {
   const [deactivationReason, setDeactivationReason] = useState('');
   const [actionLoading, setActionLoading] = useState(false);
 
-  const fetchPatients = useCallback(async (searchTerm = search, statusFilter = activeFilter, pageNum = 0) => {
+  const fetchPatients = useCallback(async () => {
     setLoading(true);
     setError(null);
     try {
-      const activeParam = statusFilter === 'ACTIVE' ? true : statusFilter === 'INACTIVE' ? false : undefined;
+      const activeParam = activeFilter === 'ACTIVE' ? true : activeFilter === 'INACTIVE' ? false : undefined;
       const data = await getPatients({
-        search: searchTerm,
+        search: appliedSearch,
         active: activeParam,
-        page: pageNum,
+        gender: genderFilter || undefined,
+        page,
         size: 20
       });
+      if (page > 0 && data.totalPages > 0 && page >= data.totalPages) {
+        setPage(data.totalPages - 1);
+        return;
+      }
       setPatients(data.content);
       setPageInfo({
         number: data.number,
@@ -52,15 +61,16 @@ export default function PatientListPage() {
     } finally {
       setLoading(false);
     }
-  }, [search, activeFilter]);
+  }, [appliedSearch, activeFilter, genderFilter, page]);
 
   useEffect(() => {
-    fetchPatients(search, activeFilter, 0);
-  }, [fetchPatients, search, activeFilter]);
+    fetchPatients();
+  }, [fetchPatients, refresh]);
 
   const handleSearchSubmit = (e) => {
     e.preventDefault();
-    fetchPatients(search, activeFilter, 0);
+    setPage(0);
+    setAppliedSearch(search.trim());
   };
 
   const handleDeactivateClick = (patient) => {
@@ -76,7 +86,7 @@ export default function PatientListPage() {
       await deactivatePatient(deactivatingPatient.id, deactivationReason);
       setActionSuccess(`Patient ${deactivatingPatient.firstName} ${deactivatingPatient.lastName} (${deactivatingPatient.patientCode}) deactivated successfully.`);
       setDeactivatingPatient(null);
-      await fetchPatients(search, activeFilter, pageInfo.number);
+      setRefresh((value) => value + 1);
     } catch (err) {
       setError(err.message || 'Failed to deactivate patient.');
     } finally {
@@ -90,7 +100,7 @@ export default function PatientListPage() {
     try {
       await reactivatePatient(patient.id);
       setActionSuccess(`Patient ${patient.firstName} ${patient.lastName} (${patient.patientCode}) reactivated successfully.`);
-      await fetchPatients(search, activeFilter, pageInfo.number);
+      setRefresh((value) => value + 1);
     } catch (err) {
       setError(err.message || 'Failed to reactivate patient.');
     } finally {
@@ -107,7 +117,7 @@ export default function PatientListPage() {
       <div className="patient-header">
         <h1>Patient Records</h1>
         <Link to="/patients/new" className="btn btn-primary" data-testid="add-patient-button">
-          Add Patient
+          Register Patient
         </Link>
       </div>
 
@@ -124,13 +134,26 @@ export default function PatientListPage() {
         <select
           className="filter-select"
           value={activeFilter}
-          onChange={(e) => setActiveFilter(e.target.value)}
+          onChange={(e) => { setActiveFilter(e.target.value); setPage(0); }}
           aria-label="Filter by status"
           data-testid="patient-status-filter"
         >
           <option value="">All Statuses</option>
           <option value="ACTIVE">Active Only</option>
           <option value="INACTIVE">Inactive Only</option>
+        </select>
+        <select
+          className="filter-select"
+          value={genderFilter}
+          onChange={(e) => { setGenderFilter(e.target.value); setPage(0); }}
+          aria-label="Filter by gender"
+          data-testid="patient-gender-filter"
+        >
+          <option value="">All Genders</option>
+          <option value="MALE">Male</option>
+          <option value="FEMALE">Female</option>
+          <option value="OTHER">Other</option>
+          <option value="PREFER_NOT_TO_SAY">Prefer not to say</option>
         </select>
         <button type="submit" className="btn btn-secondary">
           Search
@@ -153,16 +176,19 @@ export default function PatientListPage() {
         <div className="loading-state" role="status">
           Loading patient records...
         </div>
-      ) : patients.length === 0 ? (
+      ) : !error && patients.length === 0 ? (
         <div className="empty-state">
           <p>No patient records found.</p>
-          {search || activeFilter ? (
+          {appliedSearch || activeFilter || genderFilter ? (
             <button
               type="button"
               className="btn btn-secondary"
               onClick={() => {
                 setSearch('');
+                setAppliedSearch('');
                 setActiveFilter('');
+                setGenderFilter('');
+                setPage(0);
               }}
             >
               Clear Filters
@@ -192,7 +218,7 @@ export default function PatientListPage() {
                 {patients.map((patient) => (
                   <tr key={patient.id} data-testid={`patient-row-${patient.id}`}>
                     <td>
-                      <Link to={`/patients/${patient.id}`} style={{ fontWeight: 600 }}>
+                      <Link to={`/patients/${patient.id}`} className="patient-code-link">
                         {patient.patientCode}
                       </Link>
                     </td>
@@ -251,16 +277,16 @@ export default function PatientListPage() {
           </div>
 
           {pageInfo.totalPages > 1 && (
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '1rem' }}>
+            <div className="patient-pagination">
               <div>
                 Showing page {pageInfo.number + 1} of {pageInfo.totalPages} ({pageInfo.totalElements} patients)
               </div>
-              <div style={{ display: 'flex', gap: '0.5rem' }}>
+              <div className="patient-pagination-actions">
                 <button
                   type="button"
                   className="btn btn-secondary btn-sm"
                   disabled={pageInfo.first || loading}
-                  onClick={() => fetchPatients(search, activeFilter, pageInfo.number - 1)}
+                  onClick={() => setPage(pageInfo.number - 1)}
                 >
                   Previous
                 </button>
@@ -268,7 +294,7 @@ export default function PatientListPage() {
                   type="button"
                   className="btn btn-secondary btn-sm"
                   disabled={pageInfo.last || loading}
-                  onClick={() => fetchPatients(search, activeFilter, pageInfo.number + 1)}
+                  onClick={() => setPage(pageInfo.number + 1)}
                 >
                   Next
                 </button>
@@ -286,7 +312,7 @@ export default function PatientListPage() {
             <p>
               Are you sure you want to deactivate patient <strong>{deactivatingPatient.firstName} {deactivatingPatient.lastName}</strong> ({deactivatingPatient.patientCode})?
             </p>
-            <div className="form-group" style={{ marginBottom: '1rem' }}>
+            <div className="form-group patient-modal-reason">
               <label htmlFor="modal-deactivation-reason">Reason for deactivation (optional):</label>
               <input
                 id="modal-deactivation-reason"

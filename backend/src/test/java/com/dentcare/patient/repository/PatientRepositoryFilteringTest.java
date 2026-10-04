@@ -94,6 +94,14 @@ class PatientRepositoryFilteringTest {
     }
 
     @Test
+    void searchMatchesFullNameAndTreatsLikeCharactersLiterally() {
+        assertThat(patientRepository.findAll(PatientSpecifications.buildSpecification("sArAh cOnNoR", null), PageRequest.of(0, 10))
+                .getContent()).extracting(Patient::getPatientCode).containsExactly("PAT-001");
+        assertThat(patientRepository.findAll(PatientSpecifications.buildSpecification("%", null), PageRequest.of(0, 10))
+                .getContent()).isEmpty();
+    }
+
+    @Test
     @DisplayName("Search filter matches phone number")
     void testSearchByPhone() {
         Specification<Patient> spec = PatientSpecifications.buildSpecification("555-2222", null);

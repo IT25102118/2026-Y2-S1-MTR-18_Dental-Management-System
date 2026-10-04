@@ -47,10 +47,10 @@ async function getCsrfHeaders() {
     if (csrf?.headerName && csrf?.token) {
       return { [csrf.headerName]: csrf.token };
     }
-  } catch {
-    // Continue without CSRF header if token retrieval is unavailable
+  } catch (err) {
+    throw new PatientApiError(0, 'Unable to verify this request. Please refresh and try again.', {}, 'CsrfError');
   }
-  return {};
+  throw new PatientApiError(0, 'Unable to verify this request. Please refresh and try again.', {}, 'CsrfError');
 }
 
 async function request(endpoint, options = {}) {
@@ -109,7 +109,7 @@ async function request(endpoint, options = {}) {
 
   if (!response.ok) {
     const errorBody = (typeof data === 'object' && data !== null) ? data : {};
-    const message = errorBody.message || (typeof data === 'string' && data) || response.statusText || 'Operation failed';
+    const message = errorBody.message || response.statusText || 'Operation failed';
     const fieldErrors = errorBody.fieldErrors || {};
     const errorName = errorBody.error || response.statusText || 'Error';
     throw new PatientApiError(response.status, message, fieldErrors, errorName, data);

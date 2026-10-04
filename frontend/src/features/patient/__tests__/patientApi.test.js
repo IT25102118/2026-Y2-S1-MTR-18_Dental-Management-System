@@ -1,4 +1,5 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
+import { getCsrfToken } from '../../auth/api/authApi';
 import {
   getPatients,
   getPatientById,
@@ -19,6 +20,7 @@ describe('patientApi client', () => {
 
   beforeEach(() => {
     global.fetch = vi.fn();
+    getCsrfToken.mockResolvedValue({ token: 'test-csrf-token', headerName: 'X-XSRF-TOKEN' });
   });
 
   afterEach(() => {
@@ -106,6 +108,12 @@ describe('patientApi client', () => {
   });
 
   describe('createPatient', () => {
+    it('does not send a mutation when the CSRF token is unavailable', async () => {
+      getCsrfToken.mockRejectedValueOnce(new Error('CSRF unavailable'));
+      await expect(createPatient({ patientCode: 'P', firstName: 'A', lastName: 'B', dateOfBirth: '1990-01-01', gender: 'OTHER', phone: '123' }))
+        .rejects.toThrow('Unable to verify this request');
+      expect(global.fetch).not.toHaveBeenCalled();
+    });
     it('sends POST request with CSRF token and CreatePatientRequest payload', async () => {
       global.fetch.mockResolvedValueOnce({
         ok: true,

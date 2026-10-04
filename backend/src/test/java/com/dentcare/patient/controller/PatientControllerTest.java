@@ -11,6 +11,7 @@ import com.dentcare.patient.exception.DuplicatePatientCodeException;
 import com.dentcare.patient.exception.PatientExceptionHandler;
 import com.dentcare.patient.exception.PatientNotFoundException;
 import com.dentcare.patient.service.PatientService;
+import com.dentcare.security.config.SecurityConfig;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import jakarta.validation.ConstraintViolationException;
@@ -60,8 +61,8 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @WebMvcTest(PatientController.class)
-@Import(PatientExceptionHandler.class)
-@WithMockUser
+@Import({SecurityConfig.class, PatientExceptionHandler.class})
+@WithMockUser(roles = "RECEPTIONIST")
 class PatientControllerTest {
     @Autowired private MockMvc mvc;
     @Autowired private ObjectMapper mapper;
@@ -278,7 +279,9 @@ class PatientControllerTest {
                 Arguments.of(new OptimisticLockingFailureException("internal details"), 409,
                         "Patient record changed concurrently; reload it before retrying"),
                 Arguments.of(new DataIntegrityViolationException("SQL constraint internal details"), 409,
-                        "Patient record conflicts with existing data"));
+                        "Patient record conflicts with existing data"),
+                Arguments.of(new RuntimeException("SQL internal details"), 500,
+                        "Unable to process the patient record request"));
     }
 
     @Test
@@ -337,6 +340,28 @@ class PatientControllerTest {
                 .andExpect(status().isForbidden());
         mvc.perform(patch("/api/patients/7/deactivate")).andExpect(status().isForbidden());
         mvc.perform(patch("/api/patients/7/reactivate")).andExpect(status().isForbidden());
+        verifyNoInteractions(service);
+    }
+
+    @ParameterizedTest
+    @ValueSource(strings = {"ADMINISTRATOR", "RECEPTIONIST", "DENTIST", "DENTAL_ASSISTANT"})
+    void allStaffRolesCanReadPatientRecords(String role) throws Exception {
+        when(service.getPatientById(7L)).thenReturn(response(true));
+        mvc.perform(get("/api/patients/7").with(org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.user("staff").roles(role)))
+                .andExpect(status().isOk());
+    }
+
+    @Test
+    @WithMockUser(roles = "PATIENT")
+    void patientAccountCannotReadOrMutateClinicalPatientRecords() throws Exception {
+        mvc.perform(get("/api/patients")).andExpect(status().isForbidden());
+        mvc.perform(get("/api/patients/7")).andExpect(status().isForbidden());
+        mvc.perform(post("/api/patients").with(csrf()).contentType(MediaType.APPLICATION_JSON).content(createJson()))
+                .andExpect(status().isForbidden());
+        mvc.perform(put("/api/patients/7").with(csrf()).contentType(MediaType.APPLICATION_JSON).content(updateJson()))
+                .andExpect(status().isForbidden());
+        mvc.perform(patch("/api/patients/7/deactivate").with(csrf())).andExpect(status().isForbidden());
+        mvc.perform(patch("/api/patients/7/reactivate").with(csrf())).andExpect(status().isForbidden());
         verifyNoInteractions(service);
     }
 
