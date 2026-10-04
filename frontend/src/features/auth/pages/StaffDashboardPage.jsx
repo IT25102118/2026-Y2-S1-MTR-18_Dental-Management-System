@@ -533,7 +533,7 @@ export default function StaffDashboardPage() {
                 const bentoClass = getBentoLayoutClass(module.id, filteredModules.length);
                 return (
                   <article
-                    className={`staff-module-card ${bentoClass} ${module.id === 'inventory' ? 'staff-card-inventory' : ''}`}
+                    className={`staff-module-card staff-bento-tile ${bentoClass} ${module.id === 'inventory' ? 'staff-card-inventory' : ''} staff-tile-${module.id}`}
                     key={module.to}
                     style={{ '--stagger-idx': index }}
                   >

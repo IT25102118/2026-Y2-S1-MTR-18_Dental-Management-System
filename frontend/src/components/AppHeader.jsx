@@ -32,11 +32,15 @@ export default function AppHeader() {
   const isStaff = isStaffRole(user?.role);
   const canUseBilling = BILLING_ROLES.includes(user?.role);
 
+  const brandDestination = isAuthenticated
+    ? (isPatient ? '/patient/dashboard' : '/staff/dashboard')
+    : '/';
+
   return (
     <header className={`app-header ${!isLoading && !isAuthenticated ? 'app-header-public' : ''}`}>
       <div className="app-header-inner">
         <div className="app-header-brand">
-          <Link to="/" className="brand-logo-link" aria-label="DentCare Home">
+          <Link to={brandDestination} className="brand-logo-link" aria-label="DentCare Home">
             <span className="brand-icon" aria-hidden="true">
               <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                 <path d="M12 2C8.5 2 6 4.5 6 8c0 3.5 1.5 6 3 10 .8 2.2 2 4 3 4s2.2-1.8 3-4c1.5-4 3-6.5 3-10 0-3.5-2.5-6-6-6z" />
@@ -73,6 +77,13 @@ export default function AppHeader() {
                 onClick={() => setMenuOpen(false)}
               >
                 Patient Dashboard
+              </NavLink>
+              <NavLink
+                to="/patient/appointments"
+                className={({ isActive }) => `app-nav-link ${isActive ? 'active' : ''}`}
+                onClick={() => setMenuOpen(false)}
+              >
+                My Appointments
               </NavLink>
               <NavLink
                 to="/account"

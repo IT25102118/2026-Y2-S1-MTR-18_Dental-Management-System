@@ -3,6 +3,7 @@ import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { canRoleAccessPath, getDashboardPath, isSafeInternalPath, isStaffRole } from '../roleAccess';
 import staffWorkspaceImg from '../../../assets/staff-workspace.jpg';
+import patientAccessImg from '../../../assets/patient-access.jpg';
 import '../auth.css';
 import '../public-auth.css';
 
@@ -291,40 +292,200 @@ export default function LoginPage({ portalType: propPortalType }) {
     );
   }
 
-  // Patient and Unified Login Views (Preserved completely)
-  return (
-    <main className={`public-auth-page public-auth-login ${isPatientPortal ? 'portal-patient-theme' : ''}`} aria-labelledby="login-title">
-      <div className={`public-auth-card ${isPatientPortal ? 'public-auth-card-patient' : ''}`} data-testid={`login-card-${portalType}`}>
-        <Link to="/" className="public-auth-back"><span aria-hidden="true">←</span> Back to home</Link>
+  // Dedicated Premium Split-Layout for Patient Portal
+  if (isPatientPortal) {
+    return (
+      <main className="public-auth-page patient-portal-layout" aria-labelledby="login-title">
+        <div className="patient-split-shell" data-testid="login-card-patient">
+          {/* Left / Visual Overview Panel */}
+          <aside className="patient-visual-panel" aria-label="Patient Portal Overview">
+            <div className="patient-panel-header patient-anim-header">
+              <Link to="/" className="patient-panel-brand" aria-label="DentCare Home">
+                <span className="patient-brand-icon" aria-hidden="true">
+                  <ToothIcon />
+                </span>
+                <span className="patient-brand-title">DentCare</span>
+              </Link>
+              <div className="patient-portal-badge">
+                <UserIcon />
+                <span>PATIENT ACCESS</span>
+              </div>
+            </div>
 
-        <header className="public-auth-header">
-          {isPatientPortal ? (
-            <>
+            <div className="patient-panel-content">
+              <div className="patient-panel-copy patient-anim-copy">
+                <span className="patient-panel-kicker">Personal Care &amp; Appointments</span>
+                <h2 className="patient-panel-headline">Your dental wellness, comfortably managed.</h2>
+                <p className="patient-panel-desc">
+                  Access your upcoming visits, verified treatment plans, digital prescriptions, and payment receipts in one secure personal workspace.
+                </p>
+              </div>
+
+              <div className="patient-panel-media patient-anim-media">
+                <img
+                  src={patientAccessImg}
+                  alt="Welcoming DentCare dental clinic reception and comfortable patient consultation environment"
+                  className="patient-panel-img"
+                  width="800"
+                  height="600"
+                />
+                <div className="patient-panel-media-overlay" aria-hidden="true" />
+                <div className="patient-panel-media-badge">
+                  <span className="patient-badge-pulse" aria-hidden="true" />
+                  <span>Patient Services Active</span>
+                </div>
+              </div>
+
+              <div className="patient-capabilities-list patient-anim-chips" aria-label="Patient features">
+                <div className="patient-capability-chip">
+                  <span className="chip-dot" aria-hidden="true" />
+                  <span>Appointment scheduling</span>
+                </div>
+                <div className="patient-capability-chip">
+                  <span className="chip-dot" aria-hidden="true" />
+                  <span>Treatment history</span>
+                </div>
+                <div className="patient-capability-chip">
+                  <span className="chip-dot" aria-hidden="true" />
+                  <span>Invoices &amp; payments</span>
+                </div>
+              </div>
+            </div>
+
+            <div className="patient-comfort-notice patient-anim-notice" role="note">
+              <span className="notice-icon" aria-hidden="true"><UserIcon /></span>
+              <p>Need immediate dental attention? Contact our clinic reception directly or schedule an appointment after signing in.</p>
+            </div>
+          </aside>
+
+          {/* Right / Login Form Panel */}
+          <div className="patient-form-panel patient-anim-form">
+            <Link to="/" className="public-auth-back">
+              <span aria-hidden="true">←</span> Back to home
+            </Link>
+
+            <header className="public-auth-header patient-form-header">
               <div className="public-portal-tag patient-tag">
                 <UserIcon />
                 <span>Patient Portal</span>
               </div>
-              <h1 id="login-title">Patient Login</h1>
-              <p>Sign in with your verified patient email and password to access your personal dental workspace.</p>
-            </>
-          ) : (
-            <>
-              <div className="public-portal-tag">
-                <span className="portal-sparkle" aria-hidden="true">✦</span>
-                <span>DentCare Account</span>
+              <h1 id="login-title" aria-label="Patient Login - Welcome back">
+                <span className="sr-only">Patient Login - </span>
+                Welcome back
+              </h1>
+              <p className="patient-welcome-text">
+                Sign in to manage your DentCare appointments and patient account.
+              </p>
+            </header>
+
+            {errorMessage && (
+              <div id="login-error" className="public-auth-alert" role="alert" aria-live="polite" data-testid="login-error-alert">
+                <span aria-hidden="true">!</span>
+                <p>{errorMessage}</p>
               </div>
-              <h1 id="login-title">Sign in to your account</h1>
-              <p>Enter your DentCare email and password to continue.</p>
-              <div className="portal-choice-pills" role="navigation" aria-label="Portal Selection">
-                <Link to="/patient/login" className="portal-pill-btn">
-                  <UserIcon /> Patient Portal →
-                </Link>
-                <Link to="/staff/login" className="portal-pill-btn staff-pill">
-                  <ShieldIcon /> Staff Portal →
-                </Link>
+            )}
+
+            <form onSubmit={handleSubmit} className="public-auth-form" noValidate>
+              <div className="public-field">
+                <label htmlFor="login-email">Patient Email address</label>
+                <input
+                  id="login-email"
+                  type="email"
+                  name="email"
+                  value={email}
+                  onChange={(event) => setEmail(event.target.value)}
+                  required
+                  autoComplete="email"
+                  inputMode="email"
+                  placeholder="patient@example.com"
+                  disabled={isSubmitting}
+                  aria-invalid={hasError}
+                  aria-describedby={hasError ? 'login-error' : undefined}
+                  data-testid="login-email-input"
+                />
               </div>
-            </>
-          )}
+
+              <div className="public-field">
+                <label htmlFor="login-password">Password</label>
+                <div className="public-password-field">
+                  <input
+                    id="login-password"
+                    type={showPassword ? 'text' : 'password'}
+                    name="password"
+                    value={password}
+                    onChange={(event) => setPassword(event.target.value)}
+                    required
+                    autoComplete="current-password"
+                    placeholder="Enter your password"
+                    disabled={isSubmitting}
+                    aria-invalid={hasError}
+                    aria-describedby={hasError ? 'login-error' : undefined}
+                    data-testid="login-password-input"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowPassword((current) => !current)}
+                    aria-label={showPassword ? 'Hide password' : 'Show password'}
+                    aria-pressed={showPassword}
+                    disabled={isSubmitting}
+                  >
+                    <VisibilityIcon visible={showPassword} />
+                  </button>
+                </div>
+              </div>
+
+              <button
+                type="submit"
+                className="public-auth-submit submit-patient-btn"
+                disabled={isSubmitting}
+                data-testid="login-submit-button"
+              >
+                {isSubmitting ? (
+                  <span className="public-submit-loading"><span aria-hidden="true" />Signing In...</span>
+                ) : (
+                  <>
+                    <span>Sign In as Patient</span>
+                    <ArrowIcon />
+                  </>
+                )}
+              </button>
+
+              <p className="patient-auth-disclaimer">
+                Secure personal access for registered DentCare patients.
+              </p>
+            </form>
+
+            <div className="public-auth-footer patient-auth-footer">
+              <p>New patient? <Link to="/register">Register as a Patient</Link></p>
+              <span>Clinic staff member? <Link to="/staff/login">Go to Staff Login</Link></span>
+            </div>
+          </div>
+        </div>
+      </main>
+    );
+  }
+
+  // Unified / Fallback Login View
+  return (
+    <main className="public-auth-page public-auth-login" aria-labelledby="login-title">
+      <div className="public-auth-card" data-testid={`login-card-${portalType}`}>
+        <Link to="/" className="public-auth-back"><span aria-hidden="true">←</span> Back to home</Link>
+
+        <header className="public-auth-header">
+          <div className="public-portal-tag">
+            <span className="portal-sparkle" aria-hidden="true">✦</span>
+            <span>DentCare Account</span>
+          </div>
+          <h1 id="login-title">Sign in to your account</h1>
+          <p>Enter your DentCare email and password to continue.</p>
+          <div className="portal-choice-pills" role="navigation" aria-label="Portal Selection">
+            <Link to="/patient/login" className="portal-pill-btn">
+              <UserIcon /> Patient Portal →
+            </Link>
+            <Link to="/staff/login" className="portal-pill-btn staff-pill">
+              <ShieldIcon /> Staff Portal →
+            </Link>
+          </div>
         </header>
 
         {errorMessage && (
@@ -336,9 +497,7 @@ export default function LoginPage({ portalType: propPortalType }) {
 
         <form onSubmit={handleSubmit} className="public-auth-form" noValidate>
           <div className="public-field">
-            <label htmlFor="login-email">
-              {isPatientPortal ? 'Patient Email address' : 'Email address'}
-            </label>
+            <label htmlFor="login-email">Email address</label>
             <input
               id="login-email"
               type="email"
@@ -393,8 +552,6 @@ export default function LoginPage({ portalType: propPortalType }) {
           >
             {isSubmitting ? (
               <span className="public-submit-loading"><span aria-hidden="true" />Signing In...</span>
-            ) : isPatientPortal ? (
-              'Sign In as Patient'
             ) : (
               'Sign In'
             )}
@@ -402,17 +559,8 @@ export default function LoginPage({ portalType: propPortalType }) {
         </form>
 
         <div className="public-auth-footer">
-          {isPatientPortal ? (
-            <>
-              <p>New patient? <Link to="/register">Register as a Patient</Link></p>
-              <span>Clinic staff member? <Link to="/staff/login">Go to Staff Login</Link></span>
-            </>
-          ) : (
-            <>
-              <p>New patient? <Link to="/register">Register as a Patient</Link></p>
-              <span>Dedicated access: <Link to="/patient/login">Patient Login</Link> · <Link to="/staff/login">Staff Login</Link></span>
-            </>
-          )}
+          <p>New patient? <Link to="/register">Register as a Patient</Link></p>
+          <span>Dedicated access: <Link to="/patient/login">Patient Login</Link> · <Link to="/staff/login">Staff Login</Link></span>
         </div>
       </div>
     </main>
