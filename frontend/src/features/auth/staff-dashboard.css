@@ -1,10 +1,25 @@
 /* =============================================================================
    DentCare Staff Dashboard Styling — Luxury Dental Practice Workspace
+   Visual Direction: Deep Dental Teal, Clinical Slate Navy, Aqua/Mint Accents, Pearl Surfaces
    Scoped to .staff-dashboard-root
    ============================================================================= */
 
 :root {
-  /* ── Refined Deep Navy & Clinical Slate Typography ── */
+  /* ── Deep Dental Teal & Clinical Palette ── */
+  --dw-teal-950: #04242b;
+  --dw-teal-900: #073b44;
+  --dw-teal-850: #0a4955;
+  --dw-teal-800: #0d5c6b;
+  --dw-teal-700: #0f766e;
+  --dw-teal-600: #0d9488;
+  --dw-teal-500: #14b8a6;
+  --dw-teal-400: #2dd4bf;
+  --dw-teal-300: #5eead4;
+  --dw-teal-200: #99f6e4;
+  --dw-teal-100: #ccfbf1;
+  --dw-teal-50:  #f0fdfa;
+
+  /* ── Deep Slate & Navy Family ── */
   --dw-navy-950: #060a14;
   --dw-navy-900: #090e1a;
   --dw-navy-850: #0f172a;
@@ -16,35 +31,40 @@
   --dw-slate-300: #cbd5e1;
   --dw-slate-200: #e2e8f0;
   --dw-slate-100: #f1f5f9;
-  --dw-slate-50: #f8fafc;
+  --dw-slate-50:  #f8fafc;
 
-  /* ── Signature DentCare Teal & Soft Mint Accents ── */
-  --dw-teal-900: #134e4a;
-  --dw-teal-800: #115e59;
-  --dw-teal-700: #0f766e;
-  --dw-teal-600: #0d9488;
-  --dw-teal-500: #14b8a6;
-  --dw-teal-400: #2dd4bf;
-  --dw-teal-300: #5eead4;
-  --dw-teal-200: #99f6e4;
-  --dw-teal-100: #ccfbf1;
-  --dw-teal-50: #f0fdfa;
+  /* ── Hero Dark Teal / Navy Container Tokens ── */
+  --dw-hero-bg: #092e38;
+  --dw-hero-border: rgba(45, 212, 191, 0.24);
+  --dw-hero-shadow: 0 20px 45px -12px rgba(4, 47, 46, 0.38), 0 4px 12px -2px rgba(4, 47, 46, 0.2);
 
-  /* ── Restrained Functional Accents ── */
-  --dw-emerald: #10b981;
-  --dw-emerald-bg: #f0fdf4;
-  --dw-emerald-border: #bbf7d0;
+  /* ── Restrained Accents ── */
+  --dw-aqua-500: #06b6d4;
+  --dw-aqua-400: #22d3ee;
+  --dw-aqua-300: #67e8f9;
+  --dw-aqua-100: #cffafe;
+  --dw-aqua-50:  #ecfeff;
+
+  --dw-mint-500: #10b981;
+  --dw-mint-400: #34d399;
+  --dw-mint-300: #6ee7b7;
+  --dw-mint-100: #d1fae5;
+  --dw-mint-50:  #f0fdf4;
+
+  --dw-ice-blue-500: #3b82f6;
+  --dw-ice-blue-100: #dbeafe;
+  --dw-ice-blue-50:  #eff6ff;
+
   --dw-danger: #ef4444;
 
-  /* ── Premium Soft Layered Shadows ── */
-  --dw-shadow-sm: 0 1px 2px 0 rgba(15, 23, 42, 0.04);
-  --dw-shadow-card: 0 2px 8px -2px rgba(15, 23, 42, 0.04), 0 1px 3px 0 rgba(15, 23, 42, 0.02);
-  --dw-shadow-card-hover: 0 12px 28px -6px rgba(15, 23, 42, 0.07), 0 4px 12px -2px rgba(15, 118, 110, 0.05);
-  --dw-shadow-header: 0 4px 20px -4px rgba(15, 23, 42, 0.04), 0 1px 3px 0 rgba(15, 23, 42, 0.02);
+  /* ── Soft Layered Shadows ── */
+  --dw-shadow-sm: 0 1px 3px 0 rgba(15, 23, 42, 0.04);
+  --dw-shadow-card: 0 3px 12px -2px rgba(15, 23, 42, 0.04), 0 1px 4px 0 rgba(15, 23, 42, 0.02);
+  --dw-shadow-card-hover: 0 18px 36px -8px rgba(15, 23, 42, 0.09), 0 6px 16px -2px rgba(13, 148, 136, 0.06);
 }
 
 /* =============================================================================
-   PAGE CANVAS (Warm Pearl Surface & Ambient Clinical Air)
+   PAGE CANVAS (Soft Pearl to Ice-Blue Depth with Subtle Radial Teal Glows)
    ============================================================================= */
 .staff-dashboard-root {
   max-width: 1360px;
@@ -52,40 +72,44 @@
   padding: 1.5rem 2rem 4.5rem;
   width: 100%;
   min-height: calc(100vh - 64px);
-  background-color: #fbfcfd;
+  background-color: #f8fafc;
   background-image:
-    radial-gradient(1000px 380px at 12% 0%, rgba(15, 118, 110, 0.035) 0%, transparent 70%),
-    radial-gradient(800px 320px at 88% 6%, rgba(13, 148, 136, 0.025) 0%, transparent 65%);
+    radial-gradient(1100px 420px at 15% 0%, rgba(13, 148, 136, 0.07) 0%, transparent 70%),
+    radial-gradient(900px 360px at 85% 6%, rgba(6, 182, 212, 0.05) 0%, transparent 65%),
+    linear-gradient(180deg, #f0fdfa 0%, #f8fbfb 28%, #f8fafc 100%);
   color: var(--dw-navy-850);
 }
 
 /* =============================================================================
-   1. REFINED LUXURY WORKSPACE HEADER (Light Pearl Foundation)
+   1. HERO / HEADER AREA (Deep Teal / Navy Gradient Luxury Surface)
    ============================================================================= */
 .staff-workspace-header {
   position: relative;
-  background: #ffffff;
-  background-image: linear-gradient(135deg, #ffffff 0%, #fbfdfc 60%, #f3faf8 100%);
-  border: 1px solid rgba(226, 232, 240, 0.9);
-  border-top: 3px solid var(--dw-teal-700);
-  border-radius: 18px;
-  padding: 1.5rem 2rem;
-  box-shadow: var(--dw-shadow-header);
-  margin-bottom: 1.15rem;
+  background: var(--dw-hero-bg);
+  background-image:
+    radial-gradient(850px circle at 15% 10%, rgba(45, 212, 191, 0.15) 0%, transparent 60%),
+    radial-gradient(600px circle at 85% 85%, rgba(6, 182, 212, 0.08) 0%, transparent 50%),
+    linear-gradient(135deg, #07262e 0%, #0d3b45 46%, #082630 100%);
+  border: 1px solid var(--dw-hero-border);
+  border-top: 3px solid var(--dw-teal-400);
+  border-radius: 20px;
+  padding: 1.75rem 2.25rem;
+  box-shadow: var(--dw-hero-shadow);
+  margin-bottom: 1.25rem;
   overflow: hidden;
-  animation: headerReveal 0.42s cubic-bezier(0.16, 1, 0.3, 1) both;
+  animation: headerReveal 0.44s cubic-bezier(0.16, 1, 0.3, 1) both;
 }
 
-/* Subtle atmospheric medical illumination with calm, slow ambient drift */
+/* Single continuous ambient animation: slow low-contrast aqua glow shift (14s) */
 .staff-header-ambient {
   position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background: radial-gradient(650px circle at 15% 20%, rgba(15, 118, 110, 0.05) 0%, transparent 65%);
+  top: -30%;
+  left: -10%;
+  width: 140%;
+  height: 160%;
+  background: radial-gradient(750px circle at 25% 30%, rgba(45, 212, 191, 0.16) 0%, rgba(6, 182, 212, 0.06) 42%, transparent 68%);
   pointer-events: none;
-  animation: ambientGlowShift 16s ease-in-out infinite alternate;
+  animation: ambientGlowShift 14s ease-in-out infinite alternate;
   will-change: transform, opacity;
 }
 
@@ -95,8 +119,16 @@
   right: -10px;
   top: -10px;
   pointer-events: none;
-  opacity: 0.65;
+  opacity: 0.6;
   transform: rotate(4deg);
+}
+
+.staff-header-clinical-motif path {
+  stroke: rgba(94, 234, 212, 0.18);
+}
+
+.staff-header-clinical-motif circle {
+  stroke: rgba(94, 234, 212, 0.1);
 }
 
 .staff-workspace-header-inner {
@@ -118,7 +150,7 @@
 .staff-header-titles {
   display: flex;
   flex-direction: column;
-  gap: 0.3rem;
+  gap: 0.35rem;
 }
 
 .staff-eyebrow-row {
@@ -129,36 +161,38 @@
 }
 
 .staff-header-eyebrow {
-  font-size: 0.72rem;
+  font-size: 0.75rem;
   font-weight: 750;
-  letter-spacing: 0.08em;
+  letter-spacing: 0.09em;
   text-transform: uppercase;
-  color: var(--dw-teal-700);
+  color: #5eead4;
   line-height: 1;
 }
 
 .staff-page-title {
   margin: 0;
-  font-size: 2rem;
+  font-size: 2.1rem;
   font-weight: 850;
-  color: var(--dw-navy-850);
+  color: #ffffff;
   letter-spacing: -0.03em;
   line-height: 1.15;
+  text-shadow: 0 2px 4px rgba(4, 47, 46, 0.4);
 }
 
 .staff-header-subtitle {
   margin: 0;
-  font-size: 0.875rem;
-  color: var(--dw-slate-600);
+  font-size: 0.9rem;
+  color: #ccfbf1;
+  opacity: 0.92;
   line-height: 1.45;
 }
 
 .staff-header-subtitle strong {
-  color: var(--dw-navy-850);
-  font-weight: 700;
+  color: #ffffff;
+  font-weight: 750;
 }
 
-/* Right side header controls */
+/* Header Right Side Controls */
 .staff-workspace-controls {
   display: flex;
   align-items: center;
@@ -166,15 +200,18 @@
   flex-wrap: wrap;
 }
 
-/* User identity chip in header */
+/* User Identity Chip (Frosted glass on dark teal hero) */
 .staff-user-chip-wrap {
   display: flex;
   align-items: center;
   gap: 0.75rem;
-  background-color: #f8fafc;
-  border: 1px solid var(--dw-slate-200);
-  border-radius: 12px;
-  padding: 0.35rem 0.85rem 0.35rem 0.45rem;
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  border-radius: 14px;
+  padding: 0.4rem 0.95rem 0.4rem 0.5rem;
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.12);
 }
 
 .staff-avatar-chip {
@@ -184,12 +221,13 @@
   width: 42px;
   height: 42px;
   border-radius: 10px;
-  background: linear-gradient(135deg, var(--dw-teal-700) 0%, var(--dw-teal-800) 100%);
+  background: linear-gradient(135deg, #0d9488 0%, #0f766e 100%);
   color: #ffffff;
   font-size: 0.95rem;
   font-weight: 800;
   letter-spacing: -0.02em;
-  box-shadow: 0 2px 6px rgba(15, 118, 110, 0.25);
+  border: 1px solid rgba(255, 255, 255, 0.25);
+  box-shadow: 0 3px 10px rgba(0, 0, 0, 0.25);
   flex-shrink: 0;
 }
 
@@ -200,9 +238,9 @@
 }
 
 .staff-user-display-name {
-  font-size: 0.8125rem;
+  font-size: 0.825rem;
   font-weight: 750;
-  color: var(--dw-navy-850);
+  color: #ffffff;
   line-height: 1.2;
 }
 
@@ -213,7 +251,7 @@
   gap: 0.35rem;
   font-size: 0.6875rem;
   font-weight: 700;
-  color: #15803d;
+  color: #6ee7b7;
   line-height: 1;
 }
 
@@ -221,8 +259,8 @@
   width: 6px;
   height: 6px;
   border-radius: 50%;
-  background-color: #16a34a;
-  box-shadow: 0 0 0 2px rgba(22, 163, 74, 0.2);
+  background-color: #34d399;
+  box-shadow: 0 0 6px rgba(52, 211, 153, 0.7);
 }
 
 /* Session date pill */
@@ -232,114 +270,126 @@
   gap: 0.45rem;
   font-size: 0.775rem;
   font-weight: 650;
-  color: var(--dw-slate-600);
-  background-color: #ffffff;
-  border: 1px solid var(--dw-slate-200);
-  border-radius: 10px;
-  padding: 0.5rem 0.85rem;
-  box-shadow: var(--dw-shadow-sm);
+  color: #e2e8f0;
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  border-radius: 12px;
+  padding: 0.55rem 0.95rem;
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
 }
 
 .staff-header-date svg {
-  color: var(--dw-teal-700);
+  color: #5eead4;
 }
 
-/* Authenticated role badge */
+/* Authenticated Role Badges (Tailored jewel badges on dark hero) */
 .staff-role-badge {
   display: inline-flex;
   align-items: center;
-  gap: 0.4rem;
-  padding: 0.25rem 0.65rem;
+  gap: 0.45rem;
+  padding: 0.28rem 0.75rem;
   border-radius: 9999px;
   font-size: 0.6875rem;
   font-weight: 800;
-  letter-spacing: 0.05em;
+  letter-spacing: 0.06em;
   text-transform: uppercase;
-  background-color: var(--dw-teal-50);
-  color: var(--dw-teal-700);
-  border: 1px solid var(--dw-teal-100);
+  background: rgba(15, 118, 110, 0.45);
+  color: #ecfeff;
+  border: 1px solid rgba(94, 234, 212, 0.35);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
 }
 
 .role-dot {
-  width: 5px;
-  height: 5px;
+  width: 6px;
+  height: 6px;
   border-radius: 50%;
-  background-color: var(--dw-teal-600);
+  background-color: #5eead4;
+  box-shadow: 0 0 6px rgba(94, 234, 212, 0.8);
 }
 
 .staff-role-badge.role-admin {
-  background-color: #f0fdfa;
-  color: #0f766e;
-  border-color: #ccfbf1;
+  background: rgba(13, 148, 136, 0.35);
+  color: #5eead4;
+  border-color: rgba(94, 234, 212, 0.45);
 }
 
 .staff-role-badge.role-dentist {
-  background-color: #ecfeff;
-  color: #0891b2;
-  border-color: #cffafe;
+  background: rgba(8, 145, 178, 0.35);
+  color: #67e8f9;
+  border-color: rgba(103, 232, 249, 0.45);
 }
 
 .staff-role-badge.role-dentist .role-dot {
-  background-color: #06b6d4;
+  background-color: #22d3ee;
+  box-shadow: 0 0 6px rgba(34, 211, 238, 0.8);
 }
 
 .staff-role-badge.role-receptionist {
-  background-color: #eff6ff;
-  color: #2563eb;
-  border-color: #dbeafe;
+  background: rgba(37, 99, 235, 0.35);
+  color: #93c5fd;
+  border-color: rgba(147, 197, 253, 0.45);
 }
 
 .staff-role-badge.role-receptionist .role-dot {
-  background-color: #3b82f6;
+  background-color: #60a5fa;
+  box-shadow: 0 0 6px rgba(96, 165, 250, 0.8);
 }
 
 .staff-role-badge.role-assistant {
-  background-color: #f0fdf4;
-  color: #16a34a;
-  border-color: #dcfce7;
+  background: rgba(16, 185, 129, 0.35);
+  color: #6ee7b7;
+  border-color: rgba(110, 231, 183, 0.45);
 }
 
 .staff-role-badge.role-assistant .role-dot {
-  background-color: #22c55e;
+  background-color: #34d399;
+  box-shadow: 0 0 6px rgba(52, 211, 153, 0.8);
 }
 
-/* My Account button */
+/* My Account Button in Header */
 .staff-account-btn {
   display: inline-flex;
   align-items: center;
   gap: 0.45rem;
-  padding: 0.5rem 0.95rem;
-  background-color: #ffffff;
-  color: var(--dw-navy-800);
-  border: 1px solid var(--dw-slate-300);
-  border-radius: 10px;
+  padding: 0.55rem 1.05rem;
+  background: rgba(255, 255, 255, 0.1);
+  color: #ffffff;
+  border: 1px solid rgba(94, 234, 212, 0.28);
+  border-radius: 12px;
   font-size: 0.8125rem;
-  font-weight: 650;
+  font-weight: 700;
   text-decoration: none;
-  box-shadow: var(--dw-shadow-sm);
-  transition: all 0.18s cubic-bezier(0.16, 1, 0.3, 1);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.12);
+  transition: all 0.22s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 .staff-account-btn svg {
-  color: var(--dw-slate-500);
-  transition: color 0.18s ease;
+  color: #5eead4;
+  transition: transform 0.2s ease, color 0.2s ease;
 }
 
 .staff-account-btn:hover {
-  background-color: var(--dw-teal-50);
-  border-color: var(--dw-teal-700);
-  color: var(--dw-teal-800);
-  transform: translateY(-1px);
-  box-shadow: 0 3px 10px rgba(15, 118, 110, 0.12);
+  background: rgba(45, 212, 191, 0.22);
+  border-color: #5eead4;
+  color: #ffffff;
+  transform: translateY(-2px);
+  box-shadow: 0 6px 18px rgba(13, 148, 136, 0.35);
   text-decoration: none;
 }
 
 .staff-account-btn:hover svg {
-  color: var(--dw-teal-700);
+  color: #ffffff;
+  transform: scale(1.1);
 }
 
 .staff-account-btn:focus-visible {
-  outline: 2px solid var(--dw-teal-600);
+  outline: 2px solid #5eead4;
   outline-offset: 2px;
 }
 
@@ -354,9 +404,9 @@
   border: 1px solid #fecaca;
   border-left: 4px solid var(--dw-danger);
   color: #991b1b;
-  border-radius: 10px;
-  padding: 0.8rem 1.15rem;
-  margin-bottom: 1.15rem;
+  border-radius: 12px;
+  padding: 0.85rem 1.25rem;
+  margin-bottom: 1.25rem;
   box-shadow: var(--dw-shadow-sm);
   animation: headerGlide 0.3s ease-out;
 }
@@ -375,21 +425,23 @@
 }
 
 /* =============================================================================
-   2. ELEGANT INFORMATION STRIP (Quiet, Refined Horizontal Bar)
+   2. REFINED INFORMATION STRIP (Translucent Pearl / Teal Surface)
    ============================================================================= */
 .staff-summary-strip {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  background-color: #ffffff;
-  border: 1px solid rgba(226, 232, 240, 0.9);
+  background: rgba(255, 255, 255, 0.88);
+  border: 1px solid rgba(15, 118, 110, 0.14);
   border-radius: 14px;
-  padding: 0.75rem 1.6rem;
+  padding: 0.8rem 1.75rem;
   margin-bottom: 1.5rem;
-  box-shadow: 0 2px 6px -1px rgba(15, 23, 42, 0.03);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  box-shadow: 0 4px 16px -2px rgba(15, 23, 42, 0.03), 0 2px 6px -1px rgba(13, 148, 136, 0.04);
   gap: 1.25rem;
   flex-wrap: wrap;
-  animation: stripReveal 0.44s cubic-bezier(0.16, 1, 0.3, 1) 0.07s both;
+  animation: stripReveal 0.46s cubic-bezier(0.16, 1, 0.3, 1) 0.08s both;
 }
 
 .staff-strip-item {
@@ -402,9 +454,9 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 30px;
-  height: 30px;
-  border-radius: 8px;
+  width: 32px;
+  height: 32px;
+  border-radius: 9px;
   background-color: var(--dw-teal-50);
   border: 1px solid var(--dw-teal-100);
   color: var(--dw-teal-700);
@@ -415,8 +467,8 @@
   width: 7px;
   height: 7px;
   border-radius: 50%;
-  background-color: var(--dw-emerald);
-  box-shadow: 0 0 0 2px rgba(16, 185, 129, 0.2);
+  background-color: var(--dw-mint-500);
+  box-shadow: 0 0 0 2px rgba(16, 185, 129, 0.25);
 }
 
 .staff-strip-text {
@@ -443,8 +495,8 @@
 
 .staff-strip-divider {
   width: 1px;
-  height: 20px;
-  background-color: var(--dw-slate-200);
+  height: 22px;
+  background-color: rgba(203, 213, 225, 0.8);
 }
 
 /* =============================================================================
@@ -461,7 +513,6 @@
   min-width: 0;
 }
 
-/* Workspace Section Header Bar */
 .staff-workspace-bar {
   display: flex;
   align-items: center;
@@ -470,7 +521,7 @@
   gap: 1rem;
   margin-bottom: 1.15rem;
   padding-bottom: 0.35rem;
-  animation: barReveal 0.44s cubic-bezier(0.16, 1, 0.3, 1) 0.1s both;
+  animation: barReveal 0.46s cubic-bezier(0.16, 1, 0.3, 1) 0.12s both;
 }
 
 .staff-workspace-titles {
@@ -545,7 +596,7 @@
 .staff-search-input:focus {
   outline: none;
   border-color: var(--dw-teal-600);
-  box-shadow: 0 0 0 3px rgba(15, 118, 110, 0.14);
+  box-shadow: 0 0 0 3px rgba(15, 118, 110, 0.15);
 }
 
 .staff-search-clear {
@@ -568,7 +619,7 @@
 
 /* =============================================================================
    4. BENTO ASYMMETRIC MODULE GRID
-   Unified luxury pearl cards with editorial proportions
+   Unified luxury pearl cards with editorial healthcare proportions
    ============================================================================= */
 .staff-modules-grid {
   display: grid;
@@ -577,8 +628,7 @@
 }
 
 /* ── Bento Proportions ── */
-
-/* Default 6-module grid (Administrator): Row 1: 7 cols + 5 cols. Row 2 & 3: 6 cols + 6 cols */
+/* 6-module grid (Administrator): Row 1: 7 cols + 5 cols. Row 2 & 3: 6 cols + 6 cols */
 .staff-modules-grid.grid-count-6 .bento-inventory-wide {
   grid-column: span 7;
 }
@@ -617,7 +667,7 @@
   grid-column: span 6;
 }
 
-/* When searching and filtered count is 1, 2, or 4 */
+/* Filtered search counts */
 .staff-modules-grid.grid-count-1 .staff-module-card {
   grid-column: span 12;
 }
@@ -630,19 +680,21 @@
   grid-column: span 6;
 }
 
-/* ── Unified Module Card System ── */
+/* =============================================================================
+   5. MODULE CARD REDESIGN & MICRO-INTERACTIONS
+   ============================================================================= */
 .staff-module-card {
   position: relative;
   display: flex;
   flex-direction: column;
   background-color: #ffffff;
-  background-image: linear-gradient(180deg, #ffffff 0%, #fafcfb 100%);
-  border: 1px solid rgba(15, 118, 110, 0.12);
+  background-image: linear-gradient(180deg, #ffffff 0%, #fafdff 100%);
+  border: 1px solid rgba(203, 213, 225, 0.85);
   border-radius: 18px;
   box-shadow: var(--dw-shadow-card);
-  padding: 1.45rem 1.65rem;
+  padding: 1.5rem 1.75rem;
   overflow: hidden;
-  animation: cardReveal 0.46s cubic-bezier(0.16, 1, 0.3, 1) calc(0.12s + var(--stagger-idx, 0) * 0.045s) both;
+  animation: cardReveal 0.48s cubic-bezier(0.16, 1, 0.3, 1) calc(0.14s + var(--stagger-idx, 0) * 0.055s) both;
   transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1),
               box-shadow 0.25s cubic-bezier(0.16, 1, 0.3, 1),
               border-color 0.22s ease,
@@ -656,17 +708,17 @@
   inset: 0;
   border-radius: inherit;
   box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.95);
-  background: radial-gradient(420px circle at 50% 0%, rgba(15, 118, 110, 0.03) 0%, transparent 70%);
+  background: radial-gradient(460px circle at 50% 0%, rgba(13, 148, 136, 0.04) 0%, transparent 70%);
   pointer-events: none;
-  opacity: 0.5;
+  opacity: 0.6;
   transition: opacity 0.25s ease;
 }
 
-/* Card Hover Elevation (Smooth, restrained translateY -5px, max scale ~1.008) */
+/* Card Hover Elevation (Smooth, restrained translateY -5px, scale ~1.008) */
 .staff-module-card:hover {
   transform: translateY(-5px) scale(1.008);
-  border-color: rgba(15, 118, 110, 0.34);
-  box-shadow: 0 14px 30px -6px rgba(15, 23, 42, 0.08), 0 6px 16px -3px rgba(15, 118, 110, 0.06);
+  border-color: rgba(13, 148, 136, 0.38);
+  box-shadow: var(--dw-shadow-card-hover);
 }
 
 .staff-module-card:hover .staff-card-ambient {
@@ -676,30 +728,30 @@
 .staff-module-card:focus-within {
   transform: translateY(-4px) scale(1.006);
   border-color: var(--dw-teal-600);
-  box-shadow: 0 12px 28px -6px rgba(15, 23, 42, 0.07), 0 0 0 3px rgba(15, 118, 110, 0.16);
+  box-shadow: 0 16px 32px -8px rgba(15, 23, 42, 0.08), 0 0 0 3px rgba(13, 148, 136, 0.18);
 }
 
-/* ── Card Header & Icon Box ── */
+/* ── Card Header & 48px Modern Icon Container ── */
 .staff-card-header {
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: 0.85rem;
-  margin-bottom: 0.95rem;
+  margin-bottom: 1rem;
 }
 
 .staff-card-icon-box {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 44px;
-  height: 44px;
-  border-radius: 12px;
+  width: 48px;
+  height: 48px;
+  border-radius: 14px;
   flex-shrink: 0;
   background: linear-gradient(135deg, #f0fdfa 0%, #e6fffa 100%);
   color: var(--dw-teal-700);
   border: 1px solid var(--dw-teal-100);
-  box-shadow: 0 2px 6px rgba(15, 118, 110, 0.08);
+  box-shadow: 0 2px 8px rgba(15, 118, 110, 0.08);
   transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1),
               border-color 0.22s ease,
               box-shadow 0.22s ease,
@@ -710,73 +762,226 @@
 .staff-module-card:focus-within .staff-card-icon-box {
   transform: translateY(-2px) scale(1.04);
   border-color: var(--dw-teal-300);
-  box-shadow: 0 4px 12px rgba(15, 118, 110, 0.14);
+  box-shadow: 0 4px 14px rgba(15, 118, 110, 0.15);
 }
 
-/* Base icon SVG micro-interaction transition */
+/* Base icon SVG transition */
 .staff-card-icon-box svg {
   transition: transform 0.26s cubic-bezier(0.16, 1, 0.3, 1),
               stroke 0.22s ease;
   transform-origin: center center;
 }
 
-/* 1. Inventory package/supply icon: slight lift with controlled subtle tilt */
+/* ── Specific Module Accents & Micro-Interactions ── */
+
+/* 1. Inventory Management: Teal / Turquoise accent, package lift micro-interaction */
+.staff-tile-inventory {
+  border-color: rgba(13, 148, 136, 0.22);
+}
+
+.staff-tile-inventory:hover {
+  border-color: rgba(13, 148, 136, 0.44);
+}
+
+.staff-tile-inventory .staff-card-badge {
+  background-color: #f0fdfa;
+  color: #0f766e;
+  border-color: #ccfbf1;
+}
+
+.staff-tile-inventory .staff-card-icon-box,
+.staff-card-icon-box.staff-icon-inventory {
+  background: linear-gradient(135deg, #f0fdfa 0%, #ccfbf1 100%);
+  color: #0f766e;
+  border: 1px solid #99f6e4;
+  box-shadow: 0 3px 8px rgba(15, 118, 110, 0.1), inset 0 1px 0 rgba(255, 255, 255, 0.9);
+}
+
+.staff-tile-inventory:hover .staff-card-icon-box,
+.staff-tile-inventory:focus-within .staff-card-icon-box {
+  border-color: #5eead4;
+  box-shadow: 0 5px 16px rgba(15, 118, 110, 0.2);
+}
+
 .staff-tile-inventory:hover .staff-card-icon-box svg,
 .staff-tile-inventory:focus-within .staff-card-icon-box svg {
-  transform: translateY(-2px) rotate(-3deg) scale(1.05);
+  transform: translateY(-2.5px) rotate(-3deg) scale(1.05);
   stroke: var(--dw-teal-800);
 }
 
-/* 2. Clinical icon: small controlled pulse/lift */
+/* 2. Clinical Management: Blue / Cyan accent, pulse / vertical lift micro-interaction */
+.staff-tile-clinical {
+  border-color: rgba(8, 145, 178, 0.2);
+}
+
+.staff-tile-clinical:hover {
+  border-color: rgba(8, 145, 178, 0.42);
+}
+
+.staff-tile-clinical .staff-card-badge {
+  background-color: #ecfeff;
+  color: #0891b2;
+  border-color: #cffafe;
+}
+
+.staff-tile-clinical .staff-card-icon-box {
+  background: linear-gradient(135deg, #ecfeff 0%, #cffafe 100%);
+  color: #0891b2;
+  border: 1px solid #a5f3fc;
+  box-shadow: 0 3px 8px rgba(8, 145, 178, 0.1), inset 0 1px 0 rgba(255, 255, 255, 0.9);
+}
+
+.staff-tile-clinical:hover .staff-card-icon-box,
+.staff-tile-clinical:focus-within .staff-card-icon-box {
+  border-color: #67e8f9;
+  box-shadow: 0 5px 16px rgba(8, 145, 178, 0.18);
+}
+
 .staff-tile-clinical:hover .staff-card-icon-box svg,
 .staff-tile-clinical:focus-within .staff-card-icon-box svg {
-  transform: translateY(-1.5px) scale(1.08);
-  stroke: var(--dw-teal-800);
+  transform: translateY(-1.5px) scale(1.06);
+  stroke: #0e7490;
 }
 
-/* 3. Prescription icon: subtle tilt */
+/* 3. Prescription Management: Indigo-Blue / Teal accent, subtle tilt micro-interaction */
+.staff-tile-prescriptions {
+  border-color: rgba(59, 130, 246, 0.18);
+}
+
+.staff-tile-prescriptions:hover {
+  border-color: rgba(59, 130, 246, 0.4);
+}
+
+.staff-tile-prescriptions .staff-card-badge {
+  background-color: #eff6ff;
+  color: #2563eb;
+  border-color: #dbeafe;
+}
+
+.staff-tile-prescriptions .staff-card-icon-box {
+  background: linear-gradient(135deg, #eff6ff 0%, #e0e7ff 100%);
+  color: #2563eb;
+  border: 1px solid #c7d2fe;
+  box-shadow: 0 3px 8px rgba(37, 99, 235, 0.09), inset 0 1px 0 rgba(255, 255, 255, 0.9);
+}
+
+.staff-tile-prescriptions:hover .staff-card-icon-box,
+.staff-tile-prescriptions:focus-within .staff-card-icon-box {
+  border-color: #93c5fd;
+  box-shadow: 0 5px 16px rgba(37, 99, 235, 0.18);
+}
+
 .staff-tile-prescriptions:hover .staff-card-icon-box svg,
 .staff-tile-prescriptions:focus-within .staff-card-icon-box svg {
-  transform: translateY(-1px) rotate(7deg) scale(1.06);
-  stroke: var(--dw-teal-800);
+  transform: translateY(-1px) rotate(7deg) scale(1.05);
+  stroke: #1d4ed8;
 }
 
-/* 4. Billing icon: subtle upward movement */
+/* 4. Invoices & Billing: Mint / Cyan accent (STRICTLY LIGHT, NO dark card regression) */
+.staff-tile-billing {
+  border-color: rgba(14, 116, 144, 0.22);
+}
+
+.staff-tile-billing:hover {
+  border-color: rgba(14, 116, 144, 0.42);
+}
+
+.staff-tile-billing .staff-card-badge {
+  background-color: #f0fdfa;
+  color: #0e7490;
+  border-color: #cffafe;
+}
+
+.staff-tile-billing .staff-card-icon-box {
+  background: linear-gradient(135deg, #f0fdfa 0%, #e0f2fe 100%);
+  color: #0e7490;
+  border: 1px solid #bae6fd;
+  box-shadow: 0 3px 8px rgba(14, 116, 144, 0.1), inset 0 1px 0 rgba(255, 255, 255, 0.9);
+}
+
+.staff-tile-billing:hover .staff-card-icon-box,
+.staff-tile-billing:focus-within .staff-card-icon-box {
+  background: linear-gradient(135deg, #e0f2fe 0%, #ccfbf1 100%);
+  color: #0369a1;
+  border-color: #7dd3fc;
+  box-shadow: 0 5px 16px rgba(14, 116, 144, 0.18);
+}
+
 .staff-tile-billing:hover .staff-card-icon-box svg,
 .staff-tile-billing:focus-within .staff-card-icon-box svg {
   transform: translateY(-2.5px) scale(1.05);
+  stroke: #0369a1;
 }
 
-/* 5. Reports icon: subtle upward chart elevation */
+/* 5. Income Reports: Blue-Green accent, chart rise micro-interaction */
+.staff-tile-reports {
+  border-color: rgba(16, 185, 129, 0.2);
+}
+
+.staff-tile-reports:hover {
+  border-color: rgba(16, 185, 129, 0.42);
+}
+
+.staff-tile-reports .staff-card-badge {
+  background-color: #f0fdf4;
+  color: #059669;
+  border-color: #d1fae5;
+}
+
+.staff-tile-reports .staff-card-icon-box {
+  background: linear-gradient(135deg, #f0fdf4 0%, #ecfdf5 100%);
+  color: #059669;
+  border: 1px solid #a7f3d0;
+  box-shadow: 0 3px 8px rgba(16, 185, 129, 0.1), inset 0 1px 0 rgba(255, 255, 255, 0.9);
+}
+
+.staff-tile-reports:hover .staff-card-icon-box,
+.staff-tile-reports:focus-within .staff-card-icon-box {
+  border-color: #6ee7b7;
+  box-shadow: 0 5px 16px rgba(16, 185, 129, 0.18);
+}
+
 .staff-tile-reports:hover .staff-card-icon-box svg,
 .staff-tile-reports:focus-within .staff-card-icon-box svg {
-  transform: translateY(-2px) scale(1.06);
-  stroke: var(--dw-teal-800);
+  transform: translateY(-2.5px) scale(1.05);
+  stroke: #047857;
 }
 
-/* 6. Staff admin icon: slight group movement */
+/* 6. Staff Management: Deep Teal / Blue accent, subtle group scale micro-interaction */
+.staff-tile-staff-admin {
+  border-color: rgba(15, 118, 110, 0.22);
+}
+
+.staff-tile-staff-admin:hover {
+  border-color: rgba(15, 118, 110, 0.44);
+}
+
+.staff-tile-staff-admin .staff-card-badge {
+  background-color: #f0fdfa;
+  color: #0f766e;
+  border-color: #ccfbf1;
+}
+
+.staff-tile-staff-admin .staff-card-icon-box {
+  background: linear-gradient(135deg, #f0fdfa 0%, #dbeafe 100%);
+  color: #0f766e;
+  border: 1px solid #99f6e4;
+  box-shadow: 0 3px 8px rgba(15, 118, 110, 0.1), inset 0 1px 0 rgba(255, 255, 255, 0.9);
+}
+
+.staff-tile-staff-admin:hover .staff-card-icon-box,
+.staff-tile-staff-admin:focus-within .staff-card-icon-box {
+  border-color: #5eead4;
+  box-shadow: 0 5px 16px rgba(15, 118, 110, 0.2);
+}
+
 .staff-tile-staff-admin:hover .staff-card-icon-box svg,
 .staff-tile-staff-admin:focus-within .staff-card-icon-box svg {
-  transform: translateY(-1.5px) scale(1.05);
+  transform: translateY(-1.5px) scale(1.06);
   stroke: var(--dw-teal-800);
 }
 
-/* Inventory Management: Preserved Improved Icon Polish with Subtle Luxury Prominence */
-.staff-card-icon-box.staff-icon-inventory {
-  width: 48px;
-  height: 48px;
-  background: linear-gradient(135deg, #f0fdfa 0%, #dffaf4 100%);
-  border-color: var(--dw-teal-200);
-  box-shadow: 0 3px 8px rgba(15, 118, 110, 0.12), inset 0 1px 0 rgba(255, 255, 255, 0.9);
-}
-
-.staff-module-card:hover .staff-card-icon-box.staff-icon-inventory,
-.staff-module-card:focus-within .staff-card-icon-box.staff-icon-inventory {
-  border-color: var(--dw-teal-400);
-  box-shadow: 0 5px 14px rgba(15, 118, 110, 0.18);
-  transform: translateY(-2px) scale(1.04);
-}
-
+/* ── Card Meta Badge ── */
 .staff-card-meta {
   display: flex;
   align-items: center;
@@ -791,7 +996,7 @@
   background-color: var(--dw-slate-100);
   border: 1px solid var(--dw-slate-200);
   border-radius: 9999px;
-  padding: 0.16rem 0.65rem;
+  padding: 0.18rem 0.65rem;
   flex-shrink: 0;
 }
 
@@ -877,7 +1082,7 @@
   outline-offset: 1px;
 }
 
-/* ── Card Bottom Primary CTA ── */
+/* ── Card Primary CTA Button ── */
 .staff-card-footer {
   margin-top: 1rem;
 }
@@ -892,8 +1097,8 @@
   font-weight: 750;
   color: var(--dw-teal-700);
   text-decoration: none;
-  padding: 0.55rem 0.95rem;
-  border-radius: 9px;
+  padding: 0.58rem 1rem;
+  border-radius: 10px;
   background-color: var(--dw-teal-50);
   border: 1px solid var(--dw-teal-100);
   transition: all 0.22s cubic-bezier(0.16, 1, 0.3, 1);
@@ -906,7 +1111,7 @@
   line-height: 1;
 }
 
-/* Module card hover / focus advances CTA arrow and link accent */
+/* Module card hover / focus advances CTA arrow 5px and shifts background */
 .staff-module-card:hover .staff-primary-link,
 .staff-module-card:focus-within .staff-primary-link {
   background-color: #e6fffa;
@@ -916,7 +1121,7 @@
 
 .staff-module-card:hover .staff-link-arrow,
 .staff-module-card:focus-within .staff-link-arrow {
-  transform: translateX(4px);
+  transform: translateX(5px);
 }
 
 .staff-primary-link:hover {
@@ -924,12 +1129,12 @@
   background-color: var(--dw-teal-700);
   border-color: var(--dw-teal-700);
   color: #ffffff;
-  box-shadow: 0 4px 14px rgba(15, 118, 110, 0.22);
+  box-shadow: 0 4px 14px rgba(15, 118, 110, 0.25);
   transform: translateY(-1px);
 }
 
 .staff-primary-link:hover .staff-link-arrow {
-  transform: translateX(6px);
+  transform: translateX(7px);
 }
 
 .staff-primary-link:focus-visible {
@@ -976,13 +1181,13 @@
 }
 
 /* =============================================================================
-   5. SIDE RAIL (Quick Actions & Role Governance)
+   6. SIDE RAIL (Quick Actions & Role Governance)
    ============================================================================= */
 .staff-workspace-rail {
   display: flex;
   flex-direction: column;
   gap: 1.25rem;
-  animation: railReveal 0.48s cubic-bezier(0.16, 1, 0.3, 1) 0.16s both;
+  animation: railReveal 0.5s cubic-bezier(0.16, 1, 0.3, 1) 0.18s both;
 }
 
 .staff-rail-card {
@@ -1037,7 +1242,6 @@
   color: var(--dw-slate-400);
 }
 
-/* Quick Action Row Items */
 .staff-action-list {
   display: flex;
   flex-direction: column;
@@ -1116,7 +1320,6 @@
   transform: translateX(3px);
 }
 
-/* Governance Card Specs */
 .staff-governance-text {
   margin: 0 0 0.95rem;
   font-size: 0.825rem;
@@ -1155,12 +1358,12 @@
 }
 
 /* =============================================================================
-   6. MOTION & ANIMATION (Restrained, Smooth, 350-500ms)
+   7. KEYFRAMES & MOTION
    ============================================================================= */
 @keyframes headerReveal {
   from {
     opacity: 0;
-    transform: translateY(14px);
+    transform: translateY(16px);
   }
   to {
     opacity: 1;
@@ -1171,7 +1374,7 @@
 @keyframes stripReveal {
   from {
     opacity: 0;
-    transform: translateY(12px);
+    transform: translateY(14px);
   }
   to {
     opacity: 1;
@@ -1193,7 +1396,7 @@
 @keyframes cardReveal {
   from {
     opacity: 0;
-    transform: translateY(16px);
+    transform: translateY(18px);
   }
   to {
     opacity: 1;
@@ -1204,7 +1407,7 @@
 @keyframes railReveal {
   from {
     opacity: 0;
-    transform: translateY(14px);
+    transform: translateY(16px);
   }
   to {
     opacity: 1;
@@ -1212,18 +1415,19 @@
   }
 }
 
+/* Single ambient animation concept: hero aqua glow slow shift (14s) */
 @keyframes ambientGlowShift {
   0% {
     transform: translate3d(0, 0, 0) scale(1);
     opacity: 0.55;
   }
   50% {
-    transform: translate3d(22px, 8px, 0) scale(1.06);
+    transform: translate3d(24px, 12px, 0) scale(1.08);
     opacity: 0.85;
   }
   100% {
-    transform: translate3d(0, 0, 0) scale(1);
-    opacity: 0.55;
+    transform: translate3d(-10px, 4px, 0) scale(1.02);
+    opacity: 0.6;
   }
 }
 
@@ -1253,7 +1457,9 @@
   to { opacity: 1; transform: translateY(0); }
 }
 
-/* Respect Reduced Motion */
+/* =============================================================================
+   8. ACCESSIBILITY: REDUCED MOTION
+   ============================================================================= */
 @media (prefers-reduced-motion: reduce) {
   *,
   *::before,
@@ -1311,7 +1517,7 @@
 }
 
 /* =============================================================================
-   7. RESPONSIVE BREAKPOINTS
+   9. RESPONSIVE BREAKPOINTS
    ============================================================================= */
 @media (max-width: 1120px) {
   .staff-workspace-layout {
@@ -1434,52 +1640,3 @@
     padding: 1.25rem;
   }
 }
-
-/* =============================================================================
-   MF-05 Invoices & Billing Bento Tile Theme (Harmonized Pearl Clinical Family)
-   Preserves identical light color family, subtle ocean cyan accent, no dark card regression
-   ============================================================================= */
-.staff-bento-tile.staff-tile-billing,
-.staff-module-card.staff-tile-billing {
-  border-color: rgba(14, 116, 144, 0.22);
-  position: relative;
-}
-
-.staff-bento-tile.staff-tile-billing:hover,
-.staff-module-card.staff-tile-billing:hover {
-  border-color: rgba(14, 116, 144, 0.38);
-  box-shadow: 0 14px 30px -6px rgba(15, 23, 42, 0.08), 0 6px 16px -3px rgba(14, 116, 144, 0.08);
-}
-
-.staff-bento-tile.staff-tile-billing .staff-tile-badge,
-.staff-module-card.staff-tile-billing .staff-card-badge {
-  background-color: #f0fdfa;
-  color: #0e7490;
-  border-color: #cffafe;
-  font-weight: 700;
-}
-
-.staff-bento-tile.staff-tile-billing .staff-tile-icon-box,
-.staff-module-card.staff-tile-billing .staff-card-icon-box {
-  background: linear-gradient(135deg, #f0fdfa 0%, #e0f2fe 100%);
-  color: #0e7490;
-  border: 1px solid #bae6fd;
-}
-
-.staff-bento-tile.staff-tile-billing:hover .staff-tile-icon-box,
-.staff-module-card.staff-tile-billing:hover .staff-card-icon-box {
-  background: linear-gradient(135deg, #e0f2fe 0%, #ccfbf1 100%);
-  color: #0369a1;
-  border-color: #7dd3fc;
-  box-shadow: 0 4px 12px rgba(14, 116, 144, 0.14);
-}
-
-.staff-bento-tile.staff-tile-billing .staff-shortcut-chip:hover,
-.staff-module-card.staff-tile-billing .staff-shortcut-chip:hover {
-  border-color: #38bdf8;
-  color: #0369a1;
-  background: #f0f9ff;
-}
-
-
-
