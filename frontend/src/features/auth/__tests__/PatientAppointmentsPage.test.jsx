@@ -9,7 +9,8 @@ import * as patientPortalApi from '../../patient/api/patientPortalApi';
 vi.mock('../../patient/api/patientPortalApi', () => ({
   getPatientAppointments: vi.fn(),
   createAppointmentRequest: vi.fn(),
-  getPatientAppointmentById: vi.fn()
+  getPatientAppointmentById: vi.fn(),
+  cancelAppointmentRequest: vi.fn()
 }));
 
 describe('PatientAppointmentsPage', () => {
@@ -318,5 +319,227 @@ describe('PatientAppointmentsPage', () => {
     expect(screen.queryByText(/billing administration/i)).not.toBeInTheDocument();
     expect(screen.queryByText(/staff management/i)).not.toBeInTheDocument();
     expect(screen.queryByText(/operational telemetry/i)).not.toBeInTheDocument();
+  });
+
+  describe('Appointment Cancellation Flow', () => {
+    const mockAppointments = [
+      {
+        id: 901,
+        appointmentDate: futureDateStr,
+        preferredTime: '10:00',
+        reason: 'Tooth pain consultation',
+        notes: null,
+        status: 'PENDING',
+        statusDescription: 'Pending confirmation',
+        dentistName: null,
+        createdAt: '2026-10-03T10:00:00'
+      },
+      {
+        id: 902,
+        appointmentDate: '2026-11-20',
+        preferredTime: '15:00',
+        reason: 'Routine checkup',
+        notes: null,
+        status: 'CONFIRMED',
+        statusDescription: 'Confirmed',
+        dentistName: 'Dr. Sarah Connor',
+        createdAt: '2026-10-01T09:00:00'
+      },
+      {
+        id: 903,
+        appointmentDate: '2026-11-25',
+        preferredTime: '11:00',
+        reason: 'Cosmetic consultation',
+        notes: null,
+        status: 'CANCELLED',
+        statusDescription: 'Cancelled',
+        dentistName: null,
+        createdAt: '2026-09-28T09:00:00'
+      }
+    ];
+
+    it('renders Cancel Request button for PENDING appointment, but NOT for CONFIRMED or CANCELLED', async () => {
+      patientPortalApi.getPatientAppointments.mockResolvedValueOnce(mockAppointments);
+
+      render(
+        <MemoryRouter initialEntries={['/patient/appointments']}>
+          <PatientAppointmentsPage />
+        </MemoryRouter>
+      );
+
+      await waitFor(() => {
+        expect(screen.getByTestId('appointments-list')).toBeInTheDocument();
+      });
+
+      // PENDING has cancel button
+      expect(screen.getByTestId('cancel-appointment-btn-901')).toBeInTheDocument();
+      expect(screen.getByTestId('cancel-appointment-btn-901')).toHaveTextContent(/cancel request/i);
+
+      // CONFIRMED does not have cancel button
+      expect(screen.queryByTestId('cancel-appointment-btn-902')).not.toBeInTheDocument();
+
+      // CANCELLED does not have cancel button
+      expect(screen.queryByTestId('cancel-appointment-btn-903')).not.toBeInTheDocument();
+    });
+
+    it('requires explicit confirmation before calling cancellation API', async () => {
+      patientPortalApi.getPatientAppointments.mockResolvedValueOnce(mockAppointments);
+
+      render(
+        <MemoryRouter initialEntries={['/patient/appointments']}>
+          <PatientAppointmentsPage />
+        </MemoryRouter>
+      );
+
+      await waitFor(() => {
+        expect(screen.getByTestId('cancel-appointment-btn-901')).toBeInTheDocument();
+      });
+
+      // Click cancel request
+      fireEvent.click(screen.getByTestId('cancel-appointment-btn-901'));
+
+      // Confirmation prompt appears
+      expect(screen.getByTestId('cancel-confirm-box-901')).toBeInTheDocument();
+      expect(screen.getByText(/cancel this appointment request\?/i)).toBeInTheDocument();
+      expect(screen.getByText(/the pending request will be marked cancelled/i)).toBeInTheDocument();
+      expect(screen.getByTestId('confirm-cancel-btn-901')).toBeInTheDocument();
+      expect(screen.getByTestId('dismiss-cancel-btn-901')).toBeInTheDocument();
+
+      // API has not been called yet
+      expect(patientPortalApi.cancelAppointmentRequest).not.toHaveBeenCalled();
+
+      // Click dismiss / Keep Request
+      fireEvent.click(screen.getByTestId('dismiss-cancel-btn-901'));
+
+      // Confirmation box disappears and Cancel button is restored
+      expect(screen.queryByTestId('cancel-confirm-box-901')).not.toBeInTheDocument();
+      expect(screen.getByTestId('cancel-appointment-btn-901')).toBeInTheDocument();
+      expect(patientPortalApi.cancelAppointmentRequest).not.toHaveBeenCalled();
+    });
+
+    it('successfully cancels appointment, updates status to Cancelled, shows banner, and preserves record in history', async () => {
+      patientPortalApi.getPatientAppointments.mockResolvedValueOnce(mockAppointments);
+      patientPortalApi.cancelAppointmentRequest.mockResolvedValueOnce({
+        id: 901,
+        appointmentDate: futureDateStr,
+        preferredTime: '10:00',
+        reason: 'Tooth pain consultation',
+        notes: null,
+        status: 'CANCELLED',
+        statusDescription: 'Cancelled',
+        dentistName: null,
+        createdAt: '2026-10-03T10:00:00'
+      });
+
+      render(
+        <MemoryRouter initialEntries={['/patient/appointments']}>
+          <PatientAppointmentsPage />
+        </MemoryRouter>
+      );
+
+      await waitFor(() => {
+        expect(screen.getByTestId('cancel-appointment-btn-901')).toBeInTheDocument();
+      });
+
+      // Confirm cancellation
+      fireEvent.click(screen.getByTestId('cancel-appointment-btn-901'));
+      fireEvent.click(screen.getByTestId('confirm-cancel-btn-901'));
+
+      // Expect API called with appointment ID
+      await waitFor(() => {
+        expect(patientPortalApi.cancelAppointmentRequest).toHaveBeenCalledWith(901);
+      });
+
+      // Status chip is visibly updated to Cancelled
+      expect(screen.getByTestId('status-badge-901')).toHaveTextContent('Cancelled');
+
+      // Cancellation success banner appears
+      expect(screen.getByTestId('appointment-cancel-success-banner')).toBeInTheDocument();
+      expect(screen.getByText(/appointment request cancelled\./i)).toBeInTheDocument();
+
+      // Record remains visible in history
+      expect(screen.getByTestId('appointment-record-901')).toBeInTheDocument();
+      expect(screen.getByText('Tooth pain consultation')).toBeInTheDocument();
+
+      // Cancel button is no longer present for this appointment
+      expect(screen.queryByTestId('cancel-appointment-btn-901')).not.toBeInTheDocument();
+    });
+
+    it('prevents duplicate clicks and disables controls while cancellation request is in flight', async () => {
+      patientPortalApi.getPatientAppointments.mockResolvedValueOnce(mockAppointments);
+
+      let resolveCancellation;
+      const cancellationPromise = new Promise((resolve) => {
+        resolveCancellation = resolve;
+      });
+      patientPortalApi.cancelAppointmentRequest.mockReturnValueOnce(cancellationPromise);
+
+      render(
+        <MemoryRouter initialEntries={['/patient/appointments']}>
+          <PatientAppointmentsPage />
+        </MemoryRouter>
+      );
+
+      await waitFor(() => {
+        expect(screen.getByTestId('cancel-appointment-btn-901')).toBeInTheDocument();
+      });
+
+      fireEvent.click(screen.getByTestId('cancel-appointment-btn-901'));
+
+      const confirmBtn = screen.getByTestId('confirm-cancel-btn-901');
+      fireEvent.click(confirmBtn);
+
+      // In flight: confirm button is disabled and shows Cancelling...
+      expect(confirmBtn).toBeDisabled();
+      expect(confirmBtn).toHaveTextContent(/cancelling\.\.\./i);
+
+      // Secondary click while in flight is ignored
+      fireEvent.click(confirmBtn);
+      expect(patientPortalApi.cancelAppointmentRequest).toHaveBeenCalledTimes(1);
+
+      // Resolve the cancellation request
+      resolveCancellation({
+        id: 901,
+        status: 'CANCELLED',
+        statusDescription: 'Cancelled'
+      });
+
+      await waitFor(() => {
+        expect(screen.getByTestId('appointment-cancel-success-banner')).toBeInTheDocument();
+      });
+    });
+
+    it('handles backend cancellation error by preserving original status and displaying safe error message', async () => {
+      patientPortalApi.getPatientAppointments.mockResolvedValueOnce(mockAppointments);
+      patientPortalApi.cancelAppointmentRequest.mockRejectedValueOnce(
+        new Error('Only pending appointment requests can be cancelled.')
+      );
+
+      render(
+        <MemoryRouter initialEntries={['/patient/appointments']}>
+          <PatientAppointmentsPage />
+        </MemoryRouter>
+      );
+
+      await waitFor(() => {
+        expect(screen.getByTestId('cancel-appointment-btn-901')).toBeInTheDocument();
+      });
+
+      fireEvent.click(screen.getByTestId('cancel-appointment-btn-901'));
+      fireEvent.click(screen.getByTestId('confirm-cancel-btn-901'));
+
+      await waitFor(() => {
+        expect(screen.getByTestId('cancel-error-901')).toBeInTheDocument();
+      });
+
+      // Error message is displayed safely
+      expect(screen.getByText(/only pending appointment requests can be cancelled\./i)).toBeInTheDocument();
+
+      // Original status is preserved as Pending confirmation
+      expect(screen.getByTestId('status-badge-901')).toHaveTextContent(/pending confirmation/i);
+
+      // Record remains visible
+      expect(screen.getByTestId('appointment-record-901')).toBeInTheDocument();
+    });
   });
 });

@@ -121,6 +121,10 @@ export function AuthProvider({ children }) {
     }
   }, []);
 
+  const updateUser = useCallback((updatedUserData) => {
+    setUser(prev => (prev ? { ...prev, ...updatedUserData } : prev));
+  }, []);
+
   const value = {
     status,
     user,
@@ -129,6 +133,7 @@ export function AuthProvider({ children }) {
     isLoading: status === 'loading',
     isError: status === 'error',
     retryHydration,
+    updateUser,
     login,
     logout
   };

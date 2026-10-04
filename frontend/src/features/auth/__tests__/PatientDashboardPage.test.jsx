@@ -171,9 +171,11 @@ describe('PatientDashboardPage', () => {
     expect(screen.getByText(/dr\. sarah connor/i)).toBeInTheDocument();
     expect(screen.getByText(/amoxicillin/i)).toBeInTheDocument();
     expect(screen.getByText(/take with food/i)).toBeInTheDocument();
+    expect(screen.getByTestId('patient-prescriptions-link')).toHaveAttribute('href', '/patient/prescriptions');
+    expect(screen.getByTestId('patient-prescriptions-link')).toHaveTextContent(/view all prescriptions/i);
   });
 
-  it('renders active appointment workflow card and honest coming-soon billing notice without fabricated contact details', async () => {
+  it('renders active appointment workflow card and active patient billing card linking to /patient/invoices', async () => {
     render(
       <MemoryRouter initialEntries={['/patient/dashboard']}>
         <PatientDashboardPage />
@@ -190,9 +192,10 @@ describe('PatientDashboardPage', () => {
     expect(screen.getByText(/request dental appointments online and review the status/i)).toBeInTheDocument();
     expect(screen.getByText(/pending confirmation/i)).toBeInTheDocument();
 
-    // Verify Billing card retains honest coming-soon notice
-    expect(screen.getByText(/patient billing statements are not yet available in the portal/i)).toBeInTheDocument();
-    expect(screen.getByText(/please contact clinic reception regarding treatment invoices/i)).toBeInTheDocument();
+    // Verify Billing card is active and routes to /patient/invoices
+    expect(screen.getByRole('link', { name: /view my invoices/i })).toHaveAttribute('href', '/patient/invoices');
+    expect(screen.getByText(/review your invoices, payment history, and receipts\./i)).toBeInTheDocument();
+    expect(screen.getByTestId('patient-card-billing')).toHaveTextContent(/available/i);
 
     // Verify fabricated contact details are strictly absent from the DOM
     expect(screen.queryByText(/0100/i)).not.toBeInTheDocument();

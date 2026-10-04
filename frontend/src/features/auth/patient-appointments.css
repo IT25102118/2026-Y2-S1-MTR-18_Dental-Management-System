@@ -84,6 +84,32 @@
   background: rgba(22, 163, 74, 0.1);
 }
 
+.appointment-cancel-success-banner {
+  background: #f0fdf4;
+  border: 1px solid #bbf7d0;
+  border-left: 5px solid #16a34a;
+  border-radius: 14px;
+  padding: 16px 20px;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  color: #166534;
+  box-shadow: 0 4px 12px -2px rgba(22, 101, 52, 0.08);
+  animation: apptFadeIn 250ms ease;
+}
+
+.appointment-cancel-success-content {
+  flex: 1;
+}
+
+.appointment-cancel-success-content p {
+  font-size: 14.5px;
+  font-weight: 650;
+  line-height: 1.4;
+  color: #166534;
+  margin: 0;
+}
+
 /* Main Grid Layout: Form on Left/Top, List on Right/Bottom */
 .patient-appointments-layout {
   display: grid;
@@ -386,6 +412,153 @@
   display: inline-flex;
   align-items: center;
   gap: 4px;
+}
+
+/* Appointment Cancellation Actions */
+.appointment-item-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding-top: 6px;
+}
+
+.appointment-cancel-action-btn {
+  align-self: flex-start;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 6px 14px;
+  font-size: 13px;
+  font-weight: 650;
+  color: #475569;
+  background: #f1f5f9;
+  border: 1px solid #cbd5e1;
+  border-radius: 8px;
+  cursor: pointer;
+  min-height: 36px;
+  transition: all 150ms ease;
+}
+
+.appointment-cancel-action-btn:hover:not(:disabled) {
+  background: #e2e8f0;
+  color: #1e293b;
+  border-color: #94a3b8;
+}
+
+.appointment-cancel-action-btn:focus-visible {
+  outline: 2px solid #0f766e;
+  outline-offset: 2px;
+}
+
+.appointment-cancel-action-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.appointment-cancel-confirm-box {
+  background: #f8fafc;
+  border: 1px solid #cbd5e1;
+  border-left: 4px solid #64748b;
+  border-radius: 10px;
+  padding: 12px 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  animation: apptFadeIn 200ms ease;
+}
+
+.appointment-cancel-confirm-text {
+  font-size: 13px;
+  color: #334155;
+  margin: 0;
+  line-height: 1.4;
+}
+
+.appointment-cancel-confirm-buttons {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.appointment-cancel-confirm-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 6px 14px;
+  font-size: 12.5px;
+  font-weight: 700;
+  color: #ffffff;
+  background: #475569;
+  border: 1px solid #334155;
+  border-radius: 6px;
+  cursor: pointer;
+  min-height: 36px;
+  transition: all 150ms ease;
+}
+
+.appointment-cancel-confirm-btn:hover:not(:disabled) {
+  background: #334155;
+}
+
+.appointment-cancel-confirm-btn:focus-visible {
+  outline: 2px solid #0f766e;
+  outline-offset: 2px;
+}
+
+.appointment-cancel-confirm-btn:disabled {
+  opacity: 0.65;
+  cursor: not-allowed;
+}
+
+.appointment-cancel-dismiss-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 6px 12px;
+  font-size: 12.5px;
+  font-weight: 600;
+  color: #64748b;
+  background: #ffffff;
+  border: 1px solid #cbd5e1;
+  border-radius: 6px;
+  cursor: pointer;
+  min-height: 36px;
+  transition: all 150ms ease;
+}
+
+.appointment-cancel-dismiss-btn:hover:not(:disabled) {
+  background: #e2e8f0;
+  color: #1e293b;
+}
+
+.appointment-cancel-dismiss-btn:focus-visible {
+  outline: 2px solid #0f766e;
+  outline-offset: 2px;
+}
+
+.appointment-cancel-dismiss-btn:disabled {
+  opacity: 0.65;
+  cursor: not-allowed;
+}
+
+.appointment-cancel-error {
+  font-size: 12.5px;
+  color: #b91c1c;
+  background: #fef2f2;
+  border: 1px solid #fecaca;
+  padding: 8px 10px;
+  border-radius: 6px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.appointment-cancel-error svg {
+  width: 16px;
+  height: 16px;
+  flex-shrink: 0;
 }
 
 /* Status Chips */

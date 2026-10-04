@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
-import { getPatientAppointments, createAppointmentRequest } from '../../patient/api/patientPortalApi';
+import { getPatientAppointments, createAppointmentRequest, cancelAppointmentRequest } from '../../patient/api/patientPortalApi';
 import '../patient-dashboard.css';
 import '../patient-appointments.css';
 
@@ -93,6 +93,12 @@ export default function PatientAppointmentsPage() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [successInfo, setSuccessInfo] = useState(null);
 
+  // Cancellation State
+  const [confirmingCancelId, setConfirmingCancelId] = useState(null);
+  const [isCancellingId, setIsCancellingId] = useState(null);
+  const [cancelSuccessMessage, setCancelSuccessMessage] = useState('');
+  const [cancelError, setCancelError] = useState('');
+
   const todayStr = getTodayLocalDate();
 
   const fetchAppointments = async () => {
@@ -111,6 +117,39 @@ export default function PatientAppointmentsPage() {
   useEffect(() => {
     fetchAppointments();
   }, []);
+
+  useEffect(() => {
+    const handleKeyDown = (e) => {
+      if (e.key === 'Escape' && confirmingCancelId !== null && !isCancellingId) {
+        setConfirmingCancelId(null);
+        setCancelError('');
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [confirmingCancelId, isCancellingId]);
+
+  const handleConfirmCancel = async (id) => {
+    if (isCancellingId) return;
+    setIsCancellingId(id);
+    setCancelError('');
+    try {
+      const updated = await cancelAppointmentRequest(id);
+      setAppointments((prev) =>
+        prev.map((app) =>
+          app.id === id
+            ? { ...app, ...updated, status: 'CANCELLED', statusDescription: 'Cancelled' }
+            : app
+        )
+      );
+      setConfirmingCancelId(null);
+      setCancelSuccessMessage('Appointment request cancelled.');
+    } catch (err) {
+      setCancelError(err.message || 'Unable to cancel appointment request. Please try again.');
+    } finally {
+      setIsCancellingId(null);
+    }
+  };
 
   const validateForm = () => {
     const errors = {};
@@ -268,6 +307,27 @@ export default function PatientAppointmentsPage() {
               className="appointment-success-dismiss"
               onClick={() => setSuccessInfo(null)}
               aria-label="Dismiss success notice"
+            >
+              Dismiss
+            </button>
+          </div>
+        )}
+
+        {/* Cancellation Success Banner */}
+        {cancelSuccessMessage && (
+          <div className="appointment-cancel-success-banner" role="status" data-testid="appointment-cancel-success-banner">
+            <div className="appointment-success-icon" aria-hidden="true">
+              <CheckCircleIcon />
+            </div>
+            <div className="appointment-cancel-success-content">
+              <p>{cancelSuccessMessage}</p>
+            </div>
+            <button
+              type="button"
+              className="appointment-success-dismiss"
+              onClick={() => setCancelSuccessMessage('')}
+              aria-label="Dismiss cancellation notice"
+              data-testid="dismiss-cancel-success-btn"
             >
               Dismiss
             </button>
@@ -526,6 +586,74 @@ export default function PatientAppointmentsPage() {
                           <span className="appointment-unassigned">Dentist assigned upon confirmation</span>
                         )}
                       </div>
+
+                      {isPending && (
+                        <div className="appointment-item-actions">
+                          {confirmingCancelId === item.id ? (
+                            <div
+                              className="appointment-cancel-confirm-box"
+                              role="region"
+                              aria-label="Confirm cancellation"
+                              data-testid={`cancel-confirm-box-${item.id}`}
+                            >
+                              <p className="appointment-cancel-confirm-text">
+                                <strong>Cancel this appointment request?</strong>
+                                <span> The pending request will be marked cancelled.</span>
+                              </p>
+                              {cancelError && confirmingCancelId === item.id && (
+                                <div className="appointment-cancel-error" role="alert" data-testid={`cancel-error-${item.id}`}>
+                                  <AlertCircleIcon />
+                                  <span>{cancelError}</span>
+                                </div>
+                              )}
+                              <div className="appointment-cancel-confirm-buttons">
+                                <button
+                                  type="button"
+                                  className="appointment-cancel-confirm-btn"
+                                  onClick={() => handleConfirmCancel(item.id)}
+                                  disabled={isCancellingId === item.id}
+                                  data-testid={`confirm-cancel-btn-${item.id}`}
+                                >
+                                  {isCancellingId === item.id ? (
+                                    <>
+                                      <span className="patient-spinner" style={{ width: 14, height: 14, borderWidth: 2 }} aria-hidden="true" />
+                                      <span>Cancelling...</span>
+                                    </>
+                                  ) : (
+                                    <span>Yes, Cancel Request</span>
+                                  )}
+                                </button>
+                                <button
+                                  type="button"
+                                  className="appointment-cancel-dismiss-btn"
+                                  onClick={() => {
+                                    setConfirmingCancelId(null);
+                                    setCancelError('');
+                                  }}
+                                  disabled={isCancellingId === item.id}
+                                  data-testid={`dismiss-cancel-btn-${item.id}`}
+                                >
+                                  Keep Request
+                                </button>
+                              </div>
+                            </div>
+                          ) : (
+                            <button
+                              type="button"
+                              className="appointment-cancel-action-btn"
+                              onClick={() => {
+                                setConfirmingCancelId(item.id);
+                                setCancelError('');
+                              }}
+                              disabled={isCancellingId !== null}
+                              aria-label={`Cancel appointment request #${item.id}`}
+                              data-testid={`cancel-appointment-btn-${item.id}`}
+                            >
+                              Cancel Request
+                            </button>
+                          )}
+                        </div>
+                      )}
                     </div>
                   );
                 })}

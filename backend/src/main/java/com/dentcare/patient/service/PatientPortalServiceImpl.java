@@ -5,18 +5,34 @@ import com.dentcare.appointment.dto.PatientAppointmentResponse;
 import com.dentcare.appointment.entity.Appointment;
 import com.dentcare.appointment.entity.AppointmentStatus;
 import com.dentcare.appointment.repository.AppointmentRepository;
+import com.dentcare.billing.entity.Invoice;
+import com.dentcare.billing.entity.Payment;
+import com.dentcare.billing.repository.InvoiceRepository;
+import com.dentcare.billing.repository.PaymentRepository;
+import com.dentcare.patient.dto.ChangePasswordRequest;
 import com.dentcare.patient.dto.PatientDashboardSummaryResponse;
+import com.dentcare.patient.dto.PatientInvoiceDetailResponse;
+import com.dentcare.patient.dto.PatientInvoiceSummaryResponse;
 import com.dentcare.patient.dto.PatientPrescriptionItemResponse;
+import com.dentcare.patient.dto.PatientProfileResponse;
+import com.dentcare.patient.dto.PatientReceiptResponse;
+import com.dentcare.patient.dto.UpdatePatientProfileRequest;
 import com.dentcare.patient.entity.Patient;
 import com.dentcare.patient.repository.PatientRepository;
 import com.dentcare.prescription.entity.Prescription;
 import com.dentcare.prescription.entity.PrescriptionStatus;
 import com.dentcare.prescription.repository.PrescriptionRepository;
+import com.dentcare.security.entity.Role;
 import com.dentcare.security.entity.User;
+import com.dentcare.security.model.DentCareUserDetails;
 import com.dentcare.security.repository.UserRepository;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.http.HttpStatus;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
@@ -42,17 +58,26 @@ public class PatientPortalServiceImpl implements PatientPortalService {
     private final PatientRepository patientRepository;
     private final PrescriptionRepository prescriptionRepository;
     private final com.dentcare.appointment.repository.AppointmentRepository appointmentRepository;
+    private final InvoiceRepository invoiceRepository;
+    private final PaymentRepository paymentRepository;
+    private final PasswordEncoder passwordEncoder;
 
     public PatientPortalServiceImpl(
             UserRepository userRepository,
             PatientRepository patientRepository,
             PrescriptionRepository prescriptionRepository,
-            com.dentcare.appointment.repository.AppointmentRepository appointmentRepository
+            com.dentcare.appointment.repository.AppointmentRepository appointmentRepository,
+            InvoiceRepository invoiceRepository,
+            PaymentRepository paymentRepository,
+            PasswordEncoder passwordEncoder
     ) {
         this.userRepository = userRepository;
         this.patientRepository = patientRepository;
         this.prescriptionRepository = prescriptionRepository;
         this.appointmentRepository = appointmentRepository;
+        this.invoiceRepository = invoiceRepository;
+        this.paymentRepository = paymentRepository;
+        this.passwordEncoder = passwordEncoder;
     }
 
     @Override
@@ -307,6 +332,37 @@ public class PatientPortalServiceImpl implements PatientPortalService {
         return mapToAppointmentResponse(appointment);
     }
 
+    @Override
+    @Transactional
+    public PatientAppointmentResponse cancelAppointmentRequest(String authenticatedEmail, Long appointmentId) {
+        if (appointmentId == null) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Appointment ID is required");
+        }
+
+        User user = resolveAuthenticatedUser(authenticatedEmail);
+        Appointment appointment = appointmentRepository.findByIdWithDentist(appointmentId)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Appointment request not found"));
+
+        if (appointment.getPatient() == null || !user.getId().equals(appointment.getPatient().getId())) {
+            throw new ResponseStatusException(
+                    HttpStatus.FORBIDDEN,
+                    "Access denied: appointment request does not belong to the authenticated patient"
+            );
+        }
+
+        if (appointment.getStatus() == AppointmentStatus.CANCELLED) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Appointment request is already cancelled");
+        }
+
+        if (appointment.getStatus() != AppointmentStatus.PENDING) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Only pending appointment requests can be cancelled");
+        }
+
+        appointment.setStatus(AppointmentStatus.CANCELLED);
+        Appointment saved = appointmentRepository.save(appointment);
+        return mapToAppointmentResponse(saved);
+    }
+
     private PatientAppointmentResponse mapToAppointmentResponse(Appointment appointment) {
         String dentistName = appointment.getDentist() != null
                 ? "Dr. " + appointment.getDentist().getFirstName() + " " + appointment.getDentist().getLastName()
@@ -334,4 +390,134 @@ public class PatientPortalServiceImpl implements PatientPortalService {
                 appointment.getCreatedAt()
         );
     }
+
+    @Override
+    public List<PatientInvoiceSummaryResponse> getPatientInvoices(String authenticatedEmail) {
+        User user = resolveAuthenticatedUser(authenticatedEmail);
+        List<Invoice> invoices = invoiceRepository.findByPatientIdOrderByInvoiceDateDescIdDesc(user.getId());
+        if (invoices == null || invoices.isEmpty()) {
+            return List.of();
+        }
+        return invoices.stream()
+                .map(PatientInvoiceSummaryResponse::from)
+                .toList();
+    }
+
+    @Override
+    public PatientInvoiceDetailResponse getPatientInvoiceById(String authenticatedEmail, Long invoiceId) {
+        if (invoiceId == null) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Invoice ID is required");
+        }
+
+        User user = resolveAuthenticatedUser(authenticatedEmail);
+        Invoice invoice = invoiceRepository.findById(invoiceId)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Invoice not found"));
+
+        if (invoice.getPatientId() == null || !user.getId().equals(invoice.getPatientId())) {
+            throw new ResponseStatusException(
+                    HttpStatus.FORBIDDEN,
+                    "Access denied: invoice does not belong to the authenticated patient"
+            );
+        }
+
+        return PatientInvoiceDetailResponse.from(invoice);
+    }
+
+    @Override
+    public PatientReceiptResponse getPatientReceipt(String authenticatedEmail, Long paymentId) {
+        if (paymentId == null) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Payment ID is required");
+        }
+
+        User user = resolveAuthenticatedUser(authenticatedEmail);
+        Payment payment = paymentRepository.findById(paymentId)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Payment not found"));
+
+        Invoice invoice = payment.getInvoice();
+        if (invoice == null || invoice.getPatientId() == null || !user.getId().equals(invoice.getPatientId())) {
+            throw new ResponseStatusException(
+                    HttpStatus.FORBIDDEN,
+                    "Access denied: payment receipt does not belong to the authenticated patient"
+            );
+        }
+
+        return PatientReceiptResponse.from(payment);
+    }
+
+    @Override
+    @Transactional
+    public PatientProfileResponse updatePatientProfile(String authenticatedEmail, UpdatePatientProfileRequest request) {
+        User user = resolveAuthenticatedUser(authenticatedEmail);
+        if (user.getRole() != Role.PATIENT) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Access denied: patient self-service only");
+        }
+
+        String normalizedPhone = request != null && request.phone() != null ? request.phone().trim() : null;
+        if (normalizedPhone != null && normalizedPhone.isBlank()) {
+            normalizedPhone = null;
+        }
+        if (normalizedPhone != null && normalizedPhone.length() > 25) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Phone number cannot exceed 25 characters");
+        }
+
+        user.setPhone(normalizedPhone);
+        User saved = userRepository.save(user);
+
+        try {
+            Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+            if (auth != null && auth.getPrincipal() instanceof DentCareUserDetails) {
+                DentCareUserDetails updatedDetails = new DentCareUserDetails(saved);
+                Authentication newAuth = new UsernamePasswordAuthenticationToken(
+                        updatedDetails,
+                        auth.getCredentials(),
+                        updatedDetails.getAuthorities()
+                );
+                SecurityContextHolder.getContext().setAuthentication(newAuth);
+            }
+        } catch (Exception ex) {
+            // SecurityContext update failure shouldn't fail transaction
+        }
+
+        return PatientProfileResponse.fromUser(saved);
+    }
+
+    @Override
+    @Transactional
+    public void changePatientPassword(String authenticatedEmail, ChangePasswordRequest request) {
+        if (request == null) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Password change request is required");
+        }
+        User user = resolveAuthenticatedUser(authenticatedEmail);
+        if (user.getRole() != Role.PATIENT) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Access denied: patient self-service only");
+        }
+
+        if (request.currentPassword() == null || request.currentPassword().isBlank()) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Current password is required");
+        }
+
+        if (!passwordEncoder.matches(request.currentPassword(), user.getPasswordHash())) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Current password is incorrect");
+        }
+
+        if (request.newPassword() == null || request.newPassword().isBlank()) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "New password is required");
+        }
+
+        if (request.newPassword().length() < 8 || request.newPassword().length() > 100) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Password must be between 8 and 100 characters");
+        }
+
+        if (!request.newPassword().matches("^(?=.*[A-Za-z])(?=.*\\d).+$")) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Password must contain at least one letter and one digit");
+        }
+
+        if (passwordEncoder.matches(request.newPassword(), user.getPasswordHash())) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "New password cannot be the same as current password");
+        }
+
+        user.setPasswordHash(passwordEncoder.encode(request.newPassword()));
+        userRepository.save(user);
+    }
 }
+

@@ -334,9 +334,9 @@ export default function PatientDashboardPage() {
                 )}
               </div>
               <div className="patient-card-footer">
-                <span className="patient-card-desc">
-                  Prescriptions are verified directly from authorized dentist consultations.
-                </span>
+                <Link to="/patient/prescriptions" className="patient-card-link" data-testid="patient-prescriptions-link">
+                  View All Prescriptions <span aria-hidden="true">→</span>
+                </Link>
               </div>
             </article>
 
@@ -378,13 +378,13 @@ export default function PatientDashboardPage() {
               </div>
             </article>
 
-            {/* Card 5: Invoices & Payments (Honest status - Coming Soon) */}
+            {/* Card 5: Invoices & Payments (Active read-only billing) */}
             <article className="patient-portal-card" data-testid="patient-card-billing">
               <div className="patient-card-header">
                 <div className="patient-card-icon-wrap" aria-hidden="true">
                   <ReceiptIcon />
                 </div>
-                <span className="patient-card-status-chip status-chip-soon">Coming Soon</span>
+                <span className="patient-card-status-chip status-chip-available">Available</span>
               </div>
               <div className="patient-card-title-wrap">
                 <span className="patient-card-kicker">Billing Records</span>
@@ -392,14 +392,27 @@ export default function PatientDashboardPage() {
               </div>
               <div className="patient-card-body">
                 <p className="patient-card-desc">
-                  Patient billing statements are not yet available in the portal.
+                  Review your invoices, payment history, and receipts.
                 </p>
-                <div className="patient-feature-notice">
-                  <p>Please contact clinic reception regarding treatment invoices, payment receipts, or billing and statement questions.</p>
+                <div className="patient-detail-list">
+                  <div className="patient-detail-row">
+                    <span className="patient-detail-label">Service</span>
+                    <span className="patient-detail-value">Patient Invoices</span>
+                  </div>
+                  <div className="patient-detail-row">
+                    <span className="patient-detail-label">Receipts</span>
+                    <span className="patient-detail-value">Payment History</span>
+                  </div>
+                  <div className="patient-detail-row">
+                    <span className="patient-detail-label">Access</span>
+                    <span className="patient-detail-value">Read-only records</span>
+                  </div>
                 </div>
               </div>
               <div className="patient-card-footer">
-                <span className="patient-card-desc">Direct digital payments will launch in an upcoming release.</span>
+                <Link to="/patient/invoices" className="patient-card-link" data-testid="dashboard-invoices-link">
+                  View My Invoices <span aria-hidden="true">→</span>
+                </Link>
               </div>
             </article>
 
