@@ -73,18 +73,20 @@
   box-shadow: var(--dw-shadow-header);
   margin-bottom: 1.15rem;
   overflow: hidden;
-  animation: headerGlide 0.4s cubic-bezier(0.16, 1, 0.3, 1) both;
+  animation: headerReveal 0.42s cubic-bezier(0.16, 1, 0.3, 1) both;
 }
 
-/* Subtle atmospheric medical illumination */
+/* Subtle atmospheric medical illumination with calm, slow ambient drift */
 .staff-header-ambient {
   position: absolute;
   top: 0;
   left: 0;
   width: 100%;
   height: 100%;
-  background: radial-gradient(600px circle at 0% 0%, rgba(15, 118, 110, 0.04) 0%, transparent 60%);
+  background: radial-gradient(650px circle at 15% 20%, rgba(15, 118, 110, 0.05) 0%, transparent 65%);
   pointer-events: none;
+  animation: ambientGlowShift 16s ease-in-out infinite alternate;
+  will-change: transform, opacity;
 }
 
 /* Subtle, abstract clinical geometric line motif (top right) */
@@ -387,7 +389,7 @@
   box-shadow: 0 2px 6px -1px rgba(15, 23, 42, 0.03);
   gap: 1.25rem;
   flex-wrap: wrap;
-  animation: stripSlide 0.45s cubic-bezier(0.16, 1, 0.3, 1) 0.06s both;
+  animation: stripReveal 0.44s cubic-bezier(0.16, 1, 0.3, 1) 0.07s both;
 }
 
 .staff-strip-item {
@@ -468,7 +470,7 @@
   gap: 1rem;
   margin-bottom: 1.15rem;
   padding-bottom: 0.35rem;
-  animation: barSlide 0.45s cubic-bezier(0.16, 1, 0.3, 1) 0.08s both;
+  animation: barReveal 0.44s cubic-bezier(0.16, 1, 0.3, 1) 0.1s both;
 }
 
 .staff-workspace-titles {
@@ -640,10 +642,12 @@
   box-shadow: var(--dw-shadow-card);
   padding: 1.45rem 1.65rem;
   overflow: hidden;
-  animation: cardFadeUp 0.45s cubic-bezier(0.16, 1, 0.3, 1) calc(0.1s + var(--stagger-idx, 0) * 0.05s) both;
-  transition: transform 0.22s cubic-bezier(0.16, 1, 0.3, 1),
-              box-shadow 0.22s cubic-bezier(0.16, 1, 0.3, 1),
-              border-color 0.2s ease;
+  animation: cardReveal 0.46s cubic-bezier(0.16, 1, 0.3, 1) calc(0.12s + var(--stagger-idx, 0) * 0.045s) both;
+  transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1),
+              box-shadow 0.25s cubic-bezier(0.16, 1, 0.3, 1),
+              border-color 0.22s ease,
+              background-color 0.22s ease;
+  will-change: transform, box-shadow;
 }
 
 /* Subtle inner light bevel highlight */
@@ -652,19 +656,27 @@
   inset: 0;
   border-radius: inherit;
   box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.95);
+  background: radial-gradient(420px circle at 50% 0%, rgba(15, 118, 110, 0.03) 0%, transparent 70%);
   pointer-events: none;
+  opacity: 0.5;
+  transition: opacity 0.25s ease;
 }
 
-/* Card Hover Elevation */
+/* Card Hover Elevation (Smooth, restrained translateY -5px, max scale ~1.008) */
 .staff-module-card:hover {
-  transform: translateY(-3px);
-  border-color: rgba(15, 118, 110, 0.32);
-  box-shadow: var(--dw-shadow-card-hover);
+  transform: translateY(-5px) scale(1.008);
+  border-color: rgba(15, 118, 110, 0.34);
+  box-shadow: 0 14px 30px -6px rgba(15, 23, 42, 0.08), 0 6px 16px -3px rgba(15, 118, 110, 0.06);
+}
+
+.staff-module-card:hover .staff-card-ambient {
+  opacity: 1;
 }
 
 .staff-module-card:focus-within {
-  border-color: var(--dw-teal-700);
-  box-shadow: 0 0 0 3px rgba(15, 118, 110, 0.14);
+  transform: translateY(-4px) scale(1.006);
+  border-color: var(--dw-teal-600);
+  box-shadow: 0 12px 28px -6px rgba(15, 23, 42, 0.07), 0 0 0 3px rgba(15, 118, 110, 0.16);
 }
 
 /* ── Card Header & Icon Box ── */
@@ -688,12 +700,65 @@
   color: var(--dw-teal-700);
   border: 1px solid var(--dw-teal-100);
   box-shadow: 0 2px 6px rgba(15, 118, 110, 0.08);
-  transition: transform 0.2s ease, border-color 0.2s ease;
+  transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1),
+              border-color 0.22s ease,
+              box-shadow 0.22s ease,
+              background-color 0.22s ease;
 }
 
-.staff-module-card:hover .staff-card-icon-box {
-  transform: scale(1.03);
+.staff-module-card:hover .staff-card-icon-box,
+.staff-module-card:focus-within .staff-card-icon-box {
+  transform: translateY(-2px) scale(1.04);
   border-color: var(--dw-teal-300);
+  box-shadow: 0 4px 12px rgba(15, 118, 110, 0.14);
+}
+
+/* Base icon SVG micro-interaction transition */
+.staff-card-icon-box svg {
+  transition: transform 0.26s cubic-bezier(0.16, 1, 0.3, 1),
+              stroke 0.22s ease;
+  transform-origin: center center;
+}
+
+/* 1. Inventory package/supply icon: slight lift with controlled subtle tilt */
+.staff-tile-inventory:hover .staff-card-icon-box svg,
+.staff-tile-inventory:focus-within .staff-card-icon-box svg {
+  transform: translateY(-2px) rotate(-3deg) scale(1.05);
+  stroke: var(--dw-teal-800);
+}
+
+/* 2. Clinical icon: small controlled pulse/lift */
+.staff-tile-clinical:hover .staff-card-icon-box svg,
+.staff-tile-clinical:focus-within .staff-card-icon-box svg {
+  transform: translateY(-1.5px) scale(1.08);
+  stroke: var(--dw-teal-800);
+}
+
+/* 3. Prescription icon: subtle tilt */
+.staff-tile-prescriptions:hover .staff-card-icon-box svg,
+.staff-tile-prescriptions:focus-within .staff-card-icon-box svg {
+  transform: translateY(-1px) rotate(7deg) scale(1.06);
+  stroke: var(--dw-teal-800);
+}
+
+/* 4. Billing icon: subtle upward movement */
+.staff-tile-billing:hover .staff-card-icon-box svg,
+.staff-tile-billing:focus-within .staff-card-icon-box svg {
+  transform: translateY(-2.5px) scale(1.05);
+}
+
+/* 5. Reports icon: subtle upward chart elevation */
+.staff-tile-reports:hover .staff-card-icon-box svg,
+.staff-tile-reports:focus-within .staff-card-icon-box svg {
+  transform: translateY(-2px) scale(1.06);
+  stroke: var(--dw-teal-800);
+}
+
+/* 6. Staff admin icon: slight group movement */
+.staff-tile-staff-admin:hover .staff-card-icon-box svg,
+.staff-tile-staff-admin:focus-within .staff-card-icon-box svg {
+  transform: translateY(-1.5px) scale(1.05);
+  stroke: var(--dw-teal-800);
 }
 
 /* Inventory Management: Preserved Improved Icon Polish with Subtle Luxury Prominence */
@@ -705,9 +770,11 @@
   box-shadow: 0 3px 8px rgba(15, 118, 110, 0.12), inset 0 1px 0 rgba(255, 255, 255, 0.9);
 }
 
-.staff-module-card:hover .staff-card-icon-box.staff-icon-inventory {
+.staff-module-card:hover .staff-card-icon-box.staff-icon-inventory,
+.staff-module-card:focus-within .staff-card-icon-box.staff-icon-inventory {
   border-color: var(--dw-teal-400);
-  box-shadow: 0 4px 12px rgba(15, 118, 110, 0.18);
+  box-shadow: 0 5px 14px rgba(15, 118, 110, 0.18);
+  transform: translateY(-2px) scale(1.04);
 }
 
 .staff-card-meta {
@@ -829,7 +896,27 @@
   border-radius: 9px;
   background-color: var(--dw-teal-50);
   border: 1px solid var(--dw-teal-100);
-  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  transition: all 0.22s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.staff-link-arrow {
+  display: inline-block;
+  transition: transform 0.22s cubic-bezier(0.16, 1, 0.3, 1);
+  font-size: 0.95rem;
+  line-height: 1;
+}
+
+/* Module card hover / focus advances CTA arrow and link accent */
+.staff-module-card:hover .staff-primary-link,
+.staff-module-card:focus-within .staff-primary-link {
+  background-color: #e6fffa;
+  border-color: var(--dw-teal-200);
+  color: var(--dw-teal-800);
+}
+
+.staff-module-card:hover .staff-link-arrow,
+.staff-module-card:focus-within .staff-link-arrow {
+  transform: translateX(4px);
 }
 
 .staff-primary-link:hover {
@@ -838,21 +925,16 @@
   border-color: var(--dw-teal-700);
   color: #ffffff;
   box-shadow: 0 4px 14px rgba(15, 118, 110, 0.22);
+  transform: translateY(-1px);
+}
+
+.staff-primary-link:hover .staff-link-arrow {
+  transform: translateX(6px);
 }
 
 .staff-primary-link:focus-visible {
   outline: 2px solid var(--dw-teal-600);
   outline-offset: 2px;
-}
-
-.staff-link-arrow {
-  transition: transform 0.2s ease;
-  font-size: 0.95rem;
-  line-height: 1;
-}
-
-.staff-primary-link:hover .staff-link-arrow {
-  transform: translateX(4px);
 }
 
 /* Empty Search State */
@@ -900,7 +982,7 @@
   display: flex;
   flex-direction: column;
   gap: 1.25rem;
-  animation: railSlide 0.5s cubic-bezier(0.16, 1, 0.3, 1) 0.12s both;
+  animation: railReveal 0.48s cubic-bezier(0.16, 1, 0.3, 1) 0.16s both;
 }
 
 .staff-rail-card {
@@ -971,19 +1053,26 @@
   text-decoration: none;
   background-color: #ffffff;
   border: 1px solid transparent;
-  transition: all 0.16s ease;
+  transition: transform 0.2s cubic-bezier(0.16, 1, 0.3, 1),
+              background-color 0.18s ease,
+              border-color 0.18s ease,
+              box-shadow 0.18s ease;
 }
 
 .staff-action-item:hover {
   background-color: #f8fafc;
   border-color: var(--dw-slate-200);
-  transform: translateX(3px);
+  transform: translateX(4px);
+  box-shadow: 0 2px 8px rgba(15, 23, 42, 0.04);
   text-decoration: none;
 }
 
 .staff-action-item:focus-visible {
   outline: 2px solid var(--dw-teal-600);
   outline-offset: 1px;
+  transform: translateX(3px);
+  background-color: #f8fafc;
+  border-color: var(--dw-teal-200);
 }
 
 .staff-action-details {
@@ -1001,7 +1090,8 @@
   transition: color 0.15s ease;
 }
 
-.staff-action-item:hover .staff-action-name {
+.staff-action-item:hover .staff-action-name,
+.staff-action-item:focus-visible .staff-action-name {
   color: var(--dw-teal-700);
 }
 
@@ -1017,10 +1107,11 @@
   color: var(--dw-slate-300);
   line-height: 1;
   padding-left: 0.5rem;
-  transition: transform 0.15s ease, color 0.15s ease;
+  transition: transform 0.2s cubic-bezier(0.16, 1, 0.3, 1), color 0.18s ease;
 }
 
-.staff-action-item:hover .staff-action-arrow {
+.staff-action-item:hover .staff-action-arrow,
+.staff-action-item:focus-visible .staff-action-arrow {
   color: var(--dw-teal-700);
   transform: translateX(3px);
 }
@@ -1066,59 +1157,100 @@
 /* =============================================================================
    6. MOTION & ANIMATION (Restrained, Smooth, 350-500ms)
    ============================================================================= */
-@keyframes headerGlide {
+@keyframes headerReveal {
   from {
     opacity: 0;
-    transform: translateY(-8px);
+    transform: translateY(14px);
   }
   to {
     opacity: 1;
     transform: translateY(0);
   }
+}
+
+@keyframes stripReveal {
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes barReveal {
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes cardReveal {
+  from {
+    opacity: 0;
+    transform: translateY(16px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes railReveal {
+  from {
+    opacity: 0;
+    transform: translateY(14px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes ambientGlowShift {
+  0% {
+    transform: translate3d(0, 0, 0) scale(1);
+    opacity: 0.55;
+  }
+  50% {
+    transform: translate3d(22px, 8px, 0) scale(1.06);
+    opacity: 0.85;
+  }
+  100% {
+    transform: translate3d(0, 0, 0) scale(1);
+    opacity: 0.55;
+  }
+}
+
+/* Backward compatibility keyframe aliases */
+@keyframes headerGlide {
+  from { opacity: 0; transform: translateY(-8px); }
+  to { opacity: 1; transform: translateY(0); }
 }
 
 @keyframes stripSlide {
-  from {
-    opacity: 0;
-    transform: translateY(6px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
+  from { opacity: 0; transform: translateY(6px); }
+  to { opacity: 1; transform: translateY(0); }
 }
 
 @keyframes barSlide {
-  from {
-    opacity: 0;
-    transform: translateY(8px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: translateY(0); }
 }
 
 @keyframes cardFadeUp {
-  from {
-    opacity: 0;
-    transform: translateY(10px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
 }
 
 @keyframes railSlide {
-  from {
-    opacity: 0;
-    transform: translateX(8px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: translateY(0); }
 }
 
 /* Respect Reduced Motion */
@@ -1126,10 +1258,55 @@
   *,
   *::before,
   *::after {
-    animation-duration: 0.01ms !important;
+    animation-duration: 0.001ms !important;
     animation-iteration-count: 1 !important;
-    transition-duration: 0.01ms !important;
+    transition-duration: 0.001ms !important;
     scroll-behavior: auto !important;
+  }
+
+  .staff-workspace-header,
+  .staff-summary-strip,
+  .staff-workspace-bar,
+  .staff-module-card,
+  .staff-workspace-rail,
+  .staff-dashboard-notice {
+    animation: none !important;
+    opacity: 1 !important;
+    transform: none !important;
+  }
+
+  .staff-header-ambient {
+    animation: none !important;
+    transform: none !important;
+  }
+
+  .staff-module-card:hover,
+  .staff-module-card:focus-within {
+    transform: none !important;
+  }
+
+  .staff-card-icon-box,
+  .staff-module-card:hover .staff-card-icon-box,
+  .staff-module-card:focus-within .staff-card-icon-box,
+  .staff-card-icon-box svg,
+  .staff-tile-inventory:hover .staff-card-icon-box svg,
+  .staff-tile-clinical:hover .staff-card-icon-box svg,
+  .staff-tile-prescriptions:hover .staff-card-icon-box svg,
+  .staff-tile-billing:hover .staff-card-icon-box svg,
+  .staff-tile-reports:hover .staff-card-icon-box svg,
+  .staff-tile-staff-admin:hover .staff-card-icon-box svg {
+    transform: none !important;
+  }
+
+  .staff-link-arrow,
+  .staff-module-card:hover .staff-link-arrow,
+  .staff-module-card:focus-within .staff-link-arrow,
+  .staff-primary-link:hover .staff-link-arrow,
+  .staff-action-item:hover,
+  .staff-action-item:hover .staff-action-arrow,
+  .staff-shortcut-chip:hover,
+  .staff-account-btn:hover {
+    transform: none !important;
   }
 }
 
@@ -1259,58 +1436,50 @@
 }
 
 /* =============================================================================
-   MF-05 Invoices & Billing Bento Tile Theme (Ocean Blue & Cyan)
+   MF-05 Invoices & Billing Bento Tile Theme (Harmonized Pearl Clinical Family)
+   Preserves identical light color family, subtle ocean cyan accent, no dark card regression
    ============================================================================= */
 .staff-bento-tile.staff-tile-billing,
 .staff-module-card.staff-tile-billing {
-  border-color: rgba(6, 182, 212, 0.35);
-  box-shadow: 0 4px 18px -2px rgba(2, 132, 199, 0.1);
+  border-color: rgba(14, 116, 144, 0.22);
   position: relative;
 }
 
 .staff-bento-tile.staff-tile-billing:hover,
 .staff-module-card.staff-tile-billing:hover {
-  border-color: #06b6d4;
-  box-shadow: 0 12px 28px -4px rgba(6, 182, 212, 0.22);
+  border-color: rgba(14, 116, 144, 0.38);
+  box-shadow: 0 14px 30px -6px rgba(15, 23, 42, 0.08), 0 6px 16px -3px rgba(14, 116, 144, 0.08);
 }
 
 .staff-bento-tile.staff-tile-billing .staff-tile-badge,
 .staff-module-card.staff-tile-billing .staff-card-badge {
-  background: linear-gradient(135deg, rgba(2, 132, 199, 0.15), rgba(6, 182, 212, 0.2));
-  color: #0284c7;
-  border-color: rgba(6, 182, 212, 0.35);
+  background-color: #f0fdfa;
+  color: #0e7490;
+  border-color: #cffafe;
   font-weight: 700;
 }
 
 .staff-bento-tile.staff-tile-billing .staff-tile-icon-box,
 .staff-module-card.staff-tile-billing .staff-card-icon-box {
-  background: linear-gradient(135deg, rgba(2, 132, 199, 0.12), rgba(6, 182, 212, 0.18));
-  color: #0284c7;
-  border: 1px solid rgba(6, 182, 212, 0.35);
+  background: linear-gradient(135deg, #f0fdfa 0%, #e0f2fe 100%);
+  color: #0e7490;
+  border: 1px solid #bae6fd;
 }
 
 .staff-bento-tile.staff-tile-billing:hover .staff-tile-icon-box,
 .staff-module-card.staff-tile-billing:hover .staff-card-icon-box {
-  background: linear-gradient(135deg, #0284c7 0%, #06b6d4 100%);
-  color: #ffffff;
-  box-shadow: 0 0 16px rgba(6, 182, 212, 0.45);
-}
-
-.staff-bento-tile.staff-tile-billing .staff-primary-link,
-.staff-module-card.staff-tile-billing .staff-primary-link {
-  color: #0284c7;
-}
-
-.staff-bento-tile.staff-tile-billing .staff-primary-link:hover,
-.staff-module-card.staff-tile-billing .staff-primary-link:hover {
-  color: #0891b2;
+  background: linear-gradient(135deg, #e0f2fe 0%, #ccfbf1 100%);
+  color: #0369a1;
+  border-color: #7dd3fc;
+  box-shadow: 0 4px 12px rgba(14, 116, 144, 0.14);
 }
 
 .staff-bento-tile.staff-tile-billing .staff-shortcut-chip:hover,
 .staff-module-card.staff-tile-billing .staff-shortcut-chip:hover {
-  border-color: #06b6d4;
-  color: #0284c7;
+  border-color: #38bdf8;
+  color: #0369a1;
   background: #f0f9ff;
 }
+
 
 

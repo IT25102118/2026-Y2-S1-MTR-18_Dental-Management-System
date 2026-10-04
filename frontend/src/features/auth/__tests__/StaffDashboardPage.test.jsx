@@ -137,4 +137,36 @@ describe('StaffDashboardPage Component', () => {
     expect(alert).toBeInTheDocument();
     expect(alert).toHaveTextContent(/That page is not authorized for your account role/i);
   });
+
+  it('renders module cards with motion stagger indexes, icon classes, and CTA arrows without affecting interaction', () => {
+    vi.spyOn(AuthContextModule, 'useAuth').mockReturnValue({
+      user: {
+        id: 1,
+        firstName: 'Sarah',
+        role: 'ADMINISTRATOR'
+      }
+    });
+
+    const { container } = renderDashboard();
+
+    const moduleCards = container.querySelectorAll('.staff-module-card');
+    expect(moduleCards.length).toBe(6);
+
+    // Verify stagger indexes are assigned sequentially
+    moduleCards.forEach((card, index) => {
+      expect(card.style.getPropertyValue('--stagger-idx')).toBe(String(index));
+      expect(card.querySelector('.staff-card-ambient')).toBeInTheDocument();
+      expect(card.querySelector('.staff-link-arrow')).toBeInTheDocument();
+      expect(card.querySelector('.staff-module-icon')).toBeInTheDocument();
+    });
+
+    // Verify specific module icon classes are rendered
+    expect(container.querySelector('.staff-icon-inventory')).toBeInTheDocument();
+    expect(container.querySelector('.staff-icon-clinical')).toBeInTheDocument();
+    expect(container.querySelector('.staff-icon-prescriptions')).toBeInTheDocument();
+    expect(container.querySelector('.staff-icon-billing')).toBeInTheDocument();
+    expect(container.querySelector('.staff-icon-reports')).toBeInTheDocument();
+    expect(container.querySelector('.staff-icon-staff-admin')).toBeInTheDocument();
+  });
 });
+
