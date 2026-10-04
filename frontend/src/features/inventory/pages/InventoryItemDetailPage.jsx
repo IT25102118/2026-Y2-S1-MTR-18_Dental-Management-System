@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Link, useParams } from 'react-router-dom';
+import { Link, useParams, useLocation, useNavigate } from 'react-router-dom';
 import { getItemById, updateItemStatus, InventoryApiError } from '../api/inventoryApi';
 import { StockStatusBadge, ActiveStatusBadge } from '../components/InventoryStatusBadge';
 import InventoryPageHeader from '../components/InventoryPageHeader';
@@ -42,6 +42,8 @@ function useOptionalAuth() {
  */
 export default function InventoryItemDetailPage() {
   const { id } = useParams();
+  const location = useLocation();
+  const navigate = useNavigate();
   const { user, isAuthenticated } = useOptionalAuth();
   const isStaff = isAuthenticated && user && user.role !== 'PATIENT';
 
@@ -49,6 +51,19 @@ export default function InventoryItemDetailPage() {
   const [loading, setLoading] = useState(true);
   const [loadError, setLoadError] = useState(null);
   const [notFound, setNotFound] = useState(false);
+  const [successMessage, setSuccessMessage] = useState(
+    location.state?.successMessage || location.state?.message || null
+  );
+
+  useEffect(() => {
+    if (location.state?.successMessage || location.state?.message) {
+      const { successMessage: _sm, message: _m, ...restState } = location.state;
+      navigate(location.pathname, {
+        replace: true,
+        state: Object.keys(restState).length > 0 ? restState : null
+      });
+    }
+  }, [location.pathname, location.state, navigate]);
 
   const [showDeactivateConfirm, setShowDeactivateConfirm] = useState(false);
   const [statusSubmitting, setStatusSubmitting] = useState(false);
@@ -188,6 +203,36 @@ export default function InventoryItemDetailPage() {
         }
         breadcrumb={{ to: '/inventory/items', label: '← Back to Inventory Items' }}
       />
+
+      {successMessage && (
+        <div className="success-alert" role="status" aria-live="polite" data-testid="inventory-success-alert">
+          <div className="success-alert-content">
+            <svg
+              className="alert-icon"
+              width="18"
+              height="18"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2.2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              aria-hidden="true"
+            >
+              <polyline points="20 6 9 17 4 12" />
+            </svg>
+            <p>{successMessage}</p>
+          </div>
+          <button
+            type="button"
+            className="alert-dismiss-btn"
+            onClick={() => setSuccessMessage(null)}
+            aria-label="Dismiss notification"
+          >
+            ×
+          </button>
+        </div>
+      )}
 
       {actionError && (
         <div className="error-alert" role="alert">

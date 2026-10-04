@@ -13,15 +13,21 @@ export default function InventoryItemCreatePage() {
   const [submitting, setSubmitting] = useState(false);
   const [serverFieldErrors, setServerFieldErrors] = useState({});
   const [serverErrorMessage, setServerErrorMessage] = useState('');
+  const [successMessage, setSuccessMessage] = useState('');
 
   const handleSubmit = async (payload) => {
+    if (submitting) return;
     setSubmitting(true);
     setServerFieldErrors({});
     setServerErrorMessage('');
+    setSuccessMessage('');
 
     try {
       const created = await createItem(payload);
-      navigate(`/inventory/items/${created.id}`);
+      setSuccessMessage('Item registered successfully.');
+      navigate(`/inventory/items/${created.id}`, {
+        state: { successMessage: 'Item registered successfully.' }
+      });
     } catch (err) {
       if (err instanceof InventoryApiError) {
         if (err.status === 409) {
@@ -55,6 +61,36 @@ export default function InventoryItemCreatePage() {
         breadcrumb={{ to: '/inventory/items', label: '← Back to Inventory Items' }}
         showNav={false}
       />
+
+      {successMessage && (
+        <div className="success-alert" role="status" aria-live="polite" data-testid="item-create-success">
+          <div className="success-alert-content">
+            <svg
+              className="alert-icon"
+              width="18"
+              height="18"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2.2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              aria-hidden="true"
+            >
+              <polyline points="20 6 9 17 4 12" />
+            </svg>
+            <p>{successMessage}</p>
+          </div>
+          <button
+            type="button"
+            className="alert-dismiss-btn"
+            onClick={() => setSuccessMessage('')}
+            aria-label="Dismiss notification"
+          >
+            ×
+          </button>
+        </div>
+      )}
 
       <InventoryItemForm
         mode="create"

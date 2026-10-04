@@ -1,6 +1,6 @@
 import React from 'react';
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
-import { MemoryRouter, Routes, Route } from 'react-router-dom';
+import { MemoryRouter, Routes, Route, useLocation } from 'react-router-dom';
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import InventoryItemDetailPage from '../pages/InventoryItemDetailPage';
 import * as inventoryApi from '../api/inventoryApi';
@@ -382,6 +382,87 @@ describe('InventoryItemDetailPage', () => {
       expect(heroCard).toHaveTextContent('25');
       expect(heroCard).toHaveTextContent(/reorder threshold/i);
       expect(heroCard).toHaveTextContent('10 piece');
+    });
+
+    it('renders success alert banner when navigated with successMessage, clears history state, and remains visible until dismissed', async () => {
+      inventoryApi.getItemById.mockResolvedValue(sampleItem);
+
+      let capturedLocation;
+      function LocationTracker() {
+        capturedLocation = useLocation();
+        return null;
+      }
+
+      const { unmount } = render(
+        <MemoryRouter initialEntries={[{ pathname: '/inventory/items/1', state: { successMessage: 'Item registered successfully.' } }]}>
+          <LocationTracker />
+          <Routes>
+            <Route path="/inventory/items/:id" element={<InventoryItemDetailPage />} />
+          </Routes>
+        </MemoryRouter>
+      );
+
+      // 1. Success banner renders with exact message
+      const alert = await screen.findByTestId('inventory-success-alert');
+      expect(alert).toBeInTheDocument();
+      expect(alert).toHaveAttribute('role', 'status');
+      expect(alert).toHaveTextContent('Item registered successfully.');
+
+      // 2. Navigation state was cleared via replace
+      await waitFor(() => {
+        expect(capturedLocation.state).toBeNull();
+      });
+
+      // 3. Local banner remains visible even after history state is cleared
+      expect(screen.getByTestId('inventory-success-alert')).toBeInTheDocument();
+
+      // 4. Dismiss alert removes it from DOM
+      const dismissBtn = screen.getByRole('button', { name: /dismiss notification/i });
+      fireEvent.click(dismissBtn);
+      expect(screen.queryByTestId('inventory-success-alert')).not.toBeInTheDocument();
+
+      // 5. Simulated page refresh / remount with the now-cleared state does NOT recreate the banner
+      unmount();
+      render(
+        <MemoryRouter initialEntries={[{ pathname: '/inventory/items/1', state: capturedLocation.state }]}>
+          <Routes>
+            <Route path="/inventory/items/:id" element={<InventoryItemDetailPage />} />
+          </Routes>
+        </MemoryRouter>
+      );
+
+      await screen.findByRole('heading', { name: 'Dental Mirror #4' });
+      expect(screen.queryByTestId('inventory-success-alert')).not.toBeInTheDocument();
+    });
+
+    it('does not display success alert banner on standard direct navigation without state', async () => {
+      inventoryApi.getItemById.mockResolvedValueOnce(sampleItem);
+
+      render(
+        <MemoryRouter initialEntries={['/inventory/items/1']}>
+          <Routes>
+            <Route path="/inventory/items/:id" element={<InventoryItemDetailPage />} />
+          </Routes>
+        </MemoryRouter>
+      );
+
+      await screen.findByRole('heading', { name: 'Dental Mirror #4' });
+      expect(screen.queryByTestId('inventory-success-alert')).not.toBeInTheDocument();
+    });
+
+    it('does not display success banner when returning with empty history state (simulating back/forward)', async () => {
+      inventoryApi.getItemById.mockResolvedValueOnce(sampleItem);
+
+      render(
+        <MemoryRouter initialEntries={[{ pathname: '/inventory/items/1', state: {} }]}>
+          <Routes>
+            <Route path="/inventory/items/:id" element={<InventoryItemDetailPage />} />
+          </Routes>
+        </MemoryRouter>
+      );
+
+      await screen.findByRole('heading', { name: 'Dental Mirror #4' });
+      expect(screen.queryByTestId('inventory-success-alert')).not.toBeInTheDocument();
     });
   });
 });

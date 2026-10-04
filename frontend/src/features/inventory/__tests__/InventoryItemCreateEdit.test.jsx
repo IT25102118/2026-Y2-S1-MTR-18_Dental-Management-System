@@ -1,6 +1,6 @@
 import React from 'react';
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
-import { MemoryRouter, Routes, Route } from 'react-router-dom';
+import { MemoryRouter, Routes, Route, useLocation } from 'react-router-dom';
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import InventoryItemCreatePage from '../pages/InventoryItemCreatePage';
 import InventoryItemEditPage from '../pages/InventoryItemEditPage';
@@ -277,6 +277,157 @@ describe('InventoryItemCreatePage', () => {
         expect.objectContaining({ reorderLevel: 0 })
       );
       expect(screen.getByText('Detail Page for 99')).toBeInTheDocument();
+    });
+  });
+
+  it('triggers "Item registered successfully." upon confirmed API success and passes it to destination page', async () => {
+    inventoryApi.createItem.mockResolvedValueOnce({
+      id: 88,
+      itemCode: 'ITM-088',
+      name: 'Sterilization Pouch',
+      category: 'Sterilization',
+      unit: 'box',
+      reorderLevel: 10,
+      currentQuantity: 0,
+      active: true
+    });
+
+    function LocationStateConsumer() {
+      const location = useLocation();
+      return (
+        <div>
+          <div data-testid="destination-id">Detail Page for 88</div>
+          {location.state?.successMessage && (
+            <div data-testid="destination-success-message">{location.state.successMessage}</div>
+          )}
+        </div>
+      );
+    }
+
+    render(
+      <MemoryRouter initialEntries={['/inventory/items/new']}>
+        <Routes>
+          <Route path="/inventory/items/new" element={<InventoryItemCreatePage />} />
+          <Route path="/inventory/items/:id" element={<LocationStateConsumer />} />
+        </Routes>
+      </MemoryRouter>
+    );
+
+    fireEvent.change(screen.getByLabelText(/item code/i), { target: { value: 'ITM-088' } });
+    fireEvent.change(screen.getByLabelText(/item name/i), { target: { value: 'Sterilization Pouch' } });
+    fireEvent.change(screen.getByLabelText(/category/i), { target: { value: 'Sterilization' } });
+    fireEvent.change(screen.getByLabelText(/unit of measurement/i), { target: { value: 'box' } });
+    fireEvent.change(screen.getByLabelText(/reorder level/i), { target: { value: '10' } });
+
+    fireEvent.click(screen.getByRole('button', { name: /register item/i }));
+
+    await waitFor(() => {
+      expect(screen.getByTestId('destination-success-message')).toHaveTextContent('Item registered successfully.');
+    });
+  });
+
+  it('does not display success message while request is pending or before backend success', async () => {
+    let resolvePromise;
+    inventoryApi.createItem.mockReturnValueOnce(
+      new Promise((resolve) => {
+        resolvePromise = resolve;
+      })
+    );
+
+    render(
+      <MemoryRouter initialEntries={['/inventory/items/new']}>
+        <InventoryItemCreatePage />
+      </MemoryRouter>
+    );
+
+    fireEvent.change(screen.getByLabelText(/item code/i), { target: { value: 'ITM-089' } });
+    fireEvent.change(screen.getByLabelText(/item name/i), { target: { value: 'Gloves Large' } });
+    fireEvent.change(screen.getByLabelText(/category/i), { target: { value: 'PPE' } });
+    fireEvent.change(screen.getByLabelText(/unit of measurement/i), { target: { value: 'box' } });
+    fireEvent.change(screen.getByLabelText(/reorder level/i), { target: { value: '5' } });
+
+    fireEvent.click(screen.getByRole('button', { name: /register item/i }));
+
+    // While pending, submit button is disabled and no success message appears
+    expect(screen.getByRole('button', { name: /saving/i })).toBeDisabled();
+    expect(screen.queryByText(/item registered successfully/i)).not.toBeInTheDocument();
+
+    // Now resolve
+    resolvePromise({
+      id: 89,
+      itemCode: 'ITM-089',
+      name: 'Gloves Large'
+    });
+
+    await waitFor(() => {
+      expect(screen.getByText('Item registered successfully.')).toBeInTheDocument();
+    });
+  });
+
+  it('does not display success message when API call fails and retains form data', async () => {
+    inventoryApi.createItem.mockRejectedValueOnce(
+      new inventoryApi.InventoryApiError(409, 'Conflict: An item with this code already exists.', {
+        itemCode: 'An inventory item with this code already exists'
+      })
+    );
+
+    render(
+      <MemoryRouter initialEntries={['/inventory/items/new']}>
+        <InventoryItemCreatePage />
+      </MemoryRouter>
+    );
+
+    fireEvent.change(screen.getByLabelText(/item code/i), { target: { value: 'ITM-DUP' } });
+    fireEvent.change(screen.getByLabelText(/item name/i), { target: { value: 'Duplicate Gauze' } });
+    fireEvent.change(screen.getByLabelText(/category/i), { target: { value: 'Consumables' } });
+    fireEvent.change(screen.getByLabelText(/unit of measurement/i), { target: { value: 'pack' } });
+    fireEvent.change(screen.getByLabelText(/reorder level/i), { target: { value: '2' } });
+
+    fireEvent.click(screen.getByRole('button', { name: /register item/i }));
+
+    await waitFor(() => {
+      expect(screen.getAllByText(/conflict: an item with this code already exists/i).length).toBeGreaterThan(0);
+    });
+
+    // Success message must NOT be displayed
+    expect(screen.queryByText(/item registered successfully/i)).not.toBeInTheDocument();
+
+    // Form data must remain preserved
+    expect(screen.getByLabelText(/item code/i)).toHaveValue('ITM-DUP');
+    expect(screen.getByLabelText(/item name/i)).toHaveValue('Duplicate Gauze');
+  });
+
+  it('prevents duplicate submissions while request is in flight', async () => {
+    let resolvePromise;
+    inventoryApi.createItem.mockReturnValueOnce(
+      new Promise((resolve) => {
+        resolvePromise = resolve;
+      })
+    );
+
+    render(
+      <MemoryRouter initialEntries={['/inventory/items/new']}>
+        <InventoryItemCreatePage />
+      </MemoryRouter>
+    );
+
+    fireEvent.change(screen.getByLabelText(/item code/i), { target: { value: 'ITM-LOCK' } });
+    fireEvent.change(screen.getByLabelText(/item name/i), { target: { value: 'Cotton Rolls' } });
+    fireEvent.change(screen.getByLabelText(/category/i), { target: { value: 'Consumables' } });
+    fireEvent.change(screen.getByLabelText(/unit of measurement/i), { target: { value: 'pack' } });
+    fireEvent.change(screen.getByLabelText(/reorder level/i), { target: { value: '10' } });
+
+    const submitBtn = screen.getByRole('button', { name: /register item/i });
+    fireEvent.click(submitBtn);
+
+    // Second click while in flight
+    fireEvent.click(submitBtn);
+
+    expect(inventoryApi.createItem).toHaveBeenCalledTimes(1);
+
+    resolvePromise({ id: 91, itemCode: 'ITM-LOCK' });
+    await waitFor(() => {
+      expect(screen.getByText('Item registered successfully.')).toBeInTheDocument();
     });
   });
 });
