@@ -1,5 +1,4 @@
--- The original patient DDL lived outside spring.flyway.locations and was never applied.
--- IF NOT EXISTS also permits installations that ran that DDL manually to upgrade.
+-- Flyway migration V4: Create patients table as authoritative clinical record
 CREATE TABLE IF NOT EXISTS patients (
     id BIGINT AUTO_INCREMENT PRIMARY KEY,
     patient_code VARCHAR(30) NOT NULL,
@@ -31,7 +30,9 @@ CREATE TABLE IF NOT EXISTS patients (
     CONSTRAINT uk_patients_user UNIQUE (user_id),
     CONSTRAINT fk_patients_user FOREIGN KEY (user_id) REFERENCES users (id) ON DELETE SET NULL,
     CONSTRAINT chk_patients_gender CHECK (gender IN ('MALE', 'FEMALE', 'OTHER', 'PREFER_NOT_TO_SAY')),
-    INDEX idx_patients_name (last_name, first_name),
-    INDEX idx_patients_phone (phone),
-    INDEX idx_patients_active (active)
+    KEY idx_patients_code (patient_code),
+    KEY idx_patients_name (last_name, first_name),
+    KEY idx_patients_phone (phone),
+    KEY idx_patients_active (active),
+    KEY idx_patients_user (user_id)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;

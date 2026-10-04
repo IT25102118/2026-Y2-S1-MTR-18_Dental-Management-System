@@ -278,6 +278,29 @@ describe('LoginPage', () => {
     expect(screen.getByRole('link', { name: /Go to Staff Login/i })).toHaveAttribute('href', '/staff/login');
   });
 
+  it('renders redesigned split-screen Patient Portal with welcoming overview panel and distinct patient image', async () => {
+    render(
+      <MemoryRouter initialEntries={['/patient/login']}>
+        <LoginPage />
+      </MemoryRouter>
+    );
+
+    expect(screen.getByTestId('login-card-patient')).toBeInTheDocument();
+    expect(screen.getByLabelText(/Patient Portal Overview/i)).toBeInTheDocument();
+    expect(screen.getByText(/Personal Care & Appointments/i)).toBeInTheDocument();
+    expect(screen.getByText(/Your dental wellness, comfortably managed/i)).toBeInTheDocument();
+    expect(screen.getByText(/PATIENT ACCESS/i)).toBeInTheDocument();
+
+    const patientImage = screen.getByRole('img', { name: /Welcoming DentCare dental clinic reception/i });
+    expect(patientImage).toBeInTheDocument();
+    expect(patientImage.getAttribute('src')).toMatch(/patient-access/i);
+
+    expect(screen.getByText(/Welcome back/i)).toBeInTheDocument();
+    expect(screen.getByText(/Sign in to manage your DentCare appointments and patient account/i)).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /Sign In as Patient/i })).toBeInTheDocument();
+    expect(screen.getByText(/Need immediate dental attention\?/i)).toBeInTheDocument();
+  });
+
   it('renders distinct Staff Portal login view at /staff/login with administrator provisioning notice', async () => {
     render(
       <MemoryRouter initialEntries={['/staff/login']}>

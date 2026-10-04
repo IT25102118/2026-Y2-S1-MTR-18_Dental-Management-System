@@ -376,6 +376,161 @@ describe('StockMovementForm', () => {
     expect(card).toHaveClass('selected');
     expect(screen.getByTestId('movement-batch-select')).toHaveValue('301');
   });
+
+  describe('Prompt 35: Expiry date past date prevention', () => {
+    function getLocalDateString(offsetDays = 0) {
+      const d = new Date();
+      d.setDate(d.getDate() + offsetDays);
+      const year = d.getFullYear();
+      const month = String(d.getMonth() + 1).padStart(2, '0');
+      const day = String(d.getDate()).padStart(2, '0');
+      return `${year}-${month}-${day}`;
+    }
+
+    it('sets dynamic min attribute on expiry date input equal to today in local calendar format', () => {
+      render(<StockMovementForm item={sampleItem} />);
+
+      const expiryInput = screen.getByLabelText(/expiry date/i);
+      const todayStr = getLocalDateString(0);
+      expect(expiryInput).toHaveAttribute('min', todayStr);
+    });
+
+    it('rejects past expiry date on submit with validation error message', async () => {
+      render(<StockMovementForm item={sampleItem} />);
+
+      const qtyInput = screen.getByLabelText(/quantity/i);
+      fireEvent.change(qtyInput, { target: { value: '10' } });
+
+      const expiryInput = screen.getByLabelText(/expiry date/i);
+      const pastDate = getLocalDateString(-1);
+      fireEvent.change(expiryInput, { target: { value: pastDate } });
+
+      const submitBtn = screen.getByTestId('submit-movement-button');
+      fireEvent.click(submitBtn);
+
+      const errorMsg = await screen.findByTestId('movement-expiry-date-error');
+      expect(errorMsg).toHaveTextContent('Expiry date cannot be earlier than today.');
+      expect(movementApi.recordStockMovement).not.toHaveBeenCalled();
+    });
+
+    it('accepts today as expiry date on submit', async () => {
+      movementApi.recordStockMovement.mockResolvedValueOnce({
+        id: 101,
+        inventoryItemId: 10,
+        movementType: 'RECEIVED',
+        quantity: 10,
+        resultingQuantity: 50
+      });
+
+      render(<StockMovementForm item={sampleItem} />);
+
+      const qtyInput = screen.getByLabelText(/quantity/i);
+      fireEvent.change(qtyInput, { target: { value: '10' } });
+
+      const todayStr = getLocalDateString(0);
+      const expiryInput = screen.getByLabelText(/expiry date/i);
+      fireEvent.change(expiryInput, { target: { value: todayStr } });
+
+      const submitBtn = screen.getByTestId('submit-movement-button');
+      fireEvent.click(submitBtn);
+
+      await waitFor(() => {
+        expect(movementApi.recordStockMovement).toHaveBeenCalledWith(
+          '10',
+          expect.objectContaining({
+            movementType: 'RECEIVED',
+            quantity: 10,
+            expiryDate: todayStr
+          })
+        );
+      });
+      expect(screen.queryByTestId('movement-expiry-date-error')).not.toBeInTheDocument();
+    });
+
+    it('accepts future date as expiry date on submit', async () => {
+      movementApi.recordStockMovement.mockResolvedValueOnce({
+        id: 102,
+        inventoryItemId: 10,
+        movementType: 'RECEIVED',
+        quantity: 20,
+        resultingQuantity: 60
+      });
+
+      render(<StockMovementForm item={sampleItem} />);
+
+      const qtyInput = screen.getByLabelText(/quantity/i);
+      fireEvent.change(qtyInput, { target: { value: '20' } });
+
+      const futureDate = getLocalDateString(30);
+      const expiryInput = screen.getByLabelText(/expiry date/i);
+      fireEvent.change(expiryInput, { target: { value: futureDate } });
+
+      const submitBtn = screen.getByTestId('submit-movement-button');
+      fireEvent.click(submitBtn);
+
+      await waitFor(() => {
+        expect(movementApi.recordStockMovement).toHaveBeenCalledWith(
+          '10',
+          expect.objectContaining({
+            movementType: 'RECEIVED',
+            quantity: 20,
+            expiryDate: futureDate
+          })
+        );
+      });
+      expect(screen.queryByTestId('movement-expiry-date-error')).not.toBeInTheDocument();
+    });
+
+    it('accepts empty expiry date since it is optional', async () => {
+      movementApi.recordStockMovement.mockResolvedValueOnce({
+        id: 103,
+        inventoryItemId: 10,
+        movementType: 'RECEIVED',
+        quantity: 5,
+        resultingQuantity: 45
+      });
+
+      render(<StockMovementForm item={sampleItem} />);
+
+      const qtyInput = screen.getByLabelText(/quantity/i);
+      fireEvent.change(qtyInput, { target: { value: '5' } });
+
+      const submitBtn = screen.getByTestId('submit-movement-button');
+      fireEvent.click(submitBtn);
+
+      await waitFor(() => {
+        expect(movementApi.recordStockMovement).toHaveBeenCalledWith(
+          '10',
+          expect.objectContaining({
+            movementType: 'RECEIVED',
+            quantity: 5
+          })
+        );
+      });
+      expect(screen.queryByTestId('movement-expiry-date-error')).not.toBeInTheDocument();
+    });
+
+    it('displays server-side expiryDate field validation error when backend rejects bypass', async () => {
+      movementApi.recordStockMovement.mockRejectedValueOnce(
+        new inventoryApi.InventoryApiError(
+          400,
+          'Validation failed',
+          { expiryDate: 'Expiry date cannot be earlier than today' }
+        )
+      );
+
+      render(<StockMovementForm item={sampleItem} />);
+
+      const qtyInput = screen.getByLabelText(/quantity/i);
+      fireEvent.change(qtyInput, { target: { value: '10' } });
+
+      const submitBtn = screen.getByTestId('submit-movement-button');
+      fireEvent.click(submitBtn);
+
+      const errorMsg = await screen.findByTestId('movement-expiry-date-error');
+      expect(errorMsg).toHaveTextContent('Expiry date cannot be earlier than today');
+    });
+  });
 });
 
 

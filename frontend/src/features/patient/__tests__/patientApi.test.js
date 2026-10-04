@@ -11,6 +11,8 @@ import {
   normalizePatientPage
 } from '../api/patientApi';
 
+import { getCsrfToken } from '../../auth/api/authApi';
+
 vi.mock('../../auth/api/authApi', () => ({
   getCsrfToken: vi.fn().mockResolvedValue({ token: 'test-csrf-token', headerName: 'X-XSRF-TOKEN' })
 }));
@@ -25,7 +27,7 @@ describe('patientApi client', () => {
 
   afterEach(() => {
     global.fetch = originalFetch;
-    vi.restoreAllMocks();
+    vi.clearAllMocks();
   });
 
   describe('normalizePatientPage', () => {

@@ -500,4 +500,84 @@ class StockMovementControllerTest {
                 .andExpect(jsonPath("$.status", is(403)))
                 .andExpect(jsonPath("$.error", is("Forbidden")));
     }
+
+    /**
+     * Past Expiry Date Validation:
+     * Verifies that attempting to bypass frontend validation with an expiry date in the past
+     * triggers Bean Validation (@FutureOrPresent) and returns HTTP 400 Bad Request with
+     * repository-standard fieldErrors mapping.
+     */
+    @Test
+    @DisplayName("Prompt 35: POST with past expiryDate returns 400 Bad Request")
+    void testRecordMovementPastExpiryDateReturns400() throws Exception {
+        RecordStockMovementRequest invalidRequest = new RecordStockMovementRequest(
+                StockMovementType.RECEIVED,
+                null,
+                10,
+                "Shipment received",
+                101L,
+                "LOT-PAST",
+                java.time.LocalDate.now().minusDays(1),
+                null
+        );
+
+        mockMvc.perform(post("/api/inventory/items/1/movements")
+                        .with(csrf())
+                        .with(user(staffUser))
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(invalidRequest)))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.status", is(400)))
+                .andExpect(jsonPath("$.fieldErrors.expiryDate", is("Expiry date cannot be earlier than today")));
+    }
+
+    @Test
+    @DisplayName("Prompt 35: POST with today expiryDate is accepted")
+    void testRecordMovementTodayExpiryDateAccepted() throws Exception {
+        RecordStockMovementRequest todayRequest = new RecordStockMovementRequest(
+                StockMovementType.RECEIVED,
+                null,
+                10,
+                "Shipment received today",
+                101L,
+                "LOT-TODAY",
+                java.time.LocalDate.now(),
+                null
+        );
+
+        when(stockMovementService.recordMovement(eq(1L), any(RecordStockMovementRequest.class)))
+                .thenReturn(sampleResponse);
+
+        mockMvc.perform(post("/api/inventory/items/1/movements")
+                        .with(csrf())
+                        .with(user(staffUser))
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(todayRequest)))
+                .andExpect(status().isCreated());
+    }
+
+    @Test
+    @DisplayName("Prompt 35: POST with future expiryDate is accepted")
+    void testRecordMovementFutureExpiryDateAccepted() throws Exception {
+        RecordStockMovementRequest futureRequest = new RecordStockMovementRequest(
+                StockMovementType.RECEIVED,
+                null,
+                10,
+                "Shipment received future",
+                101L,
+                "LOT-FUTURE",
+                java.time.LocalDate.now().plusMonths(6),
+                null
+        );
+
+        when(stockMovementService.recordMovement(eq(1L), any(RecordStockMovementRequest.class)))
+                .thenReturn(sampleResponse);
+
+        mockMvc.perform(post("/api/inventory/items/1/movements")
+                        .with(csrf())
+                        .with(user(staffUser))
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(futureRequest)))
+                .andExpect(status().isCreated());
+    }
 }

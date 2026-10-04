@@ -27,6 +27,7 @@ import { AuthProvider } from './features/auth/context/AuthContext';
 import { STAFF_ROLES } from './features/auth/roleAccess';
 import PublicLandingPage from './features/auth/pages/PublicLandingPage';
 import PatientDashboardPage from './features/auth/pages/PatientDashboardPage';
+import PatientAppointmentsPage from './features/auth/pages/PatientAppointmentsPage';
 import StaffDashboardPage from './features/auth/pages/StaffDashboardPage';
 import ClinicalOverviewPage from './features/clinical/pages/ClinicalOverviewPage';
 import ExaminationsPage from './features/clinical/pages/ExaminationsPage';
@@ -67,6 +68,14 @@ export default function App() {
               element={
                 <ProtectedRoute allowedRoles={['PATIENT']}>
                   <PatientDashboardPage />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/patient/appointments"
+              element={
+                <ProtectedRoute allowedRoles={['PATIENT']}>
+                  <PatientAppointmentsPage />
                 </ProtectedRoute>
               }
             />

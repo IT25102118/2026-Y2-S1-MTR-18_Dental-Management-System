@@ -5,6 +5,21 @@ import React, { useState, useEffect } from 'react';
  */
 const EMPTY_INITIAL_VALUES = {};
 
+export const INVENTORY_UNIT_OPTIONS = [
+  { value: 'piece', label: 'Piece' },
+  { value: 'box', label: 'Box' },
+  { value: 'bottle', label: 'Bottle' },
+  { value: 'pack', label: 'Pack' }
+];
+
+const normalizeUnit = (unitVal) => {
+  if (!unitVal) return '';
+  const matched = INVENTORY_UNIT_OPTIONS.find(
+    (opt) => opt.value.toLowerCase() === unitVal.toLowerCase()
+  );
+  return matched ? matched.value : unitVal;
+};
+
 export default function InventoryItemForm({
   initialValues = EMPTY_INITIAL_VALUES,
   mode = 'create',
@@ -18,7 +33,7 @@ export default function InventoryItemForm({
     itemCode: initialValues?.itemCode || '',
     name: initialValues?.name || '',
     category: initialValues?.category || '',
-    unit: initialValues?.unit || '',
+    unit: normalizeUnit(initialValues?.unit),
     reorderLevel: initialValues?.reorderLevel !== undefined ? String(initialValues.reorderLevel) : '0',
     defaultSupplierReference: initialValues?.defaultSupplierReference || ''
   });
@@ -31,7 +46,7 @@ export default function InventoryItemForm({
         itemCode: initialValues.itemCode || '',
         name: initialValues.name || '',
         category: initialValues.category || '',
-        unit: initialValues.unit || '',
+        unit: normalizeUnit(initialValues.unit),
         reorderLevel: initialValues.reorderLevel !== undefined ? String(initialValues.reorderLevel) : '0',
         defaultSupplierReference: initialValues.defaultSupplierReference || ''
       });
@@ -235,20 +250,29 @@ export default function InventoryItemForm({
           <label htmlFor="unit">
             Unit of Measurement <span className="required-star">*</span>
           </label>
-          <input
+          <select
             id="unit"
             name="unit"
-            type="text"
-            className="form-input"
-            maxLength={50}
-            placeholder="e.g. piece, box, bottle, pack"
+            className="form-input form-select"
             value={formData.unit}
             onChange={handleChange}
             disabled={submitting}
             aria-invalid={Boolean(errors.unit)}
             aria-describedby={errors.unit ? 'unit-error' : undefined}
             required
-          />
+          >
+            <option value="">Select unit</option>
+            {INVENTORY_UNIT_OPTIONS.map((opt) => (
+              <option key={opt.value} value={opt.value}>
+                {opt.label}
+              </option>
+            ))}
+            {mode === 'edit' && formData.unit && !INVENTORY_UNIT_OPTIONS.some((opt) => opt.value === formData.unit) && (
+              <option key={formData.unit} value={formData.unit}>
+                {formData.unit}
+              </option>
+            )}
+          </select>
           {errors.unit && (
             <span id="unit-error" className="field-error" role="alert">
               {errors.unit}

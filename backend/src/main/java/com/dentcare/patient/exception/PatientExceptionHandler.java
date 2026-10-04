@@ -10,6 +10,7 @@ import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.util.LinkedHashMap;
 import java.util.Map;
@@ -71,6 +72,12 @@ public class PatientExceptionHandler {
     public ResponseEntity<PatientErrorResponse> handleConstraintConflict(DataIntegrityViolationException ex) {
         // Also covers concurrent inserts that race the service's unique-code precheck; never return SQL details.
         return error(HttpStatus.CONFLICT, "Patient record conflicts with existing data");
+    }
+
+    @ExceptionHandler(ResponseStatusException.class)
+    public ResponseEntity<PatientErrorResponse> handleResponseStatus(ResponseStatusException ex) {
+        HttpStatus status = HttpStatus.valueOf(ex.getStatusCode().value());
+        return error(status, ex.getReason());
     }
 
     @ExceptionHandler(Exception.class)

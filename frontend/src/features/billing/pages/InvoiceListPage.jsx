@@ -92,6 +92,59 @@ export default function InvoiceListPage() {
         onReset={handleResetFilters}
       />
 
+      {hasActiveFilters && (
+        <div
+          className="active-filters-bar"
+          style={{
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            marginBottom: '1.25rem',
+            padding: '0.65rem 1rem',
+            background: '#ffffff',
+            borderRadius: '10px',
+            border: '1px solid #bae6fd',
+            fontSize: '0.875rem',
+            boxShadow: '0 2px 8px rgba(2, 132, 199, 0.08)'
+          }}
+        >
+          <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center', flexWrap: 'wrap' }}>
+            <span style={{ fontWeight: 700, color: '#0369a1' }}>Filtered By:</span>
+            {filters.patientId !== undefined && (
+              <span className="badge-status-draft" style={{ padding: '0.2rem 0.6rem', borderRadius: '6px', fontWeight: 600 }}>
+                Patient ID: {filters.patientId}
+              </span>
+            )}
+            {filters.status && (
+              <span className="badge-status-draft" style={{ padding: '0.2rem 0.6rem', borderRadius: '6px', fontWeight: 600 }}>
+                Status: {filters.status}
+              </span>
+            )}
+            {filters.startDate && (
+              <span className="badge-status-draft" style={{ padding: '0.2rem 0.6rem', borderRadius: '6px', fontWeight: 600 }}>
+                From: {filters.startDate}
+              </span>
+            )}
+            {filters.endDate && (
+              <span className="badge-status-draft" style={{ padding: '0.2rem 0.6rem', borderRadius: '6px', fontWeight: 600 }}>
+                To: {filters.endDate}
+              </span>
+            )}
+            <span style={{ color: '#64748b', marginLeft: '0.25rem' }}>
+              ({invoices.length} {invoices.length === 1 ? 'record' : 'records'} found)
+            </span>
+          </div>
+          <button
+            type="button"
+            className="btn btn-secondary btn-sm"
+            onClick={handleResetFilters}
+            style={{ padding: '0.25rem 0.75rem', fontSize: '0.8rem' }}
+          >
+            Clear
+          </button>
+        </div>
+      )}
+
       {error && (
         <div className="error-alert" role="alert" data-testid="invoice-list-error">
           <p>{error}</p>
