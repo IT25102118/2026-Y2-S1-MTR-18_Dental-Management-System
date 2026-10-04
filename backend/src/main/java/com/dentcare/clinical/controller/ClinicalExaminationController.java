@@ -3,7 +3,9 @@ package com.dentcare.clinical.controller;
 import com.dentcare.clinical.dto.ClinicalExaminationResponse;
 import com.dentcare.clinical.dto.ConfirmDiagnosisRequest;
 import com.dentcare.clinical.dto.CreateClinicalExaminationRequest;
+import com.dentcare.clinical.dto.PatientMedicalSummaryDto;
 import com.dentcare.clinical.dto.UpdateClinicalExaminationRequest;
+import com.dentcare.clinical.exception.PatientNotFoundException;
 import com.dentcare.clinical.service.ClinicalExaminationService;
 import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
@@ -64,5 +66,13 @@ public class ClinicalExaminationController {
             @PathVariable("id") Long id,
             @Valid @RequestBody ConfirmDiagnosisRequest request) {
         return ResponseEntity.ok(clinicalExaminationService.confirmDiagnosis(id, request));
+    }
+
+    @GetMapping("/patients/{patientId}/medical-summary")
+    public ResponseEntity<PatientMedicalSummaryDto> getPatientMedicalSummary(
+            @PathVariable("patientId") Long patientId) {
+        return clinicalExaminationService.getPatientMedicalSummary(patientId)
+                .map(ResponseEntity::ok)
+                .orElseThrow(() -> new PatientNotFoundException(patientId));
     }
 }

@@ -98,6 +98,12 @@ class UserLookupAdaptersTest {
         assertThat(exists).isFalse();
     }
 
+    @Test
+    @DisplayName("Patient lookup: getPatientMedicalSummary returns empty optional")
+    void getPatientMedicalSummary_returnsEmpty() {
+        assertThat(patientLookupAdapter.getPatientMedicalSummary(101L)).isEmpty();
+    }
+
     // --- Dentist Lookup Tests ---
 
     @Test
