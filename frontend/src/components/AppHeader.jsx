@@ -86,6 +86,20 @@ export default function AppHeader() {
                 My Appointments
               </NavLink>
               <NavLink
+                to="/patient/prescriptions"
+                className={({ isActive }) => `app-nav-link ${isActive ? 'active' : ''}`}
+                onClick={() => setMenuOpen(false)}
+              >
+                My Prescriptions
+              </NavLink>
+              <NavLink
+                to="/patient/invoices"
+                className={({ isActive }) => `app-nav-link ${isActive ? 'active' : ''}`}
+                onClick={() => setMenuOpen(false)}
+              >
+                My Invoices
+              </NavLink>
+              <NavLink
                 to="/account"
                 className={({ isActive }) => `app-nav-link ${isActive ? 'active' : ''}`}
                 onClick={() => setMenuOpen(false)}

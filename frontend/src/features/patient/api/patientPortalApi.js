@@ -136,3 +136,72 @@ export async function createAppointmentRequest(appointmentData) {
   });
 }
 
+/**
+ * Cancels a pending appointment request owned by the authenticated patient.
+ *
+ * @param {number|string} id
+ * @returns {Promise<Object>}
+ */
+export async function cancelAppointmentRequest(id) {
+  return request(`/api/patient/me/appointments/${id}/cancel`, {
+    method: 'PATCH'
+  });
+}
+
+/**
+ * Fetches all invoices issued to the authenticated patient.
+ *
+ * @returns {Promise<Array>}
+ */
+export async function getPatientInvoices() {
+  return request('/api/patient/me/invoices');
+}
+
+/**
+ * Fetches a single invoice owned by the authenticated patient.
+ *
+ * @param {number|string} id
+ * @returns {Promise<Object>}
+ */
+export async function getPatientInvoiceById(id) {
+  return request(`/api/patient/me/invoices/${id}`);
+}
+
+/**
+ * Fetches receipt details for a payment owned by the authenticated patient.
+ *
+ * @param {number|string} paymentId
+ * @returns {Promise<Object>}
+ */
+export async function getPatientReceipt(paymentId) {
+  return request(`/api/patient/me/payments/${paymentId}/receipt`);
+}
+
+/**
+ * Updates the authenticated patient's profile details (phone number).
+ *
+ * @param {Object} payload
+ * @param {string} payload.phone
+ * @returns {Promise<Object>} Updated patient profile response
+ */
+export async function updatePatientProfile(payload) {
+  return request('/api/patient/me/profile', {
+    method: 'PATCH',
+    body: JSON.stringify(payload)
+  });
+}
+
+/**
+ * Changes the authenticated patient's password requiring current password verification.
+ *
+ * @param {Object} payload
+ * @param {string} payload.currentPassword
+ * @param {string} payload.newPassword
+ * @returns {Promise<Object>} Password change success response
+ */
+export async function changePatientPassword(payload) {
+  return request('/api/patient/me/change-password', {
+    method: 'POST',
+    body: JSON.stringify(payload)
+  });
+}

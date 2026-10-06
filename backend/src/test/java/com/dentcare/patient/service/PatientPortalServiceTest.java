@@ -4,8 +4,19 @@ import com.dentcare.appointment.dto.CreateAppointmentRequest;
 import com.dentcare.appointment.dto.PatientAppointmentResponse;
 import com.dentcare.appointment.entity.Appointment;
 import com.dentcare.appointment.entity.AppointmentStatus;
+import com.dentcare.billing.entity.Invoice;
+import com.dentcare.billing.entity.InvoiceItem;
+import com.dentcare.billing.entity.InvoiceStatus;
+import com.dentcare.billing.entity.Payment;
+import com.dentcare.billing.entity.PaymentMethod;
+import com.dentcare.billing.entity.PaymentStatus;
+import com.dentcare.billing.repository.InvoiceRepository;
+import com.dentcare.billing.repository.PaymentRepository;
 import com.dentcare.patient.dto.PatientDashboardSummaryResponse;
+import com.dentcare.patient.dto.PatientInvoiceDetailResponse;
+import com.dentcare.patient.dto.PatientInvoiceSummaryResponse;
 import com.dentcare.patient.dto.PatientPrescriptionItemResponse;
+import com.dentcare.patient.dto.PatientReceiptResponse;
 import com.dentcare.patient.entity.Gender;
 import com.dentcare.patient.entity.Patient;
 import com.dentcare.patient.repository.PatientRepository;
@@ -27,6 +38,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.server.ResponseStatusException;
 
+import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
@@ -53,6 +65,15 @@ class PatientPortalServiceTest {
     @Mock
     private com.dentcare.appointment.repository.AppointmentRepository appointmentRepository;
 
+    @Mock
+    private InvoiceRepository invoiceRepository;
+
+    @Mock
+    private PaymentRepository paymentRepository;
+
+    @Mock
+    private org.springframework.security.crypto.password.PasswordEncoder passwordEncoder;
+
     private PatientPortalService patientPortalService;
 
     private User patientUser1;
@@ -65,7 +86,10 @@ class PatientPortalServiceTest {
                 userRepository,
                 patientRepository,
                 prescriptionRepository,
-                appointmentRepository
+                appointmentRepository,
+                invoiceRepository,
+                paymentRepository,
+                passwordEncoder
         );
 
         patientUser1 = new User("patient1@dentcare.test", "hash1", "Alice", "Smith", "+1 555-0101", Role.PATIENT);
@@ -630,6 +654,557 @@ class PatientPortalServiceTest {
                 .satisfies(ex -> {
                     ResponseStatusException rse = (ResponseStatusException) ex;
                     assertThat(rse.getStatusCode()).isEqualTo(HttpStatus.NOT_FOUND);
+                });
+    }
+
+    @Test
+    @DisplayName("cancelAppointmentRequest allows authenticated patient to cancel their own PENDING appointment")
+    void testCancelAppointmentRequestSuccess() {
+        when(userRepository.findByEmailIgnoreCase("patient1@dentcare.test"))
+                .thenReturn(Optional.of(patientUser1));
+
+        Appointment appt = new Appointment(patientUser1, LocalDate.now().plusDays(3), "14:00", "Root canal check", "Mild ache");
+        appt.setId(3001L);
+        appt.setStatus(AppointmentStatus.PENDING);
+
+        when(appointmentRepository.findByIdWithDentist(3001L)).thenReturn(Optional.of(appt));
+        when(appointmentRepository.save(any(Appointment.class))).thenAnswer(invocation -> invocation.getArgument(0));
+
+        PatientAppointmentResponse response = patientPortalService.cancelAppointmentRequest("patient1@dentcare.test", 3001L);
+
+        assertThat(response).isNotNull();
+        assertThat(response.id()).isEqualTo(3001L);
+        assertThat(response.status()).isEqualTo("CANCELLED");
+        assertThat(response.statusDescription()).isEqualTo("Cancelled");
+        assertThat(appt.getStatus()).isEqualTo(AppointmentStatus.CANCELLED);
+    }
+
+    @Test
+    @DisplayName("cancelAppointmentRequest preserves original appointment fields (date, time, reason, notes, dentist, patient)")
+    void testCancelAppointmentRequestPreservesFields() {
+        when(userRepository.findByEmailIgnoreCase("patient1@dentcare.test"))
+                .thenReturn(Optional.of(patientUser1));
+
+        LocalDate apptDate = LocalDate.now().plusDays(5);
+        Appointment appt = new Appointment(patientUser1, apptDate, "09:30", "Consultation", "Some notes");
+        appt.setId(3002L);
+        appt.setStatus(AppointmentStatus.PENDING);
+        appt.setDentist(dentistUser);
+
+        when(appointmentRepository.findByIdWithDentist(3002L)).thenReturn(Optional.of(appt));
+        when(appointmentRepository.save(any(Appointment.class))).thenAnswer(invocation -> invocation.getArgument(0));
+
+        PatientAppointmentResponse response = patientPortalService.cancelAppointmentRequest("patient1@dentcare.test", 3002L);
+
+        assertThat(appt.getAppointmentDate()).isEqualTo(apptDate);
+        assertThat(appt.getPreferredTime()).isEqualTo("09:30");
+        assertThat(appt.getReason()).isEqualTo("Consultation");
+        assertThat(appt.getNotes()).isEqualTo("Some notes");
+        assertThat(appt.getDentist()).isEqualTo(dentistUser);
+        assertThat(appt.getPatient()).isEqualTo(patientUser1);
+        assertThat(response.dentistName()).isEqualTo("Dr. Sarah Connor");
+    }
+
+    @Test
+    @DisplayName("CRITICAL DATA ISOLATION: Patient A cannot cancel Patient B's appointment (403 Forbidden)")
+    void testCancelAppointmentRequestCrossPatientForbidden() {
+        when(userRepository.findByEmailIgnoreCase("patient1@dentcare.test"))
+                .thenReturn(Optional.of(patientUser1));
+
+        Appointment apptOfBob = new Appointment(patientUser2, LocalDate.now().plusDays(2), "11:00", "Checkup", null);
+        apptOfBob.setId(3003L);
+        apptOfBob.setStatus(AppointmentStatus.PENDING);
+
+        when(appointmentRepository.findByIdWithDentist(3003L)).thenReturn(Optional.of(apptOfBob));
+
+        assertThatThrownBy(() -> patientPortalService.cancelAppointmentRequest("patient1@dentcare.test", 3003L))
+                .isInstanceOf(ResponseStatusException.class)
+                .satisfies(ex -> {
+                    ResponseStatusException rse = (ResponseStatusException) ex;
+                    assertThat(rse.getStatusCode()).isEqualTo(HttpStatus.FORBIDDEN);
+                    assertThat(rse.getReason()).contains("Access denied");
+                });
+    }
+
+    @Test
+    @DisplayName("cancelAppointmentRequest throws 404 Not Found when appointment does not exist")
+    void testCancelAppointmentRequestNotFound() {
+        when(userRepository.findByEmailIgnoreCase("patient1@dentcare.test"))
+                .thenReturn(Optional.of(patientUser1));
+        when(appointmentRepository.findByIdWithDentist(9999L)).thenReturn(Optional.empty());
+
+        assertThatThrownBy(() -> patientPortalService.cancelAppointmentRequest("patient1@dentcare.test", 9999L))
+                .isInstanceOf(ResponseStatusException.class)
+                .satisfies(ex -> {
+                    ResponseStatusException rse = (ResponseStatusException) ex;
+                    assertThat(rse.getStatusCode()).isEqualTo(HttpStatus.NOT_FOUND);
+                });
+    }
+
+    @Test
+    @DisplayName("cancelAppointmentRequest rejects cancelling CONFIRMED appointment with 400 Bad Request")
+    void testCancelAppointmentRequestConfirmedBadRequest() {
+        when(userRepository.findByEmailIgnoreCase("patient1@dentcare.test"))
+                .thenReturn(Optional.of(patientUser1));
+
+        Appointment appt = new Appointment(patientUser1, LocalDate.now().plusDays(2), "10:00", "Filling", null);
+        appt.setId(3004L);
+        appt.setStatus(AppointmentStatus.CONFIRMED);
+
+        when(appointmentRepository.findByIdWithDentist(3004L)).thenReturn(Optional.of(appt));
+
+        assertThatThrownBy(() -> patientPortalService.cancelAppointmentRequest("patient1@dentcare.test", 3004L))
+                .isInstanceOf(ResponseStatusException.class)
+                .satisfies(ex -> {
+                    ResponseStatusException rse = (ResponseStatusException) ex;
+                    assertThat(rse.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST);
+                    assertThat(rse.getReason()).contains("Only pending appointment requests can be cancelled");
+                });
+    }
+
+    @Test
+    @DisplayName("cancelAppointmentRequest rejects cancelling already-CANCELLED appointment with 400 Bad Request")
+    void testCancelAppointmentRequestAlreadyCancelledBadRequest() {
+        when(userRepository.findByEmailIgnoreCase("patient1@dentcare.test"))
+                .thenReturn(Optional.of(patientUser1));
+
+        Appointment appt = new Appointment(patientUser1, LocalDate.now().plusDays(2), "10:00", "Filling", null);
+        appt.setId(3005L);
+        appt.setStatus(AppointmentStatus.CANCELLED);
+
+        when(appointmentRepository.findByIdWithDentist(3005L)).thenReturn(Optional.of(appt));
+
+        assertThatThrownBy(() -> patientPortalService.cancelAppointmentRequest("patient1@dentcare.test", 3005L))
+                .isInstanceOf(ResponseStatusException.class)
+                .satisfies(ex -> {
+                    ResponseStatusException rse = (ResponseStatusException) ex;
+                    assertThat(rse.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST);
+                    assertThat(rse.getReason()).contains("already cancelled");
+                });
+    }
+
+    @Test
+    @DisplayName("getPatientInvoices returns own invoices ordered newest first mapped to PatientInvoiceSummaryResponse")
+    void testGetPatientInvoicesSuccess() {
+        when(userRepository.findByEmailIgnoreCase("patient1@dentcare.test"))
+                .thenReturn(Optional.of(patientUser1));
+
+        Invoice inv1 = new Invoice("INV-2026-0001", 101L, LocalDate.of(2026, 9, 20));
+        inv1.setId(5001L);
+        inv1.setTotalAmount(new BigDecimal("150.00"));
+        inv1.setPaidAmount(new BigDecimal("50.00"));
+        inv1.setBalanceAmount(new BigDecimal("100.00"));
+        inv1.setStatus(InvoiceStatus.PARTIALLY_PAID);
+
+        Invoice inv2 = new Invoice("INV-2026-0002", 101L, LocalDate.of(2026, 8, 15));
+        inv2.setId(5002L);
+        inv2.setTotalAmount(new BigDecimal("80.00"));
+        inv2.setPaidAmount(new BigDecimal("80.00"));
+        inv2.setBalanceAmount(BigDecimal.ZERO);
+        inv2.setStatus(InvoiceStatus.PAID);
+
+        when(invoiceRepository.findByPatientIdOrderByInvoiceDateDescIdDesc(101L))
+                .thenReturn(List.of(inv1, inv2));
+
+        List<PatientInvoiceSummaryResponse> summaries = patientPortalService.getPatientInvoices("patient1@dentcare.test");
+
+        assertThat(summaries).hasSize(2);
+        assertThat(summaries.get(0).id()).isEqualTo(5001L);
+        assertThat(summaries.get(0).invoiceNumber()).isEqualTo("INV-2026-0001");
+        assertThat(summaries.get(0).totalAmount()).isEqualByComparingTo("150.00");
+        assertThat(summaries.get(0).paidAmount()).isEqualByComparingTo("50.00");
+        assertThat(summaries.get(0).balanceAmount()).isEqualByComparingTo("100.00");
+        assertThat(summaries.get(0).status()).isEqualTo("PARTIALLY_PAID");
+
+        assertThat(summaries.get(1).id()).isEqualTo(5002L);
+        assertThat(summaries.get(1).status()).isEqualTo("PAID");
+    }
+
+    @Test
+    @DisplayName("getPatientInvoices query uses authenticated user ID, strictly isolating Patient A from Patient B")
+    void testGetPatientInvoicesCrossPatientIsolation() {
+        when(userRepository.findByEmailIgnoreCase("patient2@dentcare.test"))
+                .thenReturn(Optional.of(patientUser2));
+
+        when(invoiceRepository.findByPatientIdOrderByInvoiceDateDescIdDesc(102L))
+                .thenReturn(List.of());
+
+        List<PatientInvoiceSummaryResponse> summaries = patientPortalService.getPatientInvoices("patient2@dentcare.test");
+
+        assertThat(summaries).isEmpty();
+        // Verifies repository was called strictly with patientUser2.id (102L), never 101L
+        org.mockito.Mockito.verify(invoiceRepository).findByPatientIdOrderByInvoiceDateDescIdDesc(102L);
+        org.mockito.Mockito.verify(invoiceRepository, org.mockito.Mockito.never()).findByPatientIdOrderByInvoiceDateDescIdDesc(101L);
+    }
+
+    @Test
+    @DisplayName("getPatientInvoiceById returns verified invoice details with items and payment history")
+    void testGetPatientInvoiceByIdSuccess() {
+        when(userRepository.findByEmailIgnoreCase("patient1@dentcare.test"))
+                .thenReturn(Optional.of(patientUser1));
+
+        Invoice inv = new Invoice("INV-2026-0010", 101L, LocalDate.of(2026, 9, 25));
+        inv.setId(5010L);
+        inv.setSubtotal(new BigDecimal("200.00"));
+        inv.setDiscountAmount(BigDecimal.ZERO);
+        inv.setTotalAmount(new BigDecimal("200.00"));
+        inv.setPaidAmount(new BigDecimal("100.00"));
+        inv.setBalanceAmount(new BigDecimal("100.00"));
+        inv.setStatus(InvoiceStatus.PARTIALLY_PAID);
+        inv.setNotes("Follow-up appointment scheduled");
+
+        InvoiceItem item = new InvoiceItem(inv, "Dental Consultation & Cleaning", 1, new BigDecimal("200.00"), new BigDecimal("200.00"));
+        item.setId(6001L);
+        inv.addItem(item);
+
+        Payment payment = new Payment(inv, "PAY-2026-0001", new BigDecimal("100.00"), PaymentMethod.CARD, "AUTH-999", LocalDateTime.of(2026, 9, 25, 11, 30), 201L);
+        payment.setId(7001L);
+        payment.setStatus(PaymentStatus.RECORDED);
+        inv.getPayments().add(payment);
+
+        when(invoiceRepository.findById(5010L)).thenReturn(Optional.of(inv));
+
+        PatientInvoiceDetailResponse detail = patientPortalService.getPatientInvoiceById("patient1@dentcare.test", 5010L);
+
+        assertThat(detail).isNotNull();
+        assertThat(detail.id()).isEqualTo(5010L);
+        assertThat(detail.invoiceNumber()).isEqualTo("INV-2026-0010");
+        assertThat(detail.status()).isEqualTo("PARTIALLY_PAID");
+        assertThat(detail.notes()).isEqualTo("Follow-up appointment scheduled");
+        assertThat(detail.items()).hasSize(1);
+        assertThat(detail.items().get(0).description()).isEqualTo("Dental Consultation & Cleaning");
+        assertThat(detail.items().get(0).lineTotal()).isEqualByComparingTo("200.00");
+        assertThat(detail.payments()).hasSize(1);
+        assertThat(detail.payments().get(0).paymentNumber()).isEqualTo("PAY-2026-0001");
+        assertThat(detail.payments().get(0).amount()).isEqualByComparingTo("100.00");
+        assertThat(detail.payments().get(0).paymentMethod()).isEqualTo("CARD");
+    }
+
+    @Test
+    @DisplayName("getPatientInvoiceById throws 404 when invoice does not exist")
+    void testGetPatientInvoiceByIdNotFoundThrows404() {
+        when(userRepository.findByEmailIgnoreCase("patient1@dentcare.test"))
+                .thenReturn(Optional.of(patientUser1));
+
+        when(invoiceRepository.findById(9999L)).thenReturn(Optional.empty());
+
+        assertThatThrownBy(() -> patientPortalService.getPatientInvoiceById("patient1@dentcare.test", 9999L))
+                .isInstanceOf(ResponseStatusException.class)
+                .satisfies(ex -> {
+                    ResponseStatusException rse = (ResponseStatusException) ex;
+                    assertThat(rse.getStatusCode()).isEqualTo(HttpStatus.NOT_FOUND);
+                    assertThat(rse.getReason()).contains("Invoice not found");
+                });
+    }
+
+    @Test
+    @DisplayName("getPatientInvoiceById throws 403 Forbidden when invoice belongs to another patient")
+    void testGetPatientInvoiceByIdCrossPatientForbiddenThrows403() {
+        when(userRepository.findByEmailIgnoreCase("patient1@dentcare.test"))
+                .thenReturn(Optional.of(patientUser1));
+
+        // Invoice belongs to patientUser2 (102L), not patientUser1 (101L)
+        Invoice otherPatientInvoice = new Invoice("INV-2026-0099", 102L, LocalDate.of(2026, 9, 20));
+        otherPatientInvoice.setId(5099L);
+
+        when(invoiceRepository.findById(5099L)).thenReturn(Optional.of(otherPatientInvoice));
+
+        assertThatThrownBy(() -> patientPortalService.getPatientInvoiceById("patient1@dentcare.test", 5099L))
+                .isInstanceOf(ResponseStatusException.class)
+                .satisfies(ex -> {
+                    ResponseStatusException rse = (ResponseStatusException) ex;
+                    assertThat(rse.getStatusCode()).isEqualTo(HttpStatus.FORBIDDEN);
+                    assertThat(rse.getReason()).contains("does not belong to the authenticated patient");
+                });
+    }
+
+    @Test
+    @DisplayName("getPatientReceipt returns patient-safe receipt data for owned payment")
+    void testGetPatientReceiptSuccess() {
+        when(userRepository.findByEmailIgnoreCase("patient1@dentcare.test"))
+                .thenReturn(Optional.of(patientUser1));
+
+        Invoice inv = new Invoice("INV-2026-0050", 101L, LocalDate.of(2026, 9, 20));
+        inv.setId(5050L);
+        inv.setTotalAmount(new BigDecimal("300.00"));
+        inv.setBalanceAmount(new BigDecimal("100.00"));
+
+        Payment payment = new Payment(inv, "PAY-2026-0088", new BigDecimal("200.00"), PaymentMethod.BANK_TRANSFER, "REF-12345", LocalDateTime.of(2026, 9, 21, 14, 0), 999L);
+        payment.setId(7088L);
+        payment.setStatus(PaymentStatus.RECORDED);
+
+        when(paymentRepository.findById(7088L)).thenReturn(Optional.of(payment));
+
+        PatientReceiptResponse receipt = patientPortalService.getPatientReceipt("patient1@dentcare.test", 7088L);
+
+        assertThat(receipt).isNotNull();
+        assertThat(receipt.paymentId()).isEqualTo(7088L);
+        assertThat(receipt.paymentNumber()).isEqualTo("PAY-2026-0088");
+        assertThat(receipt.invoiceId()).isEqualTo(5050L);
+        assertThat(receipt.invoiceNumber()).isEqualTo("INV-2026-0050");
+        assertThat(receipt.paymentAmount()).isEqualByComparingTo("200.00");
+        assertThat(receipt.paymentMethod()).isEqualTo("BANK_TRANSFER");
+        assertThat(receipt.paymentReference()).isEqualTo("REF-12345");
+        assertThat(receipt.invoiceTotalAmount()).isEqualByComparingTo("300.00");
+        assertThat(receipt.remainingBalance()).isEqualByComparingTo("100.00");
+        assertThat(receipt.status()).isEqualTo("RECORDED");
+    }
+
+    @Test
+    @DisplayName("getPatientReceipt throws 404 Not Found when payment does not exist")
+    void testGetPatientReceiptNotFoundThrows404() {
+        when(userRepository.findByEmailIgnoreCase("patient1@dentcare.test"))
+                .thenReturn(Optional.of(patientUser1));
+
+        when(paymentRepository.findById(8888L)).thenReturn(Optional.empty());
+
+        assertThatThrownBy(() -> patientPortalService.getPatientReceipt("patient1@dentcare.test", 8888L))
+                .isInstanceOf(ResponseStatusException.class)
+                .satisfies(ex -> {
+                    ResponseStatusException rse = (ResponseStatusException) ex;
+                    assertThat(rse.getStatusCode()).isEqualTo(HttpStatus.NOT_FOUND);
+                    assertThat(rse.getReason()).contains("Payment not found");
+                });
+    }
+
+    @Test
+    @DisplayName("getPatientReceipt throws 403 Forbidden when payment invoice belongs to another patient")
+    void testGetPatientReceiptCrossPatientForbiddenThrows403() {
+        when(userRepository.findByEmailIgnoreCase("patient1@dentcare.test"))
+                .thenReturn(Optional.of(patientUser1));
+
+        // Invoice belongs to patientUser2 (102L)
+        Invoice otherPatientInvoice = new Invoice("INV-2026-0077", 102L, LocalDate.of(2026, 9, 22));
+        otherPatientInvoice.setId(5077L);
+
+        Payment otherPayment = new Payment(otherPatientInvoice, "PAY-2026-0077", new BigDecimal("50.00"), PaymentMethod.CASH, null, LocalDateTime.now(), 201L);
+        otherPayment.setId(7077L);
+
+        when(paymentRepository.findById(7077L)).thenReturn(Optional.of(otherPayment));
+
+        assertThatThrownBy(() -> patientPortalService.getPatientReceipt("patient1@dentcare.test", 7077L))
+                .isInstanceOf(ResponseStatusException.class)
+                .satisfies(ex -> {
+                    ResponseStatusException rse = (ResponseStatusException) ex;
+                    assertThat(rse.getStatusCode()).isEqualTo(HttpStatus.FORBIDDEN);
+                    assertThat(rse.getReason()).contains("does not belong to the authenticated patient");
+                });
+    }
+
+    // =========================================================================
+    // Patient Self-Service: Phone Update Tests
+    // =========================================================================
+
+    @Test
+    @DisplayName("Patient updates own phone successfully and normalized value is persisted")
+    void testUpdatePatientProfileSuccess() {
+        when(userRepository.findByEmailIgnoreCase("patient1@dentcare.test"))
+                .thenReturn(Optional.of(patientUser1));
+        when(userRepository.save(any(User.class))).thenAnswer(invocation -> invocation.getArgument(0));
+
+        com.dentcare.patient.dto.UpdatePatientProfileRequest request =
+                new com.dentcare.patient.dto.UpdatePatientProfileRequest(" +1 555-9876 ");
+
+        com.dentcare.patient.dto.PatientProfileResponse response =
+                patientPortalService.updatePatientProfile("patient1@dentcare.test", request);
+
+        assertThat(response).isNotNull();
+        assertThat(response.id()).isEqualTo(101L);
+        assertThat(response.phone()).isEqualTo("+1 555-9876");
+        assertThat(response.email()).isEqualTo("patient1@dentcare.test");
+        assertThat(response.firstName()).isEqualTo("Alice");
+        assertThat(response.lastName()).isEqualTo("Smith");
+        assertThat(response.role()).isEqualTo("PATIENT");
+        assertThat(patientUser1.getPhone()).isEqualTo("+1 555-9876");
+    }
+
+    @Test
+    @DisplayName("Blank or whitespace phone is normalized to null")
+    void testUpdatePatientProfileBlankPhoneNormalizedToNull() {
+        when(userRepository.findByEmailIgnoreCase("patient1@dentcare.test"))
+                .thenReturn(Optional.of(patientUser1));
+        when(userRepository.save(any(User.class))).thenAnswer(invocation -> invocation.getArgument(0));
+
+        com.dentcare.patient.dto.UpdatePatientProfileRequest request =
+                new com.dentcare.patient.dto.UpdatePatientProfileRequest("   ");
+
+        com.dentcare.patient.dto.PatientProfileResponse response =
+                patientPortalService.updatePatientProfile("patient1@dentcare.test", request);
+
+        assertThat(response.phone()).isNull();
+        assertThat(patientUser1.getPhone()).isNull();
+    }
+
+    @Test
+    @DisplayName("Patient without clinical Patient record can update phone")
+    void testUpdatePatientProfileWithoutClinicalRecord() {
+        // patientUser1 has no clinical record in patientRepository
+        when(userRepository.findByEmailIgnoreCase("patient1@dentcare.test"))
+                .thenReturn(Optional.of(patientUser1));
+        when(userRepository.save(any(User.class))).thenAnswer(invocation -> invocation.getArgument(0));
+
+        com.dentcare.patient.dto.UpdatePatientProfileRequest request =
+                new com.dentcare.patient.dto.UpdatePatientProfileRequest("+1 555-4321");
+
+        com.dentcare.patient.dto.PatientProfileResponse response =
+                patientPortalService.updatePatientProfile("patient1@dentcare.test", request);
+
+        assertThat(response.phone()).isEqualTo("+1 555-4321");
+    }
+
+    @Test
+    @DisplayName("Phone exceeding 25 characters is rejected with 400 Bad Request")
+    void testUpdatePatientProfilePhoneExceedingMaxCharsThrows400() {
+        when(userRepository.findByEmailIgnoreCase("patient1@dentcare.test"))
+                .thenReturn(Optional.of(patientUser1));
+
+        com.dentcare.patient.dto.UpdatePatientProfileRequest request =
+                new com.dentcare.patient.dto.UpdatePatientProfileRequest("12345678901234567890123456");
+
+        assertThatThrownBy(() -> patientPortalService.updatePatientProfile("patient1@dentcare.test", request))
+                .isInstanceOf(ResponseStatusException.class)
+                .satisfies(ex -> {
+                    ResponseStatusException rse = (ResponseStatusException) ex;
+                    assertThat(rse.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST);
+                    assertThat(rse.getReason()).contains("Phone number cannot exceed 25 characters");
+                });
+    }
+
+    @Test
+    @DisplayName("Staff role attempting patient profile update is rejected with 403 Forbidden")
+    void testUpdatePatientProfileStaffRoleThrows403() {
+        when(userRepository.findByEmailIgnoreCase("dentist@dentcare.test"))
+                .thenReturn(Optional.of(dentistUser));
+
+        com.dentcare.patient.dto.UpdatePatientProfileRequest request =
+                new com.dentcare.patient.dto.UpdatePatientProfileRequest("+1 555-9999");
+
+        assertThatThrownBy(() -> patientPortalService.updatePatientProfile("dentist@dentcare.test", request))
+                .isInstanceOf(ResponseStatusException.class)
+                .satisfies(ex -> {
+                    ResponseStatusException rse = (ResponseStatusException) ex;
+                    assertThat(rse.getStatusCode()).isEqualTo(HttpStatus.FORBIDDEN);
+                    assertThat(rse.getReason()).contains("Access denied: patient self-service only");
+                });
+    }
+
+    // =========================================================================
+    // Patient Self-Service: Password Change Tests
+    // =========================================================================
+
+    @Test
+    @DisplayName("Patient changes password successfully with correct current password")
+    void testChangePasswordSuccess() {
+        when(userRepository.findByEmailIgnoreCase("patient1@dentcare.test"))
+                .thenReturn(Optional.of(patientUser1));
+        when(passwordEncoder.matches("CurrentPass123", "hash1")).thenReturn(true);
+        when(passwordEncoder.matches("NewSecurePass456", "hash1")).thenReturn(false);
+        when(passwordEncoder.encode("NewSecurePass456")).thenReturn("$2a$12$newHashedPassword");
+        when(userRepository.save(any(User.class))).thenAnswer(invocation -> invocation.getArgument(0));
+
+        com.dentcare.patient.dto.ChangePasswordRequest request =
+                new com.dentcare.patient.dto.ChangePasswordRequest("CurrentPass123", "NewSecurePass456");
+
+        patientPortalService.changePatientPassword("patient1@dentcare.test", request);
+
+        assertThat(patientUser1.getPasswordHash()).isEqualTo("$2a$12$newHashedPassword");
+        assertThat(patientUser1.getEmail()).isEqualTo("patient1@dentcare.test");
+        assertThat(patientUser1.getFirstName()).isEqualTo("Alice");
+        assertThat(patientUser1.getLastName()).isEqualTo("Smith");
+        assertThat(patientUser1.getRole()).isEqualTo(Role.PATIENT);
+    }
+
+    @Test
+    @DisplayName("Wrong current password is safely rejected with 400 Bad Request")
+    void testChangePasswordWrongCurrentPasswordThrows400() {
+        when(userRepository.findByEmailIgnoreCase("patient1@dentcare.test"))
+                .thenReturn(Optional.of(patientUser1));
+        when(passwordEncoder.matches("WrongPassword1", "hash1")).thenReturn(false);
+
+        com.dentcare.patient.dto.ChangePasswordRequest request =
+                new com.dentcare.patient.dto.ChangePasswordRequest("WrongPassword1", "NewSecurePass456");
+
+        assertThatThrownBy(() -> patientPortalService.changePatientPassword("patient1@dentcare.test", request))
+                .isInstanceOf(ResponseStatusException.class)
+                .satisfies(ex -> {
+                    ResponseStatusException rse = (ResponseStatusException) ex;
+                    assertThat(rse.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST);
+                    assertThat(rse.getReason()).contains("Current password is incorrect");
+                });
+    }
+
+    @Test
+    @DisplayName("Weak new password (no digits) is rejected with 400 Bad Request")
+    void testChangePasswordWithoutDigitThrows400() {
+        when(userRepository.findByEmailIgnoreCase("patient1@dentcare.test"))
+                .thenReturn(Optional.of(patientUser1));
+        when(passwordEncoder.matches("CurrentPass123", "hash1")).thenReturn(true);
+
+        com.dentcare.patient.dto.ChangePasswordRequest request =
+                new com.dentcare.patient.dto.ChangePasswordRequest("CurrentPass123", "nodigitsinpassword");
+
+        assertThatThrownBy(() -> patientPortalService.changePatientPassword("patient1@dentcare.test", request))
+                .isInstanceOf(ResponseStatusException.class)
+                .satisfies(ex -> {
+                    ResponseStatusException rse = (ResponseStatusException) ex;
+                    assertThat(rse.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST);
+                    assertThat(rse.getReason()).contains("at least one letter and one digit");
+                });
+    }
+
+    @Test
+    @DisplayName("Short new password (< 8 chars) is rejected with 400 Bad Request")
+    void testChangePasswordTooShortThrows400() {
+        when(userRepository.findByEmailIgnoreCase("patient1@dentcare.test"))
+                .thenReturn(Optional.of(patientUser1));
+        when(passwordEncoder.matches("CurrentPass123", "hash1")).thenReturn(true);
+
+        com.dentcare.patient.dto.ChangePasswordRequest request =
+                new com.dentcare.patient.dto.ChangePasswordRequest("CurrentPass123", "Pass1");
+
+        assertThatThrownBy(() -> patientPortalService.changePatientPassword("patient1@dentcare.test", request))
+                .isInstanceOf(ResponseStatusException.class)
+                .satisfies(ex -> {
+                    ResponseStatusException rse = (ResponseStatusException) ex;
+                    assertThat(rse.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST);
+                    assertThat(rse.getReason()).contains("between 8 and 100 characters");
+                });
+    }
+
+    @Test
+    @DisplayName("New password same as current password is rejected with 400 Bad Request")
+    void testChangePasswordSameAsCurrentThrows400() {
+        when(userRepository.findByEmailIgnoreCase("patient1@dentcare.test"))
+                .thenReturn(Optional.of(patientUser1));
+        when(passwordEncoder.matches("CurrentPass123", "hash1")).thenReturn(true);
+
+        com.dentcare.patient.dto.ChangePasswordRequest request =
+                new com.dentcare.patient.dto.ChangePasswordRequest("CurrentPass123", "CurrentPass123");
+
+        assertThatThrownBy(() -> patientPortalService.changePatientPassword("patient1@dentcare.test", request))
+                .isInstanceOf(ResponseStatusException.class)
+                .satisfies(ex -> {
+                    ResponseStatusException rse = (ResponseStatusException) ex;
+                    assertThat(rse.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST);
+                    assertThat(rse.getReason()).contains("New password cannot be the same as current password");
+                });
+    }
+
+    @Test
+    @DisplayName("Staff role attempting password change via patient endpoint is rejected with 403 Forbidden")
+    void testChangePasswordStaffRoleThrows403() {
+        when(userRepository.findByEmailIgnoreCase("dentist@dentcare.test"))
+                .thenReturn(Optional.of(dentistUser));
+
+        com.dentcare.patient.dto.ChangePasswordRequest request =
+                new com.dentcare.patient.dto.ChangePasswordRequest("OldPass123", "NewPass456");
+
+        assertThatThrownBy(() -> patientPortalService.changePatientPassword("dentist@dentcare.test", request))
+                .isInstanceOf(ResponseStatusException.class)
+                .satisfies(ex -> {
+                    ResponseStatusException rse = (ResponseStatusException) ex;
+                    assertThat(rse.getStatusCode()).isEqualTo(HttpStatus.FORBIDDEN);
+                    assertThat(rse.getReason()).contains("Access denied: patient self-service only");
                 });
     }
 }

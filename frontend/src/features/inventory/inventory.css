@@ -2357,6 +2357,58 @@
   font-size: 0.875rem;
 }
 
+/* Success Alert Content (Scoped to Inventory) */
+.inventory-container .success-alert {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 0.85rem 1.15rem;
+  background-color: #f0fdfa;
+  border: 1px solid #99f6e4;
+  border-radius: var(--inv-radius-md, 6px);
+  color: #0f766e;
+  margin-bottom: 1.25rem;
+  box-shadow: 0 1px 3px rgba(15, 118, 110, 0.06);
+}
+
+.inventory-container .success-alert-content {
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+}
+
+.inventory-container .success-alert-content p {
+  margin: 0;
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: #0f766e;
+}
+
+.inventory-container .success-alert-content svg {
+  color: #0d9488;
+  flex-shrink: 0;
+}
+
+.inventory-container .alert-dismiss-btn {
+  background: none;
+  border: none;
+  font-size: 1.25rem;
+  line-height: 1;
+  color: #0f766e;
+  cursor: pointer;
+  padding: 0.15rem 0.35rem;
+  border-radius: 4px;
+  transition: opacity 0.15s ease, background-color 0.15s ease;
+  opacity: 0.75;
+}
+
+.inventory-container .alert-dismiss-btn:hover {
+  opacity: 1;
+  background-color: rgba(15, 118, 110, 0.1);
+}
+
+
 /* ========================================================================= */
 /* S9 — Item Detail & Stock Movement Redesign Styles                         */
 /* ========================================================================= */

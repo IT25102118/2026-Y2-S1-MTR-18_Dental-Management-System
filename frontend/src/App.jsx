@@ -28,6 +28,9 @@ import { STAFF_ROLES } from './features/auth/roleAccess';
 import PublicLandingPage from './features/auth/pages/PublicLandingPage';
 import PatientDashboardPage from './features/auth/pages/PatientDashboardPage';
 import PatientAppointmentsPage from './features/auth/pages/PatientAppointmentsPage';
+import PatientPrescriptionsPage from './features/auth/pages/PatientPrescriptionsPage';
+import PatientInvoicesPage from './features/auth/pages/PatientInvoicesPage';
+import PatientInvoiceDetailPage from './features/auth/pages/PatientInvoiceDetailPage';
 import StaffDashboardPage from './features/auth/pages/StaffDashboardPage';
 import ClinicalOverviewPage from './features/clinical/pages/ClinicalOverviewPage';
 import ExaminationsPage from './features/clinical/pages/ExaminationsPage';
@@ -76,6 +79,30 @@ export default function App() {
               element={
                 <ProtectedRoute allowedRoles={['PATIENT']}>
                   <PatientAppointmentsPage />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/patient/prescriptions"
+              element={
+                <ProtectedRoute allowedRoles={['PATIENT']}>
+                  <PatientPrescriptionsPage />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/patient/invoices"
+              element={
+                <ProtectedRoute allowedRoles={['PATIENT']}>
+                  <PatientInvoicesPage />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/patient/invoices/:id"
+              element={
+                <ProtectedRoute allowedRoles={['PATIENT']}>
+                  <PatientInvoiceDetailPage />
                 </ProtectedRoute>
               }
             />

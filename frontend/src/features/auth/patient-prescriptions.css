@@ -1,0 +1,518 @@
+/* =============================================================================
+   DentCare Patient Prescriptions Styles
+   Theme: Pearl white / warm-white canvas, DentCare clinical teal (#0f766e),
+          soft mint/aqua, slate/navy typography, clean rounded healthcare cards.
+   ============================================================================= */
+
+.patient-prescriptions-page {
+  min-height: calc(100vh - 68px);
+  background-color: #fafaf9;
+  background-image:
+    radial-gradient(1200px 500px at 15% 0%, rgba(15, 118, 110, 0.06) 0%, transparent 70%),
+    radial-gradient(1000px 400px at 85% 15%, rgba(20, 184, 166, 0.04) 0%, transparent 60%);
+  padding: 40px 24px 64px;
+  box-sizing: border-box;
+}
+
+.patient-prescriptions-container {
+  max-width: 1160px;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  gap: 28px;
+}
+
+/* Prescriptions Toolbar / Search & Filter */
+.prescriptions-toolbar-card {
+  background: #ffffff;
+  border: 1px solid rgba(226, 232, 240, 0.9);
+  border-radius: 16px;
+  padding: 20px 24px;
+  box-shadow: 0 4px 16px -4px rgba(15, 23, 42, 0.04);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 16px;
+}
+
+.prescriptions-toolbar-left {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  flex: 1;
+  min-width: 260px;
+}
+
+.prescriptions-search-wrapper {
+  position: relative;
+  flex: 1;
+  max-width: 440px;
+}
+
+.prescriptions-search-icon {
+  position: absolute;
+  left: 14px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 18px;
+  height: 18px;
+  color: #94a3b8;
+  pointer-events: none;
+}
+
+.prescriptions-search-input {
+  width: 100%;
+  padding: 10px 14px 10px 40px;
+  border: 1px solid #cbd5e1;
+  border-radius: 10px;
+  font-size: 14px;
+  color: #0f172a;
+  background-color: #f8fafc;
+  box-sizing: border-box;
+  min-height: 42px;
+  font-family: inherit;
+  transition: border-color 150ms ease, box-shadow 150ms ease, background-color 150ms ease;
+}
+
+.prescriptions-search-input:focus {
+  outline: none;
+  border-color: #0f766e;
+  background-color: #ffffff;
+  box-shadow: 0 0 0 3px rgba(15, 118, 110, 0.15);
+}
+
+.prescriptions-filter-select {
+  padding: 10px 14px;
+  border: 1px solid #cbd5e1;
+  border-radius: 10px;
+  font-size: 13.5px;
+  font-weight: 600;
+  color: #334155;
+  background-color: #f8fafc;
+  box-sizing: border-box;
+  min-height: 42px;
+  font-family: inherit;
+  cursor: pointer;
+  transition: border-color 150ms ease;
+}
+
+.prescriptions-filter-select:focus {
+  outline: none;
+  border-color: #0f766e;
+  box-shadow: 0 0 0 3px rgba(15, 118, 110, 0.15);
+}
+
+.prescriptions-count-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 5px 14px;
+  border-radius: 9999px;
+  font-size: 12.5px;
+  font-weight: 700;
+  background: #f0fdfa;
+  color: #0f766e;
+  border: 1px solid #ccfbf1;
+}
+
+/* Prescriptions Stack */
+.prescriptions-stack {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.prescription-record-card {
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-radius: 18px;
+  padding: 26px 28px;
+  box-shadow: 0 4px 16px -4px rgba(15, 23, 42, 0.04);
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+  transition: all 180ms ease;
+  position: relative;
+  overflow: hidden;
+}
+
+.prescription-record-card:hover {
+  border-color: #cbd5e1;
+  box-shadow: 0 8px 24px -6px rgba(15, 23, 42, 0.08);
+}
+
+.prescription-record-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 4px;
+  height: 100%;
+  background: #0f766e;
+  border-radius: 18px 0 0 18px;
+}
+
+/* Header Area */
+.prescription-card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+.prescription-title-group {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.prescription-id-tag {
+  font-size: 18px;
+  font-weight: 750;
+  color: #0f172a;
+  letter-spacing: -0.01em;
+}
+
+.prescription-date-tag {
+  font-size: 13px;
+  color: #64748b;
+  font-weight: 500;
+}
+
+.prescription-status-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 3px 10px;
+  border-radius: 9999px;
+  font-size: 11.5px;
+  font-weight: 700;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+}
+
+.status-chip-finalized {
+  background: #f0fdf4;
+  color: #166534;
+  border: 1px solid #bbf7d0;
+}
+
+.status-chip-draft {
+  background: #fffbeb;
+  color: #b45309;
+  border: 1px solid #fef3c7;
+}
+
+.status-chip-neutral {
+  background: #f1f5f9;
+  color: #475569;
+  border: 1px solid #e2e8f0;
+}
+
+/* Metadata Row */
+.prescription-card-meta {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  flex-wrap: wrap;
+  font-size: 13px;
+  color: #475569;
+  padding-bottom: 4px;
+}
+
+.prescription-dentist-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-weight: 650;
+  color: #0f766e;
+}
+
+.prescription-dentist-tag svg {
+  width: 16px;
+  height: 16px;
+}
+
+.prescription-finalized-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  color: #166534;
+  font-weight: 600;
+}
+
+/* Clinical Notes Box */
+.prescription-notes-box {
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  padding: 12px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.prescription-notes-label {
+  font-size: 11.5px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: #64748b;
+}
+
+.prescription-notes-text {
+  font-size: 13.5px;
+  line-height: 1.5;
+  color: #334155;
+  margin: 0;
+}
+
+/* Medications Section */
+.prescription-medications-section {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.prescription-section-title {
+  font-size: 14.5px;
+  font-weight: 750;
+  color: #0f172a;
+  letter-spacing: -0.01em;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 0;
+}
+
+.prescription-medications-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.medication-item-row {
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  padding: 14px 18px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  transition: border-color 150ms ease;
+}
+
+.medication-item-row:hover {
+  border-color: #cbd5e1;
+}
+
+.medication-top-line {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.medication-name {
+  font-size: 15px;
+  font-weight: 750;
+  color: #0f172a;
+  letter-spacing: -0.01em;
+}
+
+.medication-specs-pills {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.medication-pill {
+  font-size: 12px;
+  font-weight: 650;
+  padding: 2px 8px;
+  border-radius: 6px;
+  background: #ffffff;
+  border: 1px solid #cbd5e1;
+  color: #334155;
+}
+
+.medication-instructions {
+  font-size: 13px;
+  color: #475569;
+  line-height: 1.5;
+  margin: 0;
+  background: #ffffff;
+  padding: 8px 12px;
+  border-radius: 8px;
+  border: 1px dashed #cbd5e1;
+  word-break: break-word;
+}
+
+.medication-instructions strong {
+  color: #0f172a;
+  font-weight: 650;
+}
+
+/* Expandable Detail Section */
+.prescription-details-panel {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  padding-top: 14px;
+  border-top: 1px solid #f1f5f9;
+  animation: apptFadeIn 200ms ease;
+}
+
+.prescription-detail-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 12px;
+  background: #f8fafc;
+  padding: 14px 16px;
+  border-radius: 12px;
+  border: 1px solid #e2e8f0;
+}
+
+.prescription-detail-cell {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.prescription-detail-cell-label {
+  font-size: 11.5px;
+  font-weight: 650;
+  color: #64748b;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+}
+
+.prescription-detail-cell-value {
+  font-size: 13.5px;
+  font-weight: 650;
+  color: #1e293b;
+}
+
+/* Toggle Details Button */
+.prescription-toggle-btn {
+  align-self: flex-start;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 14px;
+  font-size: 13px;
+  font-weight: 650;
+  color: #0f766e;
+  background: #f0fdfa;
+  border: 1px solid #ccfbf1;
+  border-radius: 8px;
+  cursor: pointer;
+  min-height: 36px;
+  transition: all 150ms ease;
+}
+
+.prescription-toggle-btn:hover {
+  background: #ccfbf1;
+  color: #115e59;
+}
+
+.prescription-toggle-btn:focus-visible {
+  outline: 2px solid #0f766e;
+  outline-offset: 2px;
+}
+
+/* Empty State */
+.prescriptions-empty-box {
+  background: #ffffff;
+  border: 2px dashed #cbd5e1;
+  border-radius: 18px;
+  padding: 48px 24px;
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 14px;
+  margin: 10px 0;
+}
+
+.prescriptions-empty-icon {
+  width: 48px;
+  height: 48px;
+  color: #94a3b8;
+}
+
+.prescriptions-empty-title {
+  font-size: 17px;
+  font-weight: 750;
+  color: #334155;
+  margin: 0;
+}
+
+.prescriptions-empty-desc {
+  font-size: 14px;
+  color: #64748b;
+  line-height: 1.5;
+  margin: 0;
+  max-width: 460px;
+}
+
+/* Responsive Breakpoints */
+@media (max-width: 768px) {
+  .patient-prescriptions-page {
+    padding: 24px 16px 48px;
+  }
+
+  .prescription-record-card {
+    padding: 20px;
+  }
+
+  .prescriptions-toolbar-card {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .prescriptions-toolbar-left {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .prescriptions-search-wrapper {
+    max-width: 100%;
+  }
+
+  .medication-top-line {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+}
+
+@media (max-width: 430px) {
+  .prescription-card-header {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .prescription-title-group {
+    width: 100%;
+    justify-content: space-between;
+  }
+
+  .prescription-detail-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .patient-prescriptions-page *,
+  .prescription-record-card,
+  .prescription-toggle-btn {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+    transform: none !important;
+  }
+}
