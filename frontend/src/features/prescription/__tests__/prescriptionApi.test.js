@@ -1,4 +1,12 @@
-import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
+import {
+  describe,
+  it,
+  expect,
+  beforeEach,
+  afterEach,
+  vi
+} from 'vitest';
+
 import {
   getPrescriptions,
   getPrescriptionsByPatient,
@@ -11,21 +19,37 @@ import {
   normalizePage
 } from '../api/prescriptionApi';
 
+import { getCsrfToken } from '../../../shared/security/csrfClient';
+
+// Mock CSRF client.
+// POST / PUT prescription requests need a CSRF token.
+vi.mock('../../../shared/security/csrfClient', () => ({
+  getCsrfToken: vi.fn()
+}));
+
 describe('prescriptionApi client', () => {
   const originalFetch = global.fetch;
 
   beforeEach(() => {
     global.fetch = vi.fn();
+
+    // Give every protected request a valid fake CSRF token.
+    getCsrfToken.mockResolvedValue({
+      token: 'test-csrf-token',
+      headerName: 'X-XSRF-TOKEN',
+      parameterName: '_csrf'
+    });
   });
 
   afterEach(() => {
     global.fetch = originalFetch;
-    vi.restoreAllMocks();
+    vi.clearAllMocks();
   });
 
   describe('normalizePage', () => {
     it('handles empty or undefined payload safely', () => {
       const result = normalizePage();
+
       expect(result.content).toEqual([]);
       expect(result.number).toBe(0);
       expect(result.empty).toBe(true);
@@ -42,7 +66,9 @@ describe('prescriptionApi client', () => {
         last: false,
         empty: false
       };
+
       const result = normalizePage(pageData);
+
       expect(result).toEqual(pageData);
     });
   });
@@ -52,9 +78,16 @@ describe('prescriptionApi client', () => {
       global.fetch.mockResolvedValueOnce({
         ok: true,
         status: 200,
-        headers: new Headers({ 'content-type': 'application/json' }),
+        headers: new Headers({
+          'content-type': 'application/json'
+        }),
         json: async () => ({
-          content: [{ id: 1, patientName: 'Alice' }],
+          content: [
+            {
+              id: 1,
+              patientName: 'Alice'
+            }
+          ],
           number: 0,
           size: 20,
           totalPages: 1,
@@ -62,12 +95,20 @@ describe('prescriptionApi client', () => {
         })
       });
 
-      const res = await getPrescriptions({ page: 0, size: 20, sort: 'createdAt,desc' });
+      const res = await getPrescriptions({
+        page: 0,
+        size: 20,
+        sort: 'createdAt,desc'
+      });
 
       expect(global.fetch).toHaveBeenCalledWith(
-        '/api/prescriptions?page=0&size=20&sort=createdAt%2Cdesc',
-        expect.objectContaining({ method: 'GET', credentials: 'same-origin' })
+          '/api/prescriptions?page=0&size=20&sort=createdAt%2Cdesc',
+          expect.objectContaining({
+            method: 'GET',
+            credentials: 'same-origin'
+          })
       );
+
       expect(res.content).toHaveLength(1);
       expect(res.content[0].patientName).toBe('Alice');
     });
@@ -78,7 +119,9 @@ describe('prescriptionApi client', () => {
       global.fetch.mockResolvedValueOnce({
         ok: true,
         status: 200,
-        headers: new Headers({ 'content-type': 'application/json' }),
+        headers: new Headers({
+          'content-type': 'application/json'
+        }),
         json: async () => ({
           id: 10,
           patientId: 1,
@@ -89,10 +132,14 @@ describe('prescriptionApi client', () => {
       });
 
       const res = await getPrescriptionById(10);
+
       expect(global.fetch).toHaveBeenCalledWith(
-        '/api/prescriptions/10',
-        expect.objectContaining({ method: 'GET' })
+          '/api/prescriptions/10',
+          expect.objectContaining({
+            method: 'GET'
+          })
       );
+
       expect(res.id).toBe(10);
       expect(res.status).toBe('DRAFT');
     });
@@ -101,11 +148,17 @@ describe('prescriptionApi client', () => {
       global.fetch.mockResolvedValueOnce({
         ok: false,
         status: 404,
-        headers: new Headers({ 'content-type': 'application/json' }),
-        json: async () => ({ message: 'Prescription not found with id: 99' })
+        headers: new Headers({
+          'content-type': 'application/json'
+        }),
+        json: async () => ({
+          message: 'Prescription not found with id: 99'
+        })
       });
 
-      await expect(getPrescriptionById(99)).rejects.toThrow(PrescriptionApiError);
+      await expect(
+          getPrescriptionById(99)
+      ).rejects.toThrow(PrescriptionApiError);
     });
   });
 
@@ -131,35 +184,52 @@ describe('prescriptionApi client', () => {
       global.fetch.mockResolvedValueOnce({
         ok: true,
         status: 201,
-        headers: new Headers({ 'content-type': 'application/json' }),
-        json: async () => ({ id: 5, status: 'DRAFT' })
+        headers: new Headers({
+          'content-type': 'application/json'
+        }),
+        json: async () => ({
+          id: 5,
+          status: 'DRAFT'
+        })
       });
 
       const res = await createPrescription(payload);
 
+      expect(getCsrfToken).toHaveBeenCalled();
+
       expect(global.fetch).toHaveBeenCalledWith(
-        '/api/prescriptions',
-        expect.objectContaining({
-          method: 'POST',
-          body: JSON.stringify({
-            patientId: 1,
-            dentistId: 2,
-            notes: 'Post-op pain',
-            items: [
-              {
-                medicineName: 'Amoxicillin',
-                strength: '500mg',
-                dosage: '1 capsule',
-                frequency: '3x daily',
-                duration: '7 days',
-                quantity: 21,
-                instructions: 'After meals'
-              }
-            ]
+          '/api/prescriptions',
+          expect.objectContaining({
+            method: 'POST',
+            credentials: 'same-origin',
+
+            headers: expect.objectContaining({
+              Accept: 'application/json',
+              'Content-Type': 'application/json',
+              'X-XSRF-TOKEN': 'test-csrf-token'
+            }),
+
+            body: JSON.stringify({
+              patientId: 1,
+              dentistId: 2,
+              notes: 'Post-op pain',
+              items: [
+                {
+                  medicineName: 'Amoxicillin',
+                  strength: '500mg',
+                  dosage: '1 capsule',
+                  frequency: '3x daily',
+                  duration: '7 days',
+                  quantity: 21,
+                  instructions: 'After meals'
+                }
+              ]
+            })
           })
-        })
       );
+
       expect(res.id).toBe(5);
+      expect(res.status).toBe('DRAFT');
     });
   });
 
@@ -181,18 +251,49 @@ describe('prescriptionApi client', () => {
       global.fetch.mockResolvedValueOnce({
         ok: true,
         status: 200,
-        headers: new Headers({ 'content-type': 'application/json' }),
-        json: async () => ({ id: 5, status: 'DRAFT', notes: 'Updated note' })
+        headers: new Headers({
+          'content-type': 'application/json'
+        }),
+        json: async () => ({
+          id: 5,
+          status: 'DRAFT',
+          notes: 'Updated note'
+        })
       });
 
       const res = await updatePrescription(5, payload);
 
+      expect(getCsrfToken).toHaveBeenCalled();
+
       expect(global.fetch).toHaveBeenCalledWith(
-        '/api/prescriptions/5',
-        expect.objectContaining({
-          method: 'PUT'
-        })
+          '/api/prescriptions/5',
+          expect.objectContaining({
+            method: 'PUT',
+            credentials: 'same-origin',
+
+            headers: expect.objectContaining({
+              Accept: 'application/json',
+              'Content-Type': 'application/json',
+              'X-XSRF-TOKEN': 'test-csrf-token'
+            }),
+
+            body: JSON.stringify({
+              notes: 'Updated note',
+              items: [
+                {
+                  medicineName: 'Ibuprofen',
+                  strength: null,
+                  dosage: '400mg',
+                  frequency: 'PRN',
+                  duration: '3 days',
+                  quantity: 10,
+                  instructions: null
+                }
+              ]
+            })
+          })
       );
+
       expect(res.notes).toBe('Updated note');
     });
   });
@@ -202,16 +303,33 @@ describe('prescriptionApi client', () => {
       global.fetch.mockResolvedValueOnce({
         ok: true,
         status: 200,
-        headers: new Headers({ 'content-type': 'application/json' }),
-        json: async () => ({ id: 5, status: 'FINALIZED', finalizedAt: '2026-09-14T01:00:00' })
+        headers: new Headers({
+          'content-type': 'application/json'
+        }),
+        json: async () => ({
+          id: 5,
+          status: 'FINALIZED',
+          finalizedAt: '2026-09-14T01:00:00'
+        })
       });
 
       const res = await finalizePrescription(5, 2);
 
+      expect(getCsrfToken).toHaveBeenCalled();
+
       expect(global.fetch).toHaveBeenCalledWith(
-        '/api/prescriptions/5/finalize?dentistId=2',
-        expect.objectContaining({ method: 'POST' })
+          '/api/prescriptions/5/finalize?dentistId=2',
+          expect.objectContaining({
+            method: 'POST',
+            credentials: 'same-origin',
+
+            headers: expect.objectContaining({
+              Accept: 'application/json',
+              'X-XSRF-TOKEN': 'test-csrf-token'
+            })
+          })
       );
+
       expect(res.status).toBe('FINALIZED');
     });
   });
@@ -221,16 +339,32 @@ describe('prescriptionApi client', () => {
       global.fetch.mockResolvedValueOnce({
         ok: true,
         status: 200,
-        headers: new Headers({ 'content-type': 'application/json' }),
-        json: async () => ({ id: 5, status: 'CANCELLED' })
+        headers: new Headers({
+          'content-type': 'application/json'
+        }),
+        json: async () => ({
+          id: 5,
+          status: 'CANCELLED'
+        })
       });
 
       const res = await cancelPrescription(5);
 
+      expect(getCsrfToken).toHaveBeenCalled();
+
       expect(global.fetch).toHaveBeenCalledWith(
-        '/api/prescriptions/5/cancel',
-        expect.objectContaining({ method: 'POST' })
+          '/api/prescriptions/5/cancel',
+          expect.objectContaining({
+            method: 'POST',
+            credentials: 'same-origin',
+
+            headers: expect.objectContaining({
+              Accept: 'application/json',
+              'X-XSRF-TOKEN': 'test-csrf-token'
+            })
+          })
       );
+
       expect(res.status).toBe('CANCELLED');
     });
   });

@@ -3,6 +3,8 @@
  * Communicates with backend /api/prescriptions endpoints.
  */
 
+import { getCsrfToken } from '../../../shared/security/csrfClient';
+
 export class PrescriptionApiError extends Error {
   constructor(status, message, fieldErrors = {}, error = null, raw = null) {
     super(message || `Prescription API error (${status})`);
@@ -18,14 +20,46 @@ export class PrescriptionApiError extends Error {
  * Normalizes Spring PageImpl JSON response to a predictable pagination shape.
  */
 export function normalizePage(pageData = {}) {
-  const content = Array.isArray(pageData?.content) ? pageData.content : [];
-  const number = typeof pageData?.number === 'number' ? pageData.number : 0;
-  const size = typeof pageData?.size === 'number' ? pageData.size : content.length;
-  const totalPages = typeof pageData?.totalPages === 'number' ? pageData.totalPages : (content.length > 0 ? 1 : 0);
-  const totalElements = typeof pageData?.totalElements === 'number' ? pageData.totalElements : content.length;
-  const first = typeof pageData?.first === 'boolean' ? pageData.first : (number === 0);
-  const last = typeof pageData?.last === 'boolean' ? pageData.last : (number >= totalPages - 1);
-  const empty = typeof pageData?.empty === 'boolean' ? pageData.empty : (content.length === 0);
+  const content = Array.isArray(pageData?.content)
+      ? pageData.content
+      : [];
+
+  const number =
+      typeof pageData?.number === 'number'
+          ? pageData.number
+          : 0;
+
+  const size =
+      typeof pageData?.size === 'number'
+          ? pageData.size
+          : content.length;
+
+  const totalPages =
+      typeof pageData?.totalPages === 'number'
+          ? pageData.totalPages
+          : content.length > 0
+              ? 1
+              : 0;
+
+  const totalElements =
+      typeof pageData?.totalElements === 'number'
+          ? pageData.totalElements
+          : content.length;
+
+  const first =
+      typeof pageData?.first === 'boolean'
+          ? pageData.first
+          : number === 0;
+
+  const last =
+      typeof pageData?.last === 'boolean'
+          ? pageData.last
+          : number >= totalPages - 1;
+
+  const empty =
+      typeof pageData?.empty === 'boolean'
+          ? pageData.empty
+          : content.length === 0;
 
   return {
     content,
@@ -40,7 +74,12 @@ export function normalizePage(pageData = {}) {
 }
 
 async function request(endpoint, options = {}) {
-  const { body, headers = {}, ...restOptions } = options;
+  const {
+    body,
+    headers = {},
+    ...restOptions
+  } = options;
+
   const config = {
     ...restOptions,
     credentials: 'same-origin',
@@ -55,15 +94,38 @@ async function request(endpoint, options = {}) {
     config.headers['Content-Type'] = 'application/json';
   }
 
+  /*
+   * Spring Security requires a CSRF token for requests
+   * that change data, such as POST and PUT.
+   */
+  const method = (config.method || 'GET').toUpperCase();
+
+  if (!['GET', 'HEAD', 'OPTIONS'].includes(method)) {
+    try {
+      const csrf = await getCsrfToken();
+      config.headers[csrf.headerName] = csrf.token;
+    } catch (err) {
+      throw new PrescriptionApiError(
+          err.status || 0,
+          err.message || 'Unable to obtain security token.',
+          err.fieldErrors || {},
+          err.error || 'CsrfError',
+          err
+      );
+    }
+  }
+
   let response;
+
   try {
     response = await fetch(endpoint, config);
   } catch (err) {
     throw new PrescriptionApiError(
-      0,
-      err.message || 'Unable to communicate with the prescription service. Please check your connection.',
-      {},
-      'NetworkError'
+        0,
+        err.message ||
+        'Unable to communicate with the prescription service. Please check your connection.',
+        {},
+        'NetworkError'
     );
   }
 
@@ -72,7 +134,10 @@ async function request(endpoint, options = {}) {
   }
 
   let data;
-  const contentType = response.headers.get('content-type') || '';
+
+  const contentType =
+      response.headers.get('content-type') || '';
+
   if (contentType.includes('application/json')) {
     try {
       data = await response.json();
@@ -88,11 +153,32 @@ async function request(endpoint, options = {}) {
   }
 
   if (!response.ok) {
-    const errorBody = typeof data === 'object' && data !== null ? data : {};
-    const message = errorBody.message || (typeof data === 'string' && data) || response.statusText || 'Operation failed';
-    const fieldErrors = errorBody.fieldErrors || {};
-    const errorName = errorBody.error || response.statusText || 'Error';
-    throw new PrescriptionApiError(response.status, message, fieldErrors, errorName, data);
+    const errorBody =
+        typeof data === 'object' && data !== null
+            ? data
+            : {};
+
+    const message =
+        errorBody.message ||
+        (typeof data === 'string' && data) ||
+        response.statusText ||
+        'Operation failed';
+
+    const fieldErrors =
+        errorBody.fieldErrors || {};
+
+    const errorName =
+        errorBody.error ||
+        response.statusText ||
+        'Error';
+
+    throw new PrescriptionApiError(
+        response.status,
+        message,
+        fieldErrors,
+        errorName,
+        data
+    );
   }
 
   return data;
@@ -101,42 +187,73 @@ async function request(endpoint, options = {}) {
 /**
  * Fetch paginated prescriptions list.
  */
-export async function getPrescriptions({ page = 0, size = 20, sort = 'createdAt,desc' } = {}) {
+export async function getPrescriptions({
+                                         page = 0,
+                                         size = 20,
+                                         sort = 'createdAt,desc'
+                                       } = {}) {
   const params = new URLSearchParams();
+
   if (page !== undefined && page !== null) {
     params.append('page', String(page));
   }
+
   if (size !== undefined && size !== null) {
     params.append('size', String(size));
   }
+
   if (sort) {
     params.append('sort', sort);
   }
 
   const queryString = params.toString();
-  const url = queryString ? `/api/prescriptions?${queryString}` : '/api/prescriptions';
-  const data = await request(url, { method: 'GET' });
+
+  const url = queryString
+      ? `/api/prescriptions?${queryString}`
+      : '/api/prescriptions';
+
+  const data = await request(url, {
+    method: 'GET'
+  });
+
   return normalizePage(data);
 }
 
 /**
  * Fetch paginated prescriptions for a specific patient.
  */
-export async function getPrescriptionsByPatient(patientId, { page = 0, size = 20, sort = 'createdAt,desc' } = {}) {
+export async function getPrescriptionsByPatient(
+    patientId,
+    {
+      page = 0,
+      size = 20,
+      sort = 'createdAt,desc'
+    } = {}
+) {
   const params = new URLSearchParams();
+
   if (page !== undefined && page !== null) {
     params.append('page', String(page));
   }
+
   if (size !== undefined && size !== null) {
     params.append('size', String(size));
   }
+
   if (sort) {
     params.append('sort', sort);
   }
 
   const queryString = params.toString();
-  const url = `/api/prescriptions/patient/${patientId}${queryString ? `?${queryString}` : ''}`;
-  const data = await request(url, { method: 'GET' });
+
+  const url =
+      `/api/prescriptions/patient/${patientId}` +
+      (queryString ? `?${queryString}` : '');
+
+  const data = await request(url, {
+    method: 'GET'
+  });
+
   return normalizePage(data);
 }
 
@@ -144,29 +261,54 @@ export async function getPrescriptionsByPatient(patientId, { page = 0, size = 20
  * Fetch a single prescription by its ID.
  */
 export async function getPrescriptionById(id) {
-  return request(`/api/prescriptions/${id}`, { method: 'GET' });
+  return request(`/api/prescriptions/${id}`, {
+    method: 'GET'
+  });
 }
 
 /**
  * Create a new DRAFT prescription.
- * Payload: { patientId, dentistId, notes, items: [...] }
+ * Payload:
+ * {
+ *   patientId,
+ *   dentistId,
+ *   notes,
+ *   items: [...]
+ * }
  */
 export async function createPrescription(payload) {
   const body = {
     patientId: Number(payload.patientId),
+
     dentistId: Number(payload.dentistId),
-    notes: payload.notes?.trim() || null,
+
+    notes:
+        payload.notes?.trim() || null,
+
     items: Array.isArray(payload.items)
-      ? payload.items.map((item) => ({
-          medicineName: item.medicineName?.trim(),
-          strength: item.strength?.trim() || null,
-          dosage: item.dosage?.trim(),
-          frequency: item.frequency?.trim(),
-          duration: item.duration?.trim(),
-          quantity: Number(item.quantity),
-          instructions: item.instructions?.trim() || null
+        ? payload.items.map((item) => ({
+          medicineName:
+              item.medicineName?.trim(),
+
+          strength:
+              item.strength?.trim() || null,
+
+          dosage:
+              item.dosage?.trim(),
+
+          frequency:
+              item.frequency?.trim(),
+
+          duration:
+              item.duration?.trim(),
+
+          quantity:
+              Number(item.quantity),
+
+          instructions:
+              item.instructions?.trim() || null
         }))
-      : []
+        : []
   };
 
   return request('/api/prescriptions', {
@@ -177,22 +319,41 @@ export async function createPrescription(payload) {
 
 /**
  * Update an existing DRAFT prescription.
- * Payload: { notes, items: [...] }
+ * Payload:
+ * {
+ *   notes,
+ *   items: [...]
+ * }
  */
 export async function updatePrescription(id, payload) {
   const body = {
-    notes: payload.notes?.trim() || null,
+    notes:
+        payload.notes?.trim() || null,
+
     items: Array.isArray(payload.items)
-      ? payload.items.map((item) => ({
-          medicineName: item.medicineName?.trim(),
-          strength: item.strength?.trim() || null,
-          dosage: item.dosage?.trim(),
-          frequency: item.frequency?.trim(),
-          duration: item.duration?.trim(),
-          quantity: Number(item.quantity),
-          instructions: item.instructions?.trim() || null
+        ? payload.items.map((item) => ({
+          medicineName:
+              item.medicineName?.trim(),
+
+          strength:
+              item.strength?.trim() || null,
+
+          dosage:
+              item.dosage?.trim(),
+
+          frequency:
+              item.frequency?.trim(),
+
+          duration:
+              item.duration?.trim(),
+
+          quantity:
+              Number(item.quantity),
+
+          instructions:
+              item.instructions?.trim() || null
         }))
-      : []
+        : []
   };
 
   return request(`/api/prescriptions/${id}`, {
@@ -202,19 +363,29 @@ export async function updatePrescription(id, payload) {
 }
 
 /**
- * Finalize a DRAFT prescription (DENTIST role required).
+ * Finalize a DRAFT prescription.
+ * DENTIST role required.
  */
-export async function finalizePrescription(id, dentistId) {
-  return request(`/api/prescriptions/${id}/finalize?dentistId=${Number(dentistId)}`, {
-    method: 'POST'
-  });
+export async function finalizePrescription(
+    id,
+    dentistId
+) {
+  return request(
+      `/api/prescriptions/${id}/finalize?dentistId=${Number(dentistId)}`,
+      {
+        method: 'POST'
+      }
+  );
 }
 
 /**
  * Non-destructively cancel a prescription.
  */
 export async function cancelPrescription(id) {
-  return request(`/api/prescriptions/${id}/cancel`, {
-    method: 'POST'
-  });
+  return request(
+      `/api/prescriptions/${id}/cancel`,
+      {
+        method: 'POST'
+      }
+  );
 }
