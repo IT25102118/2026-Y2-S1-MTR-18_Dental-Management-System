@@ -3,7 +3,10 @@ package com.dentcare.clinical.service;
 import com.dentcare.clinical.dto.ClinicalExaminationResponse;
 import com.dentcare.clinical.dto.ConfirmDiagnosisRequest;
 import com.dentcare.clinical.dto.CreateClinicalExaminationRequest;
+import com.dentcare.clinical.dto.PatientMedicalSummaryDto;
 import com.dentcare.clinical.dto.UpdateClinicalExaminationRequest;
+
+import java.util.Optional;
 import com.dentcare.clinical.entity.ClinicalExamination;
 import com.dentcare.clinical.entity.ExaminationStatus;
 import com.dentcare.clinical.exception.ClinicalExaminationNotFoundException;
@@ -263,6 +266,14 @@ public class ClinicalExaminationServiceImpl implements ClinicalExaminationServic
 
         ClinicalExamination saved = examinationRepository.save(examination);
         return ClinicalExaminationResponse.fromEntity(saved);
+    }
+
+    @Override
+    public Optional<PatientMedicalSummaryDto> getPatientMedicalSummary(Long patientId) {
+        if (patientId == null) {
+            return Optional.empty();
+        }
+        return patientLookupPort.getPatientMedicalSummary(patientId);
     }
 
     private static String trimToNull(String value) {

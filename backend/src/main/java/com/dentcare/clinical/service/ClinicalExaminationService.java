@@ -3,9 +3,11 @@ package com.dentcare.clinical.service;
 import com.dentcare.clinical.dto.ClinicalExaminationResponse;
 import com.dentcare.clinical.dto.ConfirmDiagnosisRequest;
 import com.dentcare.clinical.dto.CreateClinicalExaminationRequest;
+import com.dentcare.clinical.dto.PatientMedicalSummaryDto;
 import com.dentcare.clinical.dto.UpdateClinicalExaminationRequest;
 
 import java.util.List;
+import java.util.Optional;
 
 /**
  * Service interface for clinical examination lifecycle, patient ownership, and diagnosis operations.
@@ -64,4 +66,9 @@ public interface ClinicalExaminationService {
      * Diagnosis confirmation is dentist-only and locks the confirmed diagnosis against silent overwriting.
      */
     ClinicalExaminationResponse confirmDiagnosis(Long id, ConfirmDiagnosisRequest request);
+
+    /**
+     * Retrieves the patient's clinical medical and dental history summary.
+     */
+    Optional<PatientMedicalSummaryDto> getPatientMedicalSummary(Long patientId);
 }
