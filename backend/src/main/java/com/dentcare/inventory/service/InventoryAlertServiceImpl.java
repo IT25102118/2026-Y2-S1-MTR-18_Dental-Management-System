@@ -14,7 +14,8 @@ import org.springframework.transaction.annotation.Transactional;
 import java.time.LocalDate;
 
 /**
- * Implementation of {@link InventoryAlertService} querying deterministic low-stock and expiry alerts.
+ * Implementation of {@link InventoryAlertService} querying deterministic
+ * low-stock and expiry alerts.
  */
 @Service
 @Transactional(readOnly = true)
@@ -24,12 +25,13 @@ public class InventoryAlertServiceImpl implements InventoryAlertService {
     private final InventoryBatchRepository inventoryBatchRepository;
 
     public InventoryAlertServiceImpl(InventoryItemRepository inventoryItemRepository,
-                                     InventoryBatchRepository inventoryBatchRepository) {
+            InventoryBatchRepository inventoryBatchRepository) {
         this.inventoryItemRepository = inventoryItemRepository;
         this.inventoryBatchRepository = inventoryBatchRepository;
     }
 
-    @Override
+    @Override // Run time analysis.
+    // Handle low stock alerts
     public Page<LowStockAlertResponse> getLowStockAlerts(String category, Pageable pageable) {
         String categoryFilter = (category != null && !category.trim().isEmpty())
                 ? category.trim().toLowerCase()
@@ -39,6 +41,7 @@ public class InventoryAlertServiceImpl implements InventoryAlertService {
     }
 
     @Override
+    // Handle expire alerts
     public Page<ExpiryAlertResponse> getExpiryAlerts(LocalDate through, Pageable pageable) {
         LocalDate today = LocalDate.now();
         if (through == null) {
