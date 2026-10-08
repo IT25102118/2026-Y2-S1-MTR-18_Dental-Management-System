@@ -147,33 +147,64 @@
 }
 
 .badge-in-stock {
-  background-color: var(--inv-status-success-bg, #f0fdf4);
-  color: var(--inv-status-success-text, #166534);
-  border: 1px solid var(--inv-status-success-border, #bbf7d0);
+  background-color: var(--dc-color-sage-soft, #e9f0e9);
+  color: var(--dc-color-sage-text, #3c5e47);
+  border: 1px solid var(--dc-color-sage-border, #cadaca);
 }
 
 .badge-low-stock {
-  background-color: var(--inv-status-warning-bg, #fffbeb);
-  color: var(--inv-status-warning-text, #b45309);
-  border: 1px solid var(--inv-status-warning-border, #fde68a);
+  background-color: var(--dc-color-sand-soft, #f5ebdd);
+  color: var(--dc-color-sand-text, #7d5727);
+  border: 1px solid var(--dc-color-sand-border, #e6d3bd);
 }
 
 .badge-out-of-stock {
-  background-color: var(--inv-status-danger-bg, #fef2f2);
-  color: var(--inv-status-danger-text, #b91c1c);
-  border: 1px solid var(--inv-status-danger-border, #fecaca);
+  background-color: var(--dc-color-coral-soft, #f8e7e4);
+  color: var(--dc-color-coral-text, #8c3a30);
+  border: 1px solid var(--dc-color-coral-border, #eecbc6);
 }
 
 .badge-active {
-  background-color: var(--inv-status-info-bg, #f0fdfa);
-  color: var(--inv-status-info-text, #0f766e);
-  border: 1px solid var(--inv-status-info-border, #ccfbf1);
+  background-color: var(--dc-color-teal-soft, #ddefea);
+  color: var(--dc-color-teal-text, #19524c);
+  border: 1px solid var(--dc-color-teal-border, #b6dbd4);
 }
 
 .badge-inactive {
   background-color: #f8fafc;
-  color: var(--inv-text-muted, #64748b);
-  border: 1px solid var(--inv-border-strong, #cbd5e1);
+  color: var(--dc-text-muted, #666874);
+  border: 1px solid var(--dc-border-subtle, #ebe8e2);
+}
+
+/* ── Movement Type Badges ── */
+.badge-received {
+  background-color: var(--dc-color-teal-soft, #ddefea);
+  color: var(--dc-color-teal-text, #19524c);
+  border: 1px solid var(--dc-color-teal-border, #b6dbd4);
+}
+
+.badge-used {
+  background-color: var(--dc-color-blue-soft, #e8f0f8);
+  color: var(--dc-color-blue-text, #2c527a);
+  border: 1px solid var(--dc-color-blue-border, #c8daf0);
+}
+
+.badge-damaged {
+  background-color: var(--dc-color-coral-soft, #f8e7e4);
+  color: var(--dc-color-coral-text, #8c3a30);
+  border: 1px solid var(--dc-color-coral-border, #eecbc6);
+}
+
+.badge-adjusted {
+  background-color: var(--dc-color-lavender-soft, #eeeaf5);
+  color: var(--dc-color-lavender-text, #594877);
+  border: 1px solid var(--dc-color-lavender-border, #d7cee8);
+}
+
+.badge-expired {
+  background-color: var(--dc-color-coral-soft, #f8e7e4);
+  color: var(--dc-color-coral-text, #8c3a30);
+  border: 1px solid var(--dc-color-coral-border, #eecbc6);
 }
 
 /* Buttons */

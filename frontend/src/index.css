@@ -33,22 +33,67 @@
   --dc-accent-sand: #d8d4cb;
   --dc-accent-subtle: #f0eee8;
 
-  /* ── Status Badges (Understated, Low-Saturation) ── */
-  --dc-status-success-bg: #f2f7f4;
-  --dc-status-success-text: #1b5e39;
-  --dc-status-success-border: #c8e1d2;
+  /* ── Multi-Color Clinical Palette (Sophisticated & Restrained) ── */
+  --dc-color-teal: #287a72;
+  --dc-color-teal-soft: #ddefea;
+  --dc-color-teal-text: #19524c;
+  --dc-color-teal-border: #b6dbd4;
 
-  --dc-status-warning-bg: #fbf6ec;
-  --dc-status-warning-text: #8d5612;
-  --dc-status-warning-border: #ecd8b4;
+  --dc-color-blue: #4776a8;
+  --dc-color-blue-soft: #e8f0f8;
+  --dc-color-blue-text: #2c527a;
+  --dc-color-blue-border: #c8daf0;
 
-  --dc-status-danger-bg: #fdf2f2;
-  --dc-status-danger-text: #a82323;
-  --dc-status-danger-border: #f5c2c2;
+  --dc-color-sage: #6f8f79;
+  --dc-color-sage-soft: #e9f0e9;
+  --dc-color-sage-text: #3c5e47;
+  --dc-color-sage-border: #cadaca;
 
-  --dc-status-info-bg: #f1f4f8;
-  --dc-status-info-text: #244163;
-  --dc-status-info-border: #cbd7e6;
+  --dc-color-sand: #c99b68;
+  --dc-color-sand-soft: #f5ebdd;
+  --dc-color-sand-text: #7d5727;
+  --dc-color-sand-border: #e6d3bd;
+
+  --dc-color-coral: #c96f63;
+  --dc-color-coral-soft: #f8e7e4;
+  --dc-color-coral-text: #8c3a30;
+  --dc-color-coral-border: #eecbc6;
+
+  --dc-color-lavender: #8878a7;
+  --dc-color-lavender-soft: #eeeaf5;
+  --dc-color-lavender-text: #594877;
+  --dc-color-lavender-border: #d7cee8;
+
+  /* Palette Aliases */
+  --dc-teal: var(--dc-color-teal);
+  --dc-teal-soft: var(--dc-color-teal-soft);
+  --dc-blue: var(--dc-color-blue);
+  --dc-blue-soft: var(--dc-color-blue-soft);
+  --dc-sage: var(--dc-color-sage);
+  --dc-sage-soft: var(--dc-color-sage-soft);
+  --dc-sand: var(--dc-color-sand);
+  --dc-sand-soft: var(--dc-color-sand-soft);
+  --dc-coral: var(--dc-color-coral);
+  --dc-coral-soft: var(--dc-color-coral-soft);
+  --dc-lavender: var(--dc-color-lavender);
+  --dc-lavender-soft: var(--dc-color-lavender-soft);
+
+  /* ── Status Badges (Semantic Multi-Color Hierarchy) ── */
+  --dc-status-success-bg: var(--dc-color-sage-soft);
+  --dc-status-success-text: var(--dc-color-sage-text);
+  --dc-status-success-border: var(--dc-color-sage-border);
+
+  --dc-status-warning-bg: var(--dc-color-sand-soft);
+  --dc-status-warning-text: var(--dc-color-sand-text);
+  --dc-status-warning-border: var(--dc-color-sand-border);
+
+  --dc-status-danger-bg: var(--dc-color-coral-soft);
+  --dc-status-danger-text: var(--dc-color-coral-text);
+  --dc-status-danger-border: var(--dc-color-coral-border);
+
+  --dc-status-info-bg: var(--dc-color-blue-soft);
+  --dc-status-info-text: var(--dc-color-blue-text);
+  --dc-status-info-border: var(--dc-color-blue-border);
 
   /* ── Borders ── */
   --dc-border-subtle: #ebe8e2;
@@ -250,7 +295,7 @@ a:focus-visible, button:focus-visible, input:focus-visible, select:focus-visible
 }
 
 .app-nav-link.active {
-  color: var(--dc-text-primary);
+  color: var(--dc-color-teal-text, #19524c);
   background-color: var(--dc-bg-pearl);
   font-weight: 600;
 }
@@ -263,7 +308,7 @@ a:focus-visible, button:focus-visible, input:focus-visible, select:focus-visible
   transform: translateX(-50%) scaleX(0);
   width: 14px;
   height: 2px;
-  background: var(--dc-accent-charcoal);
+  background: var(--dc-color-teal, #287a72);
   border-radius: var(--dc-radius-pill);
   transition: transform var(--dc-transition-base);
 }
@@ -499,6 +544,78 @@ a:focus-visible, button:focus-visible, input:focus-visible, select:focus-visible
 
 .btn-outline-secondary:active {
   transform: scale(0.97);
+}
+
+/* ── Semantic Status Badge System ── */
+.badge.info, .status-badge.info, .badge-info, .status-info {
+  background-color: var(--dc-color-blue-soft);
+  color: var(--dc-color-blue-text);
+  border: 1px solid var(--dc-color-blue-border);
+}
+
+.badge.success, .status-badge.success, .badge-success, .status-success {
+  background-color: var(--dc-color-sage-soft);
+  color: var(--dc-color-sage-text);
+  border: 1px solid var(--dc-color-sage-border);
+}
+
+.badge.warning, .status-badge.warning, .badge-warning, .status-warning {
+  background-color: var(--dc-color-sand-soft);
+  color: var(--dc-color-sand-text);
+  border: 1px solid var(--dc-color-sand-border);
+}
+
+.badge.danger, .status-badge.danger, .badge-danger, .status-danger {
+  background-color: var(--dc-color-coral-soft);
+  color: var(--dc-color-coral-text);
+  border: 1px solid var(--dc-color-coral-border);
+}
+
+.badge.clinical, .status-badge.clinical, .badge-clinical, .status-clinical {
+  background-color: var(--dc-color-teal-soft);
+  color: var(--dc-color-teal-text);
+  border: 1px solid var(--dc-color-teal-border);
+}
+
+.badge.special, .status-badge.special, .badge-special, .status-special {
+  background-color: var(--dc-color-lavender-soft);
+  color: var(--dc-color-lavender-text);
+  border: 1px solid var(--dc-color-lavender-border);
+}
+
+/* ── Contextual Action Buttons ── */
+.btn-clinical {
+  background-color: var(--dc-color-teal);
+  color: #ffffff;
+  border: 1px solid var(--dc-color-teal);
+}
+.btn-clinical:hover:not(:disabled) {
+  background-color: #1f645d;
+  border-color: #1f645d;
+  color: #ffffff;
+  transform: translateY(-1px);
+}
+
+.btn-info {
+  background-color: var(--dc-color-blue-soft);
+  color: var(--dc-color-blue-text);
+  border: 1px solid var(--dc-color-blue-border);
+}
+.btn-info:hover:not(:disabled) {
+  background-color: #ffffff;
+  border-color: var(--dc-color-blue);
+  color: var(--dc-color-blue-text);
+}
+
+.btn-sage {
+  background-color: var(--dc-color-sage-soft);
+  color: var(--dc-color-sage-text);
+  border: 1px solid var(--dc-color-sage-border);
+}
+.btn-sage:hover:not(:disabled) {
+  background-color: #ffffff;
+  border-color: var(--dc-color-sage);
+  color: var(--dc-color-sage-text);
 }
 
 /* Public Header Enhancements */

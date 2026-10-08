@@ -13,6 +13,7 @@
 .auth-card {
   background: #ffffff;
   border: 1px solid var(--dc-border-subtle, #ebe8e2);
+  border-top: 3px solid var(--dc-color-teal, #287a72);
   border-radius: var(--dc-radius-xl, 24px);
   box-shadow: var(--dc-shadow-md, 0 8px 24px -6px rgba(18, 19, 22, 0.05));
   width: 100%;
@@ -82,8 +83,8 @@
 
 .form-group input:focus {
   outline: none;
-  border-color: #121316;
-  box-shadow: 0 0 0 2px rgba(18, 19, 22, 0.08);
+  border-color: var(--dc-color-teal, #287a72);
+  box-shadow: 0 0 0 2px rgba(40, 122, 114, 0.15);
 }
 
 .form-group input.input-error {
@@ -119,20 +120,21 @@
 }
 
 .auth-submit-button {
-  background-color: #2563eb;
+  background-color: var(--dc-bg-dark, #121316);
   color: #ffffff;
   font-weight: 600;
   font-size: 1rem;
   padding: 0.75rem 1.25rem;
-  border: none;
+  border: 1px solid var(--dc-bg-dark, #121316);
   border-radius: 6px;
   cursor: pointer;
   margin-top: 0.5rem;
-  transition: background-color 0.15s ease;
+  transition: all 0.15s ease;
 }
 
 .auth-submit-button:hover:not(:disabled) {
-  background-color: #1d4ed8;
+  background-color: #262830;
+  border-color: #262830;
 }
 
 .auth-submit-button:disabled {

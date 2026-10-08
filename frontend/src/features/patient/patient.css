@@ -63,9 +63,9 @@
 }
 
 .badge-active {
-  background-color: var(--dc-status-success-bg, #f2f7f4);
-  color: var(--dc-status-success-text, #1b5e39);
-  border: 1px solid var(--dc-status-success-border, #c8e1d2);
+  background-color: var(--dc-color-sage-soft, #e9f0e9);
+  color: var(--dc-color-sage-text, #3c5e47);
+  border: 1px solid var(--dc-color-sage-border, #cadaca);
 }
 
 .badge-inactive {
@@ -299,6 +299,7 @@
 .details-card {
   background: #ffffff;
   border: 1px solid #e2e8f0;
+  border-left: 3px solid var(--dc-color-blue, #4776a8);
   border-radius: 6px;
   padding: 1.5rem;
   margin-bottom: 1.5rem;

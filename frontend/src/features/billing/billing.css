@@ -129,27 +129,33 @@
 
 /* Status Badges */
 .badge-status-draft {
-  background-color: var(--dc-status-info-bg, #f1f4f8);
-  color: var(--dc-status-info-text, #244163);
-  border: 1px solid var(--dc-status-info-border, #cbd7e6);
+  background-color: var(--dc-color-blue-soft, #e8f0f8);
+  color: var(--dc-color-blue-text, #2c527a);
+  border: 1px solid var(--dc-color-blue-border, #c8daf0);
 }
 
 .badge-status-unpaid {
-  background-color: var(--dc-status-danger-bg, #fdf2f2);
-  color: var(--dc-status-danger-text, #a82323);
-  border: 1px solid var(--dc-status-danger-border, #f5c2c2);
+  background-color: var(--dc-color-sand-soft, #f5ebdd);
+  color: var(--dc-color-sand-text, #7d5727);
+  border: 1px solid var(--dc-color-sand-border, #e6d3bd);
 }
 
 .badge-status-partially-paid {
-  background-color: var(--dc-status-warning-bg, #fbf6ec);
-  color: var(--dc-status-warning-text, #8d5612);
-  border: 1px solid var(--dc-status-warning-border, #ecd8b4);
+  background-color: var(--dc-color-sand-soft, #f5ebdd);
+  color: var(--dc-color-sand-text, #7d5727);
+  border: 1px solid var(--dc-color-sand-border, #e6d3bd);
 }
 
 .badge-status-paid {
-  background-color: var(--dc-status-success-bg, #f2f7f4);
-  color: var(--dc-status-success-text, #1b5e39);
-  border: 1px solid var(--dc-status-success-border, #c8e1d2);
+  background-color: var(--dc-color-sage-soft, #e9f0e9);
+  color: var(--dc-color-sage-text, #3c5e47);
+  border: 1px solid var(--dc-color-sage-border, #cadaca);
+}
+
+.badge-status-overdue {
+  background-color: var(--dc-color-coral-soft, #f8e7e4);
+  color: var(--dc-color-coral-text, #8c3a30);
+  border: 1px solid var(--dc-color-coral-border, #eecbc6);
 }
 
 .badge-status-cancelled {
@@ -160,15 +166,15 @@
 }
 
 .badge-payment-recorded {
-  background-color: var(--dc-status-success-bg, #f2f7f4);
-  color: var(--dc-status-success-text, #1b5e39);
-  border: 1px solid var(--dc-status-success-border, #c8e1d2);
+  background-color: var(--dc-color-sage-soft, #e9f0e9);
+  color: var(--dc-color-sage-text, #3c5e47);
+  border: 1px solid var(--dc-color-sage-border, #cadaca);
 }
 
 .badge-payment-reversed {
-  background-color: var(--dc-status-danger-bg, #fdf2f2);
-  color: var(--dc-status-danger-text, #a82323);
-  border: 1px solid var(--dc-status-danger-border, #f5c2c2);
+  background-color: var(--dc-color-coral-soft, #f8e7e4);
+  color: var(--dc-color-coral-text, #8c3a30);
+  border: 1px solid var(--dc-color-coral-border, #eecbc6);
 }
 
 /* Filter Card */
@@ -499,6 +505,7 @@
 .financial-stat-card {
   background: var(--dc-bg-surface, #ffffff);
   border: 1px solid var(--dc-border-subtle, #ebe8e2);
+  border-top: 3px solid var(--dc-color-sand, #c99b68);
   border-radius: var(--dc-radius-lg, 16px);
   padding: 1.75rem;
   display: flex;

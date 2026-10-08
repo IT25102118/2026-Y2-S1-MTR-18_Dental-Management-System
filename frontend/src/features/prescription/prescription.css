@@ -63,21 +63,27 @@
 }
 
 .badge-draft {
-  background-color: var(--dc-status-warning-bg, #fbf6ec);
-  color: var(--dc-status-warning-text, #8d5612);
-  border: 1px solid var(--dc-status-warning-border, #ecd8b4);
+  background-color: var(--dc-color-lavender-soft, #eeeaf5);
+  color: var(--dc-color-lavender-text, #594877);
+  border: 1px solid var(--dc-color-lavender-border, #d7cee8);
 }
 
 .badge-finalized {
-  background-color: var(--dc-status-success-bg, #f2f7f4);
-  color: var(--dc-status-success-text, #1b5e39);
-  border: 1px solid var(--dc-status-success-border, #c8e1d2);
+  background-color: var(--dc-color-sage-soft, #e9f0e9);
+  color: var(--dc-color-sage-text, #3c5e47);
+  border: 1px solid var(--dc-color-sage-border, #cadaca);
 }
 
 .badge-cancelled {
-  background-color: var(--dc-status-danger-bg, #fdf2f2);
-  color: var(--dc-status-danger-text, #a82323);
-  border: 1px solid var(--dc-status-danger-border, #f5c2c2);
+  background-color: var(--dc-color-coral-soft, #f8e7e4);
+  color: var(--dc-color-coral-text, #8c3a30);
+  border: 1px solid var(--dc-color-coral-border, #eecbc6);
+}
+
+.badge-active {
+  background-color: var(--dc-color-teal-soft, #ddefea);
+  color: var(--dc-color-teal-text, #19524c);
+  border: 1px solid var(--dc-color-teal-border, #b6dbd4);
 }
 
 /* Action Buttons */

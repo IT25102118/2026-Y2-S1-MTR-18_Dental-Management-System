@@ -472,9 +472,110 @@
   flex-shrink: 0;
 }
 
+.staff-card-icon-box {
+  width: 48px;
+  height: 48px;
+  border-radius: var(--dc-radius-md, 12px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  transition: transform var(--dc-transition-fast, 150ms ease);
+}
+
+.staff-card-icon-box svg,
 .staff-module-icon-wrap svg {
   width: 22px;
   height: 22px;
+}
+
+.staff-card-badge {
+  font-size: 0.72rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  padding: 0.25rem 0.65rem;
+  border-radius: var(--dc-radius-pill, 9999px);
+  border: 1px solid transparent;
+}
+
+/* ── Operational Module Semantic Color Accents ── */
+.staff-tile-inventory .staff-card-icon-box,
+.staff-tile-inventory .staff-module-icon-wrap {
+  background: var(--dc-color-teal-soft, #ddefea);
+  color: var(--dc-color-teal-text, #19524c);
+  border: 1px solid var(--dc-color-teal-border, #b6dbd4);
+}
+.staff-tile-inventory .staff-card-badge,
+.staff-tile-inventory .staff-module-kicker {
+  color: var(--dc-color-teal-text, #19524c);
+  background: var(--dc-color-teal-soft, #ddefea);
+  border-color: var(--dc-color-teal-border, #b6dbd4);
+}
+
+.staff-tile-clinical .staff-card-icon-box,
+.staff-tile-clinical .staff-module-icon-wrap {
+  background: var(--dc-color-sage-soft, #e9f0e9);
+  color: var(--dc-color-sage-text, #3c5e47);
+  border: 1px solid var(--dc-color-sage-border, #cadaca);
+}
+.staff-tile-clinical .staff-card-badge,
+.staff-tile-clinical .staff-module-kicker {
+  color: var(--dc-color-sage-text, #3c5e47);
+  background: var(--dc-color-sage-soft, #e9f0e9);
+  border-color: var(--dc-color-sage-border, #cadaca);
+}
+
+.staff-tile-prescriptions .staff-card-icon-box,
+.staff-tile-prescriptions .staff-module-icon-wrap {
+  background: var(--dc-color-lavender-soft, #eeeaf5);
+  color: var(--dc-color-lavender-text, #594877);
+  border: 1px solid var(--dc-color-lavender-border, #d7cee8);
+}
+.staff-tile-prescriptions .staff-card-badge,
+.staff-tile-prescriptions .staff-module-kicker {
+  color: var(--dc-color-lavender-text, #594877);
+  background: var(--dc-color-lavender-soft, #eeeaf5);
+  border-color: var(--dc-color-lavender-border, #d7cee8);
+}
+
+.staff-tile-billing .staff-card-icon-box,
+.staff-tile-billing .staff-module-icon-wrap {
+  background: var(--dc-color-sand-soft, #f5ebdd);
+  color: var(--dc-color-sand-text, #7d5727);
+  border: 1px solid var(--dc-color-sand-border, #e6d3bd);
+}
+.staff-tile-billing .staff-card-badge,
+.staff-tile-billing .staff-module-kicker {
+  color: var(--dc-color-sand-text, #7d5727);
+  background: var(--dc-color-sand-soft, #f5ebdd);
+  border-color: var(--dc-color-sand-border, #e6d3bd);
+}
+
+.staff-tile-reports .staff-card-icon-box,
+.staff-tile-reports .staff-module-icon-wrap {
+  background: var(--dc-color-blue-soft, #e8f0f8);
+  color: var(--dc-color-blue-text, #2c527a);
+  border: 1px solid var(--dc-color-blue-border, #c8daf0);
+}
+.staff-tile-reports .staff-card-badge,
+.staff-tile-reports .staff-module-kicker {
+  color: var(--dc-color-blue-text, #2c527a);
+  background: var(--dc-color-blue-soft, #e8f0f8);
+  border-color: var(--dc-color-blue-border, #c8daf0);
+}
+
+.staff-tile-staff-admin .staff-card-icon-box,
+.staff-tile-staff-admin .staff-module-icon-wrap {
+  background: #f4f0fa;
+  color: #581c87;
+  border: 1px solid #e2d6f5;
+}
+.staff-tile-staff-admin .staff-card-badge,
+.staff-tile-staff-admin .staff-module-kicker {
+  color: #581c87;
+  background: #f4f0fa;
+  border-color: #e2d6f5;
 }
 
 .staff-module-titles {

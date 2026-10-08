@@ -252,15 +252,67 @@
 }
 
 .status-chip-available {
-  background: var(--dc-status-success-bg, #f2f7f4);
-  color: var(--dc-status-success-text, #1b5e39);
-  border: 1px solid var(--dc-status-success-border, #c8e1d2);
+  background: var(--dc-color-sage-soft, #e9f0e9);
+  color: var(--dc-color-sage-text, #3c5e47);
+  border: 1px solid var(--dc-color-sage-border, #cadaca);
+}
+
+.status-chip-pending {
+  background: var(--dc-color-sand-soft, #f5ebdd);
+  color: var(--dc-color-sand-text, #7d5727);
+  border: 1px solid var(--dc-color-sand-border, #e6d3bd);
 }
 
 .status-chip-coming {
   background: var(--dc-bg-pearl, #f7f6f2);
   color: var(--dc-text-muted, #666874);
   border: 1px solid var(--dc-border-subtle, #ebe8e2);
+}
+
+/* ── Patient Dashboard Calmer Semantic Palette ── */
+[data-testid="patient-card-appointments"] .patient-card-icon-wrap {
+  background: var(--dc-color-blue-soft, #e8f0f8);
+  color: var(--dc-color-blue-text, #2c527a);
+  border-color: var(--dc-color-blue-border, #c8daf0);
+}
+[data-testid="patient-card-appointments"] .patient-card-kicker {
+  color: var(--dc-color-blue-text, #2c527a);
+}
+
+[data-testid="patient-card-prescriptions"] .patient-card-icon-wrap {
+  background: var(--dc-color-lavender-soft, #eeeaf5);
+  color: var(--dc-color-lavender-text, #594877);
+  border-color: var(--dc-color-lavender-border, #d7cee8);
+}
+[data-testid="patient-card-prescriptions"] .patient-card-kicker {
+  color: var(--dc-color-lavender-text, #594877);
+}
+
+[data-testid="patient-card-clinical"] .patient-card-icon-wrap {
+  background: var(--dc-color-teal-soft, #ddefea);
+  color: var(--dc-color-teal-text, #19524c);
+  border-color: var(--dc-color-teal-border, #b6dbd4);
+}
+[data-testid="patient-card-clinical"] .patient-card-kicker {
+  color: var(--dc-color-teal-text, #19524c);
+}
+
+[data-testid="patient-card-billing"] .patient-card-icon-wrap {
+  background: var(--dc-color-sand-soft, #f5ebdd);
+  color: var(--dc-color-sand-text, #7d5727);
+  border-color: var(--dc-color-sand-border, #e6d3bd);
+}
+[data-testid="patient-card-billing"] .patient-card-kicker {
+  color: var(--dc-color-sand-text, #7d5727);
+}
+
+[data-testid="patient-card-profile"] .patient-card-icon-wrap {
+  background: var(--dc-color-sage-soft, #e9f0e9);
+  color: var(--dc-color-sage-text, #3c5e47);
+  border-color: var(--dc-color-sage-border, #cadaca);
+}
+[data-testid="patient-card-profile"] .patient-card-kicker {
+  color: var(--dc-color-sage-text, #3c5e47);
 }
 
 .patient-card-body {

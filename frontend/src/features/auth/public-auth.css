@@ -47,6 +47,7 @@
   padding: 44px 44px;
   background: #fff;
   border: 1px solid var(--dc-border-subtle, #ebe8e2);
+  border-top: 3px solid var(--dc-color-teal, #287a72);
   border-radius: var(--dc-radius-xl, 24px);
   box-shadow: var(--dc-shadow-md, 0 8px 24px -6px rgba(18, 19, 22, 0.05));
   animation: authCardEnter 480ms cubic-bezier(0.16, 1, 0.3, 1) both;
@@ -79,7 +80,7 @@
 }
 .public-field input::placeholder { color: #9aacbc; }
 .public-field input:hover:not(:disabled) { border-color: #829ab1; }
-.public-field input:focus { outline: none; border-color: #121316; box-shadow: 0 0 0 2px rgba(18, 19, 22, 0.08); }
+.public-field input:focus { outline: none; border-color: var(--dc-color-teal, #287a72); box-shadow: 0 0 0 2px rgba(40, 122, 114, 0.15); }
 .public-field input[aria-invalid='true'] { border-color: #c4322b; background: #fffafa; }
 .public-field input[aria-invalid='true']:focus { box-shadow: 0 0 0 2px rgba(196,50,43,.15); }
 .public-field input:disabled { color: #829ab1; background: #f0f3f6; cursor: not-allowed; }
@@ -192,15 +193,15 @@
 }
 
 .public-portal-tag.patient-tag {
-  background: #f0fdfa;
-  border-color: #99f6e4;
-  color: #0f766e;
+  background: var(--dc-color-teal-soft, #ddefea);
+  border-color: var(--dc-color-teal-border, #b6dbd4);
+  color: var(--dc-color-teal-text, #19524c);
 }
 
 .public-portal-tag.staff-tag {
-  background: #f1f5f9;
-  border-color: #cbd5e1;
-  color: #0f172a;
+  background: var(--dc-color-blue-soft, #e8f0f8);
+  border-color: var(--dc-color-blue-border, #c8daf0);
+  color: var(--dc-color-blue-text, #2c527a);
 }
 
 .public-portal-tag svg {
