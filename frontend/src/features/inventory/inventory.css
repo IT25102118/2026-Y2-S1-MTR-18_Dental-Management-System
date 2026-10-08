@@ -1,68 +1,65 @@
 /* Feature-scoped styles for Inventory Management */
 
 .inventory-container {
-  /* DentCare Clinical Design Tokens */
-  --inv-brand-primary: #0f766e;
-  --inv-brand-dark: #115e59;
-  --inv-brand-light: #0d9488;
-  --inv-brand-subtle: #f0fdfa;
-  --inv-accent-teal: #14b8a6;
-  --inv-focus-ring: #0f766e;
+  /* DentCare Editorial Design Tokens */
+  --inv-brand-primary: #121316;
+  --inv-brand-dark: #262830;
+  --inv-brand-light: #3b3d45;
+  --inv-brand-subtle: #f7f6f2;
+  --inv-accent-teal: #121316;
+  --inv-focus-ring: #121316;
 
   --inv-surface-card: #ffffff;
-  --inv-surface-subtle: #f8fafc;
-  --inv-border-default: #e2e8f0;
-  --inv-border-subtle: #ccfbf1;
-  --inv-border-strong: #cbd5e1;
+  --inv-surface-subtle: #f9f8f5;
+  --inv-border-default: #dfdcd4;
+  --inv-border-subtle: #ebe8e2;
+  --inv-border-strong: #cac7be;
 
-  --inv-text-primary: #0f172a;
-  --inv-text-secondary: #334155;
-  --inv-text-muted: #64748b;
+  --inv-text-primary: #121316;
+  --inv-text-secondary: #3b3d45;
+  --inv-text-muted: #666874;
   --inv-font-mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace;
 
-  --inv-status-success-bg: #f0fdf4;
-  --inv-status-success-text: #166534;
-  --inv-status-success-border: #bbf7d0;
+  --inv-status-success-bg: #f2f7f4;
+  --inv-status-success-text: #1b5e39;
+  --inv-status-success-border: #c8e1d2;
 
-  --inv-status-warning-bg: #fffbeb;
-  --inv-status-warning-text: #b45309;
-  --inv-status-warning-border: #fde68a;
+  --inv-status-warning-bg: #fbf6ec;
+  --inv-status-warning-text: #8d5612;
+  --inv-status-warning-border: #ecd8b4;
 
-  --inv-status-danger-bg: #fef2f2;
-  --inv-status-danger-text: #b91c1c;
-  --inv-status-danger-border: #fecaca;
+  --inv-status-danger-bg: #fdf2f2;
+  --inv-status-danger-text: #a82323;
+  --inv-status-danger-border: #f5c2c2;
 
-  --inv-status-info-bg: #f0fdfa;
-  --inv-status-info-text: #0f766e;
-  --inv-status-info-border: #ccfbf1;
+  --inv-status-info-bg: #f1f4f8;
+  --inv-status-info-text: #244163;
+  --inv-status-info-border: #cbd7e6;
 
-  --inv-radius-sm: 4px;
-  --inv-radius-md: 6px;
-  --inv-radius-lg: 10px;
-  --inv-radius-xl: 12px;
+  --inv-radius-sm: 6px;
+  --inv-radius-md: 10px;
+  --inv-radius-lg: 16px;
+  --inv-radius-xl: 20px;
   --inv-radius-pill: 9999px;
-  --inv-shadow-sm: 0 1px 3px 0 rgba(15, 23, 42, 0.04), 0 1px 2px -1px rgba(15, 23, 42, 0.03);
-  --inv-shadow-md: 0 4px 6px -1px rgba(15, 23, 42, 0.06), 0 2px 4px -2px rgba(15, 23, 42, 0.04);
-  --inv-shadow-hover: 0 10px 15px -3px rgba(15, 118, 110, 0.08), 0 4px 6px -4px rgba(15, 118, 110, 0.04);
+  --inv-shadow-sm: 0 1px 3px 0 rgba(18, 19, 22, 0.03);
+  --inv-shadow-md: 0 4px 12px -2px rgba(18, 19, 22, 0.04);
+  --inv-shadow-hover: 0 8px 24px -4px rgba(18, 19, 22, 0.08);
 
-  max-width: 1100px;
+  max-width: 1200px;
   margin: 0 auto;
-  padding: 1.5rem;
-  color: var(--inv-text-primary, #0f172a);
-  background-color: #f8fafc;
-  background-image: 
-    radial-gradient(1200px 450px at 15% 0%, rgba(15, 118, 110, 0.035) 0%, transparent 70%),
-    radial-gradient(900px 380px at 85% 10%, rgba(20, 184, 166, 0.025) 0%, transparent 65%);
+  padding: 2rem 1.5rem 5rem;
+  color: var(--inv-text-primary, #121316);
+  background-color: var(--dc-bg-page, #fbfbf9);
   min-height: 100vh;
 }
 
 .inventory-page-header {
   background-color: #ffffff;
-  border: 1px solid #ccfbf1;
-  border-radius: 12px;
-  padding: 1.25rem 1.5rem;
-  margin-bottom: 1.75rem;
-  box-shadow: 0 2px 4px rgba(15, 118, 110, 0.03), 0 1px 2px rgba(15, 23, 42, 0.04);
+  border: 1px solid var(--inv-border-subtle, #ebe8e2);
+  border-radius: var(--inv-radius-lg, 16px);
+  padding: 1.5rem 1.75rem;
+  margin-bottom: 2rem;
+  box-shadow: var(--inv-shadow-sm);
 }
 
 .inventory-header {
