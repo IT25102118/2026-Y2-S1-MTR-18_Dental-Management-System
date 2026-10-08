@@ -1,11 +1,10 @@
 /* Patient Records Management Styles */
 
 .patient-container {
-  max-width: 1200px;
+  max-width: 1100px;
   margin: 0 auto;
-  padding: 2rem 1.5rem 5rem;
-  color: var(--dc-text-primary, #121316);
-  background-color: var(--dc-bg-page, #fbfbf9);
+  padding: 1.5rem;
+  color: #1e293b;
 }
 
 .patient-header {
@@ -15,63 +14,47 @@
   flex-wrap: wrap;
   gap: 1rem;
   margin-bottom: 1.5rem;
-  padding-bottom: 0.85rem;
-  border-bottom: 1px solid var(--dc-border-subtle, #ebe8e2);
 }
 
 .patient-header h1 {
   margin: 0;
-  font-size: 1.85rem;
-  font-weight: 700;
-  letter-spacing: -0.03em;
-  color: var(--dc-text-primary, #121316);
+  font-size: 1.75rem;
+  color: #0f172a;
 }
 
 .patient-nav {
-  margin-bottom: 1.25rem;
+  margin-bottom: 1rem;
 }
 
 .patient-nav a {
-  color: var(--dc-text-primary, #121316);
-  background-color: var(--dc-bg-surface, #ffffff);
-  border: 1px solid var(--dc-border-default, #dfdcd4);
+  color: #2563eb;
   text-decoration: none;
-  font-size: 0.875rem;
-  font-weight: 600;
-  display: inline-flex;
-  align-items: center;
-  gap: 0.4rem;
-  padding: 0.4rem 0.95rem;
-  border-radius: var(--dc-radius-sm, 6px);
-  transition: all var(--dc-transition-fast, 150ms ease);
+  font-size: 0.9rem;
 }
 
 .patient-nav a:hover {
-  background-color: var(--dc-bg-pearl, #f7f6f2);
-  border-color: var(--dc-text-primary, #121316);
-  text-decoration: none;
+  text-decoration: underline;
 }
 
 /* Badges */
 .badge {
   display: inline-block;
-  padding: 0.25rem 0.65rem;
-  border-radius: var(--dc-radius-pill, 9999px);
+  padding: 0.25rem 0.6rem;
+  border-radius: 9999px;
   font-size: 0.75rem;
-  font-weight: 650;
+  font-weight: 600;
   line-height: 1.2;
 }
 
 .badge-active {
-  background-color: var(--dc-color-sage-soft, #e9f0e9);
-  color: var(--dc-color-sage-text, #3c5e47);
-  border: 1px solid var(--dc-color-sage-border, #cadaca);
+  background-color: #dbeafe;
+  color: #1d4ed8;
 }
 
 .badge-inactive {
-  background-color: var(--dc-bg-pearl, #f7f6f2);
-  color: var(--dc-text-muted, #666874);
-  border: 1px solid var(--dc-border-subtle, #ebe8e2);
+  background-color: #f1f5f9;
+  color: #64748b;
+  border: 1px solid #cbd5e1;
 }
 
 /* Buttons */
@@ -79,18 +62,18 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  padding: 0.55rem 1.15rem;
-  border-radius: var(--dc-radius-sm, 6px);
+  padding: 0.5rem 1rem;
+  border-radius: 4px;
   font-size: 0.875rem;
-  font-weight: 600;
+  font-weight: 500;
   cursor: pointer;
   border: 1px solid transparent;
   text-decoration: none;
-  transition: all var(--dc-transition-fast, 150ms ease);
+  transition: background-color 0.15s ease-in-out, border-color 0.15s ease-in-out;
 }
 
 .btn:focus-visible {
-  outline: 2px solid var(--dc-accent-charcoal, #121316);
+  outline: 2px solid #2563eb;
   outline-offset: 2px;
 }
 
@@ -100,21 +83,19 @@
 }
 
 .btn-primary {
-  background-color: var(--dc-bg-dark, #121316);
+  background-color: #2563eb;
   color: #ffffff;
-  border-color: var(--dc-bg-dark, #121316);
 }
 
 .btn-primary:hover:not(:disabled) {
-  background-color: #262830;
-  border-color: #262830;
+  background-color: #1d4ed8;
   text-decoration: none;
 }
 
 .btn-secondary {
   background-color: #ffffff;
-  color: var(--dc-text-primary, #121316);
-  border-color: var(--dc-border-default, #dfdcd4);
+  color: #334155;
+  border-color: #cbd5e1;
 }
 
 .btn-secondary:hover:not(:disabled) {
@@ -299,7 +280,6 @@
 .details-card {
   background: #ffffff;
   border: 1px solid #e2e8f0;
-  border-left: 3px solid var(--dc-color-blue, #4776a8);
   border-radius: 6px;
   padding: 1.5rem;
   margin-bottom: 1.5rem;

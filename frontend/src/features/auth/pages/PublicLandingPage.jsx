@@ -5,11 +5,6 @@ import { getDashboardPath } from '../roleAccess';
 import heroClinicImg from '../../../assets/hero-clinic.jpg';
 import patientAccessImg from '../../../assets/patient-access.jpg';
 import staffAccessImg from '../../../assets/staff-access.jpg';
-import drRobinsonImg from '../../../assets/dr_robinson.jpg';
-import drTurnerImg from '../../../assets/dr_turner.jpg';
-import drWilsonImg from '../../../assets/dr_wilson.jpg';
-import patientConsultationImg from '../../../assets/patient_christina.jpg';
-import beforeAfterImg from '../../../assets/before_after_teeth.jpg';
 import '../public-entry.css';
 
 function ArrowIcon({ className = 'icon-arrow' }) {
@@ -206,6 +201,16 @@ export default function PublicLandingPage() {
     <main className="public-home" data-testid="public-landing-page">
       {/* 1. Hero Section */}
       <section className="public-hero" aria-labelledby="public-hero-title">
+        <div className="hero-ambient-glow" aria-hidden="true" />
+        <div className="hero-decor-canvas" aria-hidden="true">
+          <svg className="hero-decor-svg" viewBox="0 0 1200 480" fill="none" preserveAspectRatio="none">
+            <path d="M0,100 Q320,30 640,90 T1200,50" stroke="rgba(15,118,110,0.07)" strokeWidth="1.5" />
+            <path d="M0,240 Q460,150 820,200 T1200,140" stroke="rgba(13,148,136,0.05)" strokeWidth="1.5" />
+            <circle cx="460" cy="150" r="3.5" fill="rgba(15,118,110,0.2)" />
+            <circle cx="820" cy="200" r="3.5" fill="rgba(13,148,136,0.2)" />
+          </svg>
+        </div>
+
         <div className="public-container public-hero-grid">
           <div className="public-hero-copy">
             <div className="public-intro-badge hero-animate-eyebrow">
@@ -263,45 +268,13 @@ export default function PublicLandingPage() {
                 </div>
               </div>
             </div>
+            <div className="hero-visual-glow" aria-hidden="true" />
+            <div className="hero-visual-frame-accent" aria-hidden="true" />
           </div>
         </div>
       </section>
 
-      {/* 2. Editorial Statistics / Overview Strip */}
-      <section className="editorial-stats-strip scroll-reveal" aria-label="Practice metrics and standards">
-        <div className="public-container editorial-stats-grid">
-          <div className="editorial-stat-item">
-            <span className="editorial-stat-number">4</span>
-            <div className="editorial-stat-meta">
-              <strong>Core Specialties</strong>
-              <span>General, Cosmetic, Restorative &amp; Surgery</span>
-            </div>
-          </div>
-          <div className="editorial-stat-item">
-            <span className="editorial-stat-number">100%</span>
-            <div className="editorial-stat-meta">
-              <strong>Role-Isolated Portals</strong>
-              <span>Zero cross-access between staff &amp; patients</span>
-            </div>
-          </div>
-          <div className="editorial-stat-item">
-            <span className="editorial-stat-number">24/7</span>
-            <div className="editorial-stat-meta">
-              <strong>Patient Access</strong>
-              <span>Immediate appointment &amp; prescription history</span>
-            </div>
-          </div>
-          <div className="editorial-stat-item">
-            <span className="editorial-stat-number">Real-Time</span>
-            <div className="editorial-stat-meta">
-              <strong>Practice Operations</strong>
-              <span>Pessimistic inventory &amp; itemized invoicing</span>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* 3. Real Product Capabilities */}
+      {/* 2. Real Product Capabilities */}
       <section className="public-capabilities scroll-reveal" aria-labelledby="public-capabilities-title">
         <div className="public-container">
           <div className="public-section-heading">
@@ -370,92 +343,9 @@ export default function PublicLandingPage() {
         </div>
       </section>
 
-      {/* 4. Doctors & Clinical Team Showcase (Dark Contrast Section) */}
-      <section className="editorial-team-section scroll-reveal" aria-labelledby="editorial-team-title">
-        <div className="public-container">
-          <div className="editorial-team-header">
-            <span className="editorial-kicker">Clinical Leadership</span>
-            <h2 id="editorial-team-title">Dedicated specialists, unified standards</h2>
-            <p>Our licensed dentists and oral healthcare specialists coordinate directly within DentCare to provide comprehensive, evidence-based dental medicine.</p>
-          </div>
-
-          <div className="editorial-team-grid">
-            <article className="editorial-doctor-card">
-              <div className="editorial-doctor-image-wrap">
-                <img src={drRobinsonImg} alt="Surgical and implant care" className="editorial-doctor-img" loading="lazy" />
-              </div>
-              <div className="editorial-doctor-body">
-                <span className="editorial-doctor-specialty">Clinical Surgery</span>
-                <h3>Surgical &amp; Implant Care</h3>
-                <p>Coordinated surgical interventions, extractions, and implant procedures integrated directly with clinical charting.</p>
-              </div>
-            </article>
-
-            <article className="editorial-doctor-card">
-              <div className="editorial-doctor-image-wrap">
-                <img src={drTurnerImg} alt="Restorative and aesthetic dental care" className="editorial-doctor-img" loading="lazy" />
-              </div>
-              <div className="editorial-doctor-body">
-                <span className="editorial-doctor-specialty">Restorative Dentistry</span>
-                <h3>Restorative &amp; Aesthetic Care</h3>
-                <p>Tooth preservation, restorative treatments, and digital treatment plans tracked across patient visits.</p>
-              </div>
-            </article>
-
-            <article className="editorial-doctor-card">
-              <div className="editorial-doctor-image-wrap">
-                <img src={drWilsonImg} alt="Orthodontics and preventive health" className="editorial-doctor-img" loading="lazy" />
-              </div>
-              <div className="editorial-doctor-body">
-                <span className="editorial-doctor-specialty">Orthodontics &amp; Prevention</span>
-                <h3>Orthodontic &amp; Preventive Health</h3>
-                <p>Preventive consultations, alignment pathways, and routine evaluations recorded with digital accuracy.</p>
-              </div>
-            </article>
-          </div>
-        </div>
-      </section>
-
-      {/* 5. Patient Experience & Treatment Spotlight */}
-      <section className="editorial-spotlight-section scroll-reveal" aria-labelledby="editorial-spotlight-title">
-        <div className="public-container editorial-spotlight-grid">
-          <div className="editorial-spotlight-media">
-            <div className="editorial-spotlight-card main-spotlight">
-              <img src={patientConsultationImg} alt="Patient consultation experience at DentCare" className="editorial-spotlight-img" loading="lazy" />
-              <div className="editorial-spotlight-badge">
-                <strong>Patient Experience</strong>
-                <span>Connected Dental Care</span>
-              </div>
-            </div>
-            <div className="editorial-spotlight-card sub-spotlight">
-              <img src={beforeAfterImg} alt="Aesthetic restorative dentistry result" className="editorial-spotlight-subimg" loading="lazy" />
-              <div className="editorial-spotlight-subbadge">
-                <span>Precision Aesthetics</span>
-              </div>
-            </div>
-          </div>
-
-          <div className="editorial-spotlight-copy">
-            <span className="public-intro">Patient Centered</span>
-            <h2 id="editorial-spotlight-title">A calm, refined approach to modern oral care</h2>
-            <p className="editorial-spotlight-lead">
-              We design every clinical touchpoint to be transparent and calm. With digital treatment plans, upfront fee schedules, and secure records access, patients always remain fully informed.
-            </p>
-            <div className="editorial-quote">
-              <p>DentCare coordinates clinical care and practice workflows into a unified system: treatment plans are clearly mapped with tooth charting, while receipts, appointments, and prescriptions remain securely accessible.</p>
-              <footer>Care Coordination &amp; Practice Workflows</footer>
-            </div>
-            <div className="editorial-spotlight-perks">
-              <div className="editorial-perk"><CheckIcon /><span>Detailed anatomical tooth consultations</span></div>
-              <div className="editorial-perk"><CheckIcon /><span>Upfront itemized treatment invoicing</span></div>
-              <div className="editorial-perk"><CheckIcon /><span>Dedicated post-care prescription tracking</span></div>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* 6. Login Choice / Access Area */}
+      {/* 3. Login Choice / Access Area */}
       <section className="public-access scroll-reveal" id="access-portals" aria-labelledby="public-access-title">
+        <div className="public-access-bg-ambient" aria-hidden="true" />
         <div className="public-container">
           <div className="public-section-heading">
             <div>
@@ -556,7 +446,7 @@ export default function PublicLandingPage() {
         </div>
       </section>
 
-      {/* 7. Trust & Privacy Architecture */}
+      {/* 4. Trust & Privacy Architecture */}
       <section className="public-security scroll-reveal" aria-labelledby="public-security-title">
         <div className="public-container">
           <div className="public-section-heading">
@@ -589,7 +479,7 @@ export default function PublicLandingPage() {
         </div>
       </section>
 
-      {/* 8. Getting Started Workflow */}
+      {/* 5. Getting Started Workflow */}
       <section className="public-process scroll-reveal" aria-labelledby="public-process-title">
         <div className="public-container public-process-grid">
           <div>
@@ -623,7 +513,7 @@ export default function PublicLandingPage() {
         </div>
       </section>
 
-      {/* 9. Purposeful FAQ Section */}
+      {/* 6. Purposeful FAQ Section */}
       <section className="public-faq scroll-reveal" aria-labelledby="public-faq-title">
         <div className="public-container">
           <div className="public-section-heading">
@@ -671,7 +561,7 @@ export default function PublicLandingPage() {
         </div>
       </section>
 
-      {/* 10. Final Action Area */}
+      {/* 7. Final Action Area */}
       <section className="public-cta scroll-reveal" aria-labelledby="public-cta-title">
         <div className="public-container public-cta-inner">
           <div className="public-cta-copy">
@@ -707,9 +597,9 @@ export default function PublicLandingPage() {
         <div className="public-container">
           <div className="public-footer-brand-wrap">
             <span className="public-footer-brand">DentCare</span>
-            <span className="public-footer-desc">Dental Management System · Clinical &amp; Practice Operations Portal</span>
+            <span className="public-footer-desc">Dental Management System</span>
           </div>
-          <p className="public-footer-copy">&copy; 2026 DentCare. Secure Dental Management. All rights reserved.</p>
+          <p className="public-footer-copy">&copy; 2026 DentCare. Secure Dental Management.</p>
           <nav aria-label="Footer navigation">
             <Link to="/">Home</Link>
             <Link to="/patient/login">Patient Login</Link>

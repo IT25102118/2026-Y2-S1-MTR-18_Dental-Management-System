@@ -1,11 +1,10 @@
 /* Feature-scoped styles for Clinical Management (MF-03) */
 
 .clinical-container {
-  max-width: 1200px;
+  max-width: 1100px;
   margin: 0 auto;
-  padding: 2rem 1.5rem 5rem;
-  color: var(--dc-text-primary, #121316);
-  background-color: var(--dc-bg-page, #fbfbf9);
+  padding: 1.5rem;
+  color: #1e293b;
 }
 
 .clinical-header {
@@ -15,82 +14,67 @@
   flex-wrap: wrap;
   gap: 1rem;
   margin-bottom: 1.5rem;
-  padding-bottom: 0.85rem;
-  border-bottom: 1px solid var(--dc-border-subtle, #ebe8e2);
 }
 
 .clinical-header h1 {
   margin: 0;
-  font-size: 1.85rem;
-  font-weight: 700;
-  letter-spacing: -0.03em;
-  color: var(--dc-text-primary, #121316);
+  font-size: 1.75rem;
+  color: #0f172a;
 }
 
 .clinical-nav {
-  margin-bottom: 1.25rem;
+  margin-bottom: 1rem;
 }
 
 .clinical-nav a {
-  color: var(--dc-text-primary, #121316);
-  background-color: var(--dc-bg-surface, #ffffff);
-  border: 1px solid var(--dc-border-default, #dfdcd4);
+  color: #2563eb;
   text-decoration: none;
-  font-size: 0.875rem;
-  font-weight: 600;
-  display: inline-flex;
-  align-items: center;
-  gap: 0.4rem;
-  padding: 0.4rem 0.95rem;
-  border-radius: var(--dc-radius-sm, 6px);
-  transition: all var(--dc-transition-fast, 150ms ease);
+  font-size: 0.9rem;
 }
 
 .clinical-nav a:hover {
-  background-color: var(--dc-bg-pearl, #f7f6f2);
-  border-color: var(--dc-text-primary, #121316);
-  text-decoration: none;
+  text-decoration: underline;
 }
 
 /* Sub-module Navigation */
 .clinical-module-nav {
   display: flex;
   gap: 0.5rem;
-  border-bottom: 1px solid var(--dc-border-subtle, #ebe8e2);
-  margin-bottom: 1.75rem;
+  border-bottom: 2px solid #e2e8f0;
+  margin-bottom: 1.5rem;
   overflow-x: auto;
 }
 
 .clin-nav-link {
-  padding: 0.65rem 1.25rem;
-  font-size: 0.92rem;
-  font-weight: 550;
-  color: var(--dc-text-muted, #666874);
+  padding: 0.6rem 1.2rem;
+  font-size: 0.95rem;
+  font-weight: 500;
+  color: #64748b;
   text-decoration: none;
   border-bottom: 2px solid transparent;
-  margin-bottom: -1px;
+  margin-bottom: -2px;
   white-space: nowrap;
   transition: color 0.15s ease, border-color 0.15s ease;
 }
 
 .clin-nav-link:hover {
-  color: var(--dc-text-primary, #121316);
+  color: #1e293b;
 }
 
 .clin-nav-link.active {
-  color: var(--dc-color-teal, #287a72);
-  border-bottom-color: var(--dc-color-teal, #287a72);
-  font-weight: 650;
+  color: #2563eb;
+  border-bottom-color: #2563eb;
+  font-weight: 600;
 }
 
 /* Placeholders */
 .clinical-placeholder {
-  background-color: var(--dc-bg-surface, #ffffff);
-  border: 1px dashed var(--dc-border-strong, #cac7be);
-  border-radius: var(--dc-radius-md, 12px);
+  background-color: #f8fafc;
+  border: 1px dashed #cbd5e1;
+  border-radius: 8px;
   padding: 3rem 2rem;
   text-align: center;
-  color: var(--dc-text-muted, #666874);
+  color: #64748b;
   font-size: 1.05rem;
   margin-top: 1rem;
 }
@@ -104,11 +88,11 @@
 
 /* Clinical Overview Dashboard Styles */
 .clinical-overview-search-card {
-  background: var(--dc-bg-surface, #ffffff);
-  border: 1px solid var(--dc-border-subtle, #ebe8e2);
-  border-radius: var(--dc-radius-lg, 16px);
-  padding: 1.5rem 1.75rem;
-  box-shadow: var(--dc-shadow-xs, 0 1px 2px rgba(18, 19, 22, 0.03));
+  background: linear-gradient(135deg, #eff6ff 0%, #f0fdfa 100%);
+  border: 1px solid #bfdbfe;
+  border-radius: 10px;
+  padding: 1.25rem 1.5rem;
+  box-shadow: 0 1px 3px rgba(37, 99, 235, 0.05);
 }
 
 .clinical-search-header {
@@ -849,60 +833,42 @@
 
 /* Treatment Plan and Procedure Badges */
 .badge-proposed {
-  background-color: var(--dc-color-lavender-soft, #eeeaf5);
-  color: var(--dc-color-lavender-text, #594877);
-  border: 1px solid var(--dc-color-lavender-border, #d7cee8);
+  background-color: #fef3c7;
+  color: #b45309;
 }
 
 .badge-approved {
-  background-color: var(--dc-color-blue-soft, #e8f0f8);
-  color: var(--dc-color-blue-text, #2c527a);
-  border: 1px solid var(--dc-color-blue-border, #c8daf0);
+  background-color: #e0f2fe;
+  color: #0369a1;
 }
 
 .badge-in-progress {
-  background-color: var(--dc-color-teal-soft, #ddefea);
-  color: var(--dc-color-teal-text, #19524c);
-  border: 1px solid var(--dc-color-teal-border, #b6dbd4);
-}
-
-.badge-completed {
-  background-color: var(--dc-color-sage-soft, #e9f0e9);
-  color: var(--dc-color-sage-text, #3c5e47);
-  border: 1px solid var(--dc-color-sage-border, #cadaca);
-}
-
-.badge-cancelled {
-  background-color: var(--dc-color-coral-soft, #f8e7e4);
-  color: var(--dc-color-coral-text, #8c3a30);
-  border: 1px solid var(--dc-color-coral-border, #eecbc6);
+  background-color: #fef9c3;
+  color: #854d0e;
 }
 
 .badge-planned {
-  background-color: var(--dc-color-lavender-soft, #eeeaf5);
-  color: var(--dc-color-lavender-text, #594877);
-  border: 1px solid var(--dc-color-lavender-border, #d7cee8);
+  background-color: #f1f5f9;
+  color: #334155;
+  border: 1px solid #cbd5e1;
 }
 
 .badge-unknown {
-  background-color: var(--dc-bg-pearl, #f7f6f2);
-  color: var(--dc-text-muted, #666874);
-  border: 1px solid var(--dc-border-subtle, #ebe8e2);
+  background-color: #f1f5f9;
+  color: #64748b;
+  border: 1px solid #cbd5e1;
 }
 
 .procedure-code-badge {
   font-size: 0.8rem;
-  color: var(--dc-color-blue-text, #2c527a);
-  background-color: var(--dc-color-blue-soft, #e8f0f8);
-  padding: 0.15rem 0.4rem;
-  border-radius: 4px;
+  color: #64748b;
   font-family: monospace;
 }
 
 /* Dentist Actions Toolbar & Action Panels */
 .dentist-actions-card {
-  border-left: 4px solid var(--dc-color-teal, #287a72);
-  background-color: var(--dc-bg-surface, #ffffff);
+  border-left: 4px solid #2563eb;
+  background-color: #f8fafc;
 }
 
 .dentist-actions-toolbar {

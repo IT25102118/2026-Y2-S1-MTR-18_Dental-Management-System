@@ -1,29 +1,52 @@
 /* =============================================================================
    Feature-scoped styles for Billing and Payment Management (MF-05)
-   Editorial Dental & Financial Practice Aesthetic
-   Palette: Warm Pearl / Crisp White / Charcoal Ink / Understated Status Pills
+   Custom Theme: Ocean Blue & Cyan (Clean, crisp medical & financial aesthetic)
+   Only affects the Billing & Invoices module.
    ============================================================================= */
 
+/* Visible Soft Ocean Blue Canvas (#e0f2fe to #eef8ff) for Billing Module */
+:root:has(.billing-container),
+body:has(.billing-container),
+.app-content-wrapper:has(.billing-container) {
+  background-color: #eaf5fc !important;
+  background-image: linear-gradient(180deg, #e0f2fe 0%, #edf6fd 60%, #f0f9ff 100%) !important;
+  background-attachment: fixed !important;
+}
+
 .billing-container {
-  /* Editorial Financial Palette */
-  --billing-primary: #121316;
-  --billing-primary-hover: #292c34;
-  --billing-primary-dark: #121316;
-  --billing-primary-light: #f7f6f2;
-  --billing-accent: #2b3038;
-  --billing-accent-hover: #121316;
-  --billing-accent-light: #f4f3ef;
-  --billing-accent-glow: rgba(18, 19, 22, 0.08);
-  --billing-border: var(--dc-border-subtle, #ebe8e2);
-  --billing-card-border: var(--dc-border-default, #dfdcd4);
+  /* Ocean Blue & Cyan Theme Variables */
+  --billing-primary: #0284c7;          /* Ocean Blue 600 */
+  --billing-primary-hover: #0369a1;    /* Ocean Blue 700 */
+  --billing-primary-dark: #0c4a6e;     /* Ocean Blue 900 */
+  --billing-primary-light: #e0f2fe;    /* Ocean Blue 100 */
+  --billing-accent: #06b6d4;           /* Vibrant Cyan 500 */
+  --billing-accent-hover: #0891b2;     /* Cyan 600 */
+  --billing-accent-light: #ecfeff;     /* Cyan 50 */
+  --billing-accent-glow: rgba(6, 182, 212, 0.28);
+  --billing-gradient: linear-gradient(135deg, #0284c7 0%, #0891b2 50%, #06b6d4 100%);
+  --billing-gradient-hover: linear-gradient(135deg, #0369a1 0%, #0e7490 50%, #0891b2 100%);
+  --billing-border: #bae6fd;
+  --billing-card-border: #cbd5e1;
 
   position: relative;
-  max-width: 1240px;
+  max-width: 1200px;
   margin: 0 auto;
-  padding: 2rem 2rem 5rem;
-  min-height: calc(100vh - 68px);
-  color: var(--dc-text-primary, #121316);
-  background-color: transparent;
+  padding: 1.75rem 2rem 4.5rem;
+  min-height: calc(100vh - 64px);
+  color: #1e293b;
+}
+
+/* Bulletproof full-viewport backdrop (works in 100% of browsers) */
+.billing-container::before {
+  content: "";
+  position: fixed;
+  top: 64px;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: linear-gradient(180deg, #e0f2fe 0%, #edf6fd 60%, #f0f9ff 100%);
+  z-index: -1;
+  pointer-events: none;
 }
 
 /* Header & Module Brand */
@@ -34,59 +57,62 @@
   flex-wrap: wrap;
   gap: 1rem;
   margin-bottom: 1.5rem;
-  padding-bottom: 1rem;
-  border-bottom: 1px solid var(--dc-border-subtle, #ebe8e2);
+  padding-bottom: 0.85rem;
+  border-bottom: 2px solid rgba(2, 132, 199, 0.18);
 }
 
 .billing-header h1 {
   margin: 0;
   font-size: 1.85rem;
-  font-weight: 700;
-  letter-spacing: -0.03em;
-  color: var(--dc-text-primary, #121316);
+  font-weight: 750;
+  letter-spacing: -0.02em;
+  background: var(--billing-gradient);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
   display: inline-flex;
   align-items: center;
   gap: 0.6rem;
 }
 
 .billing-nav {
-  margin-bottom: 1.5rem;
+  margin-bottom: 1.25rem;
 }
 
 .billing-nav a {
-  color: var(--dc-text-primary, #121316);
-  background-color: var(--dc-bg-surface, #ffffff);
-  border: 1px solid var(--dc-border-default, #dfdcd4);
+  color: var(--billing-primary);
+  background-color: rgba(255, 255, 255, 0.85);
+  border: 1px solid rgba(2, 132, 199, 0.22);
   text-decoration: none;
   font-size: 0.875rem;
   font-weight: 600;
   display: inline-flex;
   align-items: center;
   gap: 0.4rem;
-  transition: all var(--dc-transition-fast, 150ms ease);
-  padding: 0.4rem 0.95rem;
-  border-radius: var(--dc-radius-sm, 6px);
-  box-shadow: var(--dc-shadow-xs, 0 1px 2px rgba(18, 19, 22, 0.03));
+  transition: all 0.15s ease;
+  padding: 0.35rem 0.85rem;
+  border-radius: 8px;
+  box-shadow: 0 1px 3px rgba(2, 132, 199, 0.08);
 }
 
 .billing-nav a:hover {
-  color: var(--dc-text-primary, #121316);
-  background-color: var(--dc-bg-pearl, #f7f6f2);
-  border-color: var(--dc-text-primary, #121316);
+  color: var(--billing-primary-hover);
+  background-color: #ffffff;
+  border-color: var(--billing-primary);
   text-decoration: none;
-  transform: translateY(-1px);
+  transform: translateX(-2px);
+  box-shadow: 0 4px 12px rgba(2, 132, 199, 0.18);
 }
 
 /* Action Buttons Scoped to Billing */
 .billing-container .btn-primary {
-  background-color: var(--dc-bg-dark, #121316);
-  border: 1px solid var(--dc-bg-dark, #121316);
+  background: var(--billing-gradient);
+  border: 1px solid var(--billing-primary);
   color: #ffffff;
   font-weight: 600;
-  border-radius: var(--dc-radius-sm, 6px);
-  padding: 0.55rem 1.25rem;
-  box-shadow: 0 1px 3px rgba(18, 19, 22, 0.12);
-  transition: all var(--dc-transition-base, 220ms ease);
+  border-radius: 6px;
+  padding: 0.5rem 1.15rem;
+  box-shadow: 0 4px 14px var(--billing-accent-glow);
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -96,12 +122,11 @@
 }
 
 .billing-container .btn-primary:hover:not(:disabled) {
-  background-color: #262830;
-  border-color: #262830;
+  background: var(--billing-gradient-hover);
+  box-shadow: 0 6px 20px rgba(2, 132, 199, 0.38);
   transform: translateY(-1px);
   color: #ffffff;
   text-decoration: none;
-  box-shadow: 0 4px 12px rgba(18, 19, 22, 0.15);
 }
 
 .billing-container .btn-primary:active:not(:disabled) {
@@ -110,88 +135,83 @@
 
 .billing-container .btn-secondary {
   background-color: #ffffff;
-  color: var(--dc-text-primary, #121316);
-  border: 1px solid var(--dc-border-default, #dfdcd4);
+  color: var(--billing-primary-dark);
+  border: 1px solid var(--billing-border);
   font-weight: 600;
-  border-radius: var(--dc-radius-sm, 6px);
-  padding: 0.55rem 1.15rem;
-  transition: all var(--dc-transition-fast, 150ms ease);
+  border-radius: 6px;
+  padding: 0.5rem 1rem;
+  transition: all 0.15s ease;
   cursor: pointer;
   text-decoration: none;
 }
 
 .billing-container .btn-secondary:hover:not(:disabled) {
-  background-color: var(--dc-bg-pearl, #f7f6f2);
-  border-color: var(--dc-text-primary, #121316);
-  color: var(--dc-text-primary, #121316);
+  background-color: var(--billing-primary-light);
+  border-color: var(--billing-primary);
+  color: var(--billing-primary-hover);
   text-decoration: none;
 }
 
 /* Status Badges */
 .badge-status-draft {
-  background-color: var(--dc-color-blue-soft, #e8f0f8);
-  color: var(--dc-color-blue-text, #2c527a);
-  border: 1px solid var(--dc-color-blue-border, #c8daf0);
+  background-color: #f0f9ff;
+  color: #0369a1;
+  border: 1px solid var(--billing-border);
 }
 
 .badge-status-unpaid {
-  background-color: var(--dc-color-sand-soft, #f5ebdd);
-  color: var(--dc-color-sand-text, #7d5727);
-  border: 1px solid var(--dc-color-sand-border, #e6d3bd);
+  background-color: #fee2e2;
+  color: #b91c1c;
+  border: 1px solid #fca5a5;
 }
 
 .badge-status-partially-paid {
-  background-color: var(--dc-color-sand-soft, #f5ebdd);
-  color: var(--dc-color-sand-text, #7d5727);
-  border: 1px solid var(--dc-color-sand-border, #e6d3bd);
+  background-color: #fef3c7;
+  color: #b45309;
+  border: 1px solid #fcd34d;
 }
 
 .badge-status-paid {
-  background-color: var(--dc-color-sage-soft, #e9f0e9);
-  color: var(--dc-color-sage-text, #3c5e47);
-  border: 1px solid var(--dc-color-sage-border, #cadaca);
-}
-
-.badge-status-overdue {
-  background-color: var(--dc-color-coral-soft, #f8e7e4);
-  color: var(--dc-color-coral-text, #8c3a30);
-  border: 1px solid var(--dc-color-coral-border, #eecbc6);
+  background-color: #dcfce7;
+  color: #15803d;
+  border: 1px solid #86efac;
 }
 
 .badge-status-cancelled {
-  background-color: #f3f3f1;
-  color: #8c8e9a;
+  background-color: #f3f4f6;
+  color: #94a3b8;
   text-decoration: line-through;
-  border: 1px solid #dedcd4;
+  border: 1px solid #e2e8f0;
 }
 
 .badge-payment-recorded {
-  background-color: var(--dc-color-sage-soft, #e9f0e9);
-  color: var(--dc-color-sage-text, #3c5e47);
-  border: 1px solid var(--dc-color-sage-border, #cadaca);
+  background-color: #dcfce7;
+  color: #15803d;
+  border: 1px solid #86efac;
 }
 
 .badge-payment-reversed {
-  background-color: var(--dc-color-coral-soft, #f8e7e4);
-  color: var(--dc-color-coral-text, #8c3a30);
-  border: 1px solid var(--dc-color-coral-border, #eecbc6);
+  background-color: #fee2e2;
+  color: #b91c1c;
+  border: 1px solid #fca5a5;
 }
 
 /* Filter Card */
 .filter-card {
-  background: var(--dc-bg-surface, #ffffff);
-  border: 1px solid var(--dc-border-subtle, #ebe8e2);
-  border-radius: var(--dc-radius-lg, 16px);
-  padding: 1.5rem 1.75rem;
-  margin-bottom: 2rem;
-  box-shadow: var(--dc-shadow-xs, 0 1px 2px rgba(18, 19, 22, 0.03));
+  background: #ffffff;
+  border: 1px solid #bae6fd;
+  border-top: 4px solid var(--billing-primary);
+  border-radius: 14px;
+  padding: 1.35rem 1.65rem;
+  margin-bottom: 1.75rem;
+  box-shadow: 0 4px 20px -4px rgba(2, 132, 199, 0.12), 0 2px 6px -1px rgba(15, 23, 42, 0.04);
 }
 
 .filter-form {
   display: flex;
   flex-wrap: wrap;
   align-items: flex-end;
-  gap: 1.25rem;
+  gap: 1rem;
 }
 
 .filter-form .form-group {
@@ -210,28 +230,28 @@
   width: 100%;
   border-collapse: collapse;
   text-align: left;
-  font-size: 0.88rem;
-  background-color: var(--dc-bg-surface, #ffffff);
-  border: 1px solid var(--dc-border-subtle, #ebe8e2);
-  border-radius: var(--dc-radius-lg, 16px);
+  font-size: 0.875rem;
+  background-color: #ffffff;
+  border: 1px solid #bae6fd;
+  border-radius: 14px;
   overflow: hidden;
-  box-shadow: var(--dc-shadow-card, 0 1px 3px rgba(18, 19, 22, 0.02));
+  box-shadow: 0 4px 20px -4px rgba(2, 132, 199, 0.12), 0 2px 6px -1px rgba(15, 23, 42, 0.04);
 }
 
 .billing-table th {
-  background: var(--dc-bg-surface-subtle, #f9f8f5);
+  background: linear-gradient(180deg, #f0f9ff 0%, #e0f2fe 100%);
   padding: 0.85rem 1.15rem;
   font-weight: 700;
-  font-size: 0.72rem;
+  font-size: 0.78rem;
   text-transform: uppercase;
-  letter-spacing: 0.05em;
-  color: var(--dc-text-muted, #666874);
-  border-bottom: 1px solid var(--dc-border-subtle, #ebe8e2);
+  letter-spacing: 0.04em;
+  color: var(--billing-primary-dark);
+  border-bottom: 1.5px solid var(--billing-border);
 }
 
 .billing-table td {
-  padding: 0.95rem 1.15rem;
-  border-bottom: 1px solid var(--dc-border-subtle, #ebe8e2);
+  padding: 0.85rem 1.15rem;
+  border-bottom: 1px solid #f1f5f9;
   vertical-align: middle;
   background-color: #ffffff;
 }
@@ -241,16 +261,16 @@
 }
 
 .billing-table tr:hover td {
-  background-color: var(--dc-bg-surface-subtle, #f9f8f5);
+  background-color: #f8fafc; /* Clean slate hover */
 }
 
 .billing-table td a {
-  color: var(--dc-text-primary, #121316);
+  color: var(--billing-primary);
   font-weight: 600;
 }
 
 .billing-table td a:hover {
-  color: var(--dc-accent-slate, #2b3038);
+  color: var(--billing-accent-hover);
   text-decoration: underline;
 }
 
@@ -267,71 +287,238 @@
 /* Invoice Form & Line Items */
 .form-card {
   background-color: #ffffff;
-  border: 1px solid var(--dc-border-subtle, #ebe8e2);
-  border-radius: var(--dc-radius-lg, 16px);
-  padding: 2rem;
-  max-width: 880px;
-  box-shadow: var(--dc-shadow-card, 0 1px 3px rgba(18, 19, 22, 0.02));
+  border: 1px solid var(--billing-card-border);
+  border-top: 3.5px solid var(--billing-accent);
+  border-radius: 8px;
+  padding: 1.75rem;
+  max-width: 850px;
+  box-shadow: 0 4px 16px -3px rgba(2, 132, 199, 0.07);
 }
 
 .form-grid-2 {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
   gap: 1.25rem;
-  margin-bottom: 1.5rem;
 }
 
-.form-group {
+.billing-container .form-input,
+.billing-container select,
+.billing-container textarea {
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+}
+
+.billing-container .form-input:focus,
+.billing-container select:focus,
+.billing-container textarea:focus {
+  border-color: var(--billing-accent);
+  box-shadow: 0 0 0 3px var(--billing-accent-glow);
+  outline: none;
+}
+
+.items-section {
+  margin: 1.75rem 0;
+  border-top: 2px dashed var(--billing-border);
+  padding-top: 1.25rem;
+}
+
+.items-section-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1rem;
+}
+
+.items-section-header h2 {
+  margin: 0;
+  font-size: 1.2rem;
+  font-weight: 700;
+  color: var(--billing-primary-dark);
+}
+
+.items-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-bottom: 1rem;
+  background-color: #ffffff;
+  border: 1px solid var(--billing-card-border);
+  border-radius: 6px;
+  overflow: hidden;
+}
+
+.items-table th,
+.items-table td {
+  padding: 0.65rem 0.5rem;
+  border-bottom: 1px solid #f1f5f9;
+  vertical-align: top;
+}
+
+.items-table th {
+  background: linear-gradient(180deg, #f0f9ff 0%, #e0f2fe 100%);
+  font-size: 0.8rem;
+  font-weight: 700;
+  color: var(--billing-primary-dark);
+  text-align: left;
+  border-bottom: 1.5px solid var(--billing-border);
+}
+
+.items-table td .form-input {
+  width: 100%;
+  box-sizing: border-box;
+}
+
+/* Financial Live Preview Card */
+.preview-card {
+  background: linear-gradient(145deg, #f0f9ff 0%, #ecfeff 100%);
+  border: 1.5px solid var(--billing-border);
+  border-radius: 8px;
+  padding: 1.15rem 1.35rem;
+  margin: 1.5rem 0;
+  max-width: 400px;
+  margin-left: auto;
+  box-shadow: 0 6px 20px -4px var(--billing-accent-glow);
+}
+
+.preview-row {
+  display: flex;
+  justify-content: space-between;
+  padding: 0.35rem 0;
+  font-size: 0.9rem;
+  color: var(--billing-primary-dark);
+}
+
+.preview-total {
+  font-weight: 800;
+  font-size: 1.15rem;
+  color: var(--billing-primary-dark);
+  border-top: 2px solid var(--billing-accent);
+  padding-top: 0.65rem;
+  margin-top: 0.35rem;
+}
+
+.text-muted {
+  color: #64748b;
+}
+
+/* Detail View */
+.detail-card {
+  background-color: #ffffff;
+  border: 1px solid var(--billing-card-border);
+  border-top: 3.5px solid var(--billing-accent);
+  border-radius: 8px;
+  padding: 1.75rem;
+  margin-bottom: 1.5rem;
+  box-shadow: 0 4px 16px -3px rgba(2, 132, 199, 0.07);
+}
+
+.detail-card h2 {
+  margin: 0 0 1rem 0;
+  font-size: 1.2rem;
+  font-weight: 700;
+  color: var(--billing-primary-dark);
+}
+
+.detail-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 1.25rem;
+}
+
+.detail-item {
   display: flex;
   flex-direction: column;
-  gap: 0.4rem;
-  margin-bottom: 1.25rem;
+  gap: 0.25rem;
 }
 
-.form-group label {
-  font-size: 0.8125rem;
-  font-weight: 650;
-  color: var(--dc-text-secondary, #3b3d45);
+.detail-label {
+  font-size: 0.75rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: #0369a1;
 }
 
-.form-control {
-  font-family: inherit;
-  font-size: 0.92rem;
-  padding: 0.65rem 0.85rem;
-  border: 1px solid var(--dc-border-default, #dfdcd4);
-  border-radius: var(--dc-radius-sm, 6px);
-  background-color: #ffffff;
-  color: var(--dc-text-primary, #121316);
-  transition: all var(--dc-transition-fast, 150ms ease);
+.detail-value {
+  font-size: 1rem;
+  font-weight: 600;
+  color: #0f172a;
 }
 
-.form-control:focus {
-  outline: none;
-  border-color: var(--dc-accent-charcoal, #121316);
-  box-shadow: 0 0 0 2px rgba(18, 19, 22, 0.08);
+.financial-summary-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+  gap: 1rem;
+}
+
+.financial-stat-card {
+  background: linear-gradient(145deg, #ffffff 0%, #f0f9ff 100%);
+  border: 1px solid var(--billing-border);
+  border-left: 4px solid var(--billing-primary);
+  border-radius: 8px;
+  padding: 1.1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  box-shadow: 0 2px 8px rgba(2, 132, 199, 0.05);
+}
+
+.financial-stat-card .stat-label {
+  font-size: 0.75rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--billing-primary-dark);
+}
+
+.financial-stat-card .stat-value {
+  font-size: 1.35rem;
+  font-weight: 800;
+  color: #0f172a;
+  font-variant-numeric: tabular-nums;
+}
+
+.financial-stat-card.stat-balance {
+  border-left-color: #ef4444;
+}
+
+.financial-stat-card.stat-balance .stat-value {
+  color: #b91c1c;
+}
+
+.financial-stat-card.stat-paid {
+  border-left-color: #10b981;
+}
+
+.financial-stat-card.stat-paid .stat-value {
+  color: #15803d;
+}
+
+.table-actions {
+  display: flex;
+  gap: 0.5rem;
+  align-items: center;
 }
 
 .btn-danger {
-  background-color: var(--dc-status-danger-text, #a82323);
+  background-color: #dc2626;
   color: #ffffff;
   border: none;
-  border-radius: var(--dc-radius-sm, 6px);
-  padding: 0.5rem 1rem;
+  border-radius: 6px;
+  padding: 0.45rem 0.9rem;
   font-weight: 600;
   cursor: pointer;
-  transition: background-color var(--dc-transition-fast, 150ms ease);
+  transition: background-color 0.15s ease;
 }
 
 .btn-danger:hover:not(:disabled) {
-  background-color: #8c1d1d;
+  background-color: #b91c1c;
 }
 
 .success-alert {
-  background-color: var(--dc-status-success-bg, #f2f7f4);
-  border: 1px solid var(--dc-status-success-border, #c8e1d2);
-  color: var(--dc-status-success-text, #1b5e39);
+  background-color: #ecfeff;
+  border: 1px solid #a5f3fc;
+  color: #0e7490;
   padding: 1rem 1.25rem;
-  border-radius: var(--dc-radius-md, 10px);
+  border-radius: 8px;
   margin-bottom: 1.5rem;
   display: flex;
   justify-content: space-between;
@@ -348,9 +535,7 @@
   left: 0;
   right: 0;
   bottom: 0;
-  background-color: rgba(18, 19, 22, 0.65);
-  backdrop-filter: blur(4px);
-  -webkit-backdrop-filter: blur(4px);
+  background-color: rgba(8, 14, 30, 0.65);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -360,12 +545,13 @@
 
 .modal-content {
   background-color: #ffffff;
-  border: 1px solid var(--dc-border-subtle, #ebe8e2);
-  border-radius: var(--dc-radius-xl, 24px);
+  border: 1px solid var(--billing-border);
+  border-top: 4px solid var(--billing-accent);
+  border-radius: 12px;
   width: 100%;
-  max-width: 520px;
-  box-shadow: var(--dc-shadow-lg, 0 16px 40px -10px rgba(18, 19, 22, 0.07));
-  padding: 2rem;
+  max-width: 500px;
+  box-shadow: 0 20px 30px -5px rgba(2, 132, 199, 0.2), 0 10px 15px -5px rgba(0, 0, 0, 0.08);
+  padding: 1.75rem;
   max-height: 90vh;
   overflow-y: auto;
 }
@@ -375,21 +561,21 @@
   justify-content: space-between;
   align-items: flex-start;
   margin-bottom: 1.25rem;
-  border-bottom: 1px solid var(--dc-border-subtle, #ebe8e2);
-  padding-bottom: 0.85rem;
+  border-bottom: 1px solid var(--billing-card-border);
+  padding-bottom: 0.75rem;
 }
 
 .modal-header h2 {
   margin: 0;
-  font-size: 1.35rem;
-  font-weight: 700;
-  color: var(--dc-text-primary, #121316);
+  font-size: 1.3rem;
+  font-weight: 750;
+  color: var(--billing-primary-dark);
 }
 
 .modal-subtitle {
   margin: 0.25rem 0 0 0;
   font-size: 0.85rem;
-  color: var(--dc-text-muted, #666874);
+  color: #64748b;
 }
 
 .modal-footer {
@@ -397,7 +583,7 @@
   justify-content: flex-end;
   gap: 0.75rem;
   margin-top: 1.5rem;
-  border-top: 1px solid var(--dc-border-subtle, #ebe8e2);
+  border-top: 1px solid var(--billing-card-border);
   padding-top: 1rem;
 }
 
@@ -406,15 +592,15 @@
   border: none;
   font-size: 1.5rem;
   line-height: 1;
-  color: var(--dc-text-muted, #666874);
+  color: #64748b;
   cursor: pointer;
   padding: 0.25rem 0.5rem;
-  border-radius: var(--dc-radius-sm, 6px);
+  border-radius: 4px;
 }
 
 .btn-close:hover:not(:disabled) {
-  color: var(--dc-text-primary, #121316);
-  background-color: var(--dc-bg-pearl, #f7f6f2);
+  color: var(--billing-primary-dark);
+  background-color: var(--billing-primary-light);
 }
 
 .field-helper-action {
@@ -427,7 +613,7 @@
 .btn-link {
   background: none;
   border: none;
-  color: var(--dc-text-primary, #121316);
+  color: var(--billing-primary);
   font-size: 0.8rem;
   font-weight: 600;
   cursor: pointer;
@@ -436,12 +622,12 @@
 }
 
 .btn-link:hover:not(:disabled) {
-  color: var(--dc-accent-slate, #2b3038);
+  color: var(--billing-accent-hover);
 }
 
 /* Receipt Specific Styles (UI-BIL-04) */
 .receipt-banner {
-  border-bottom: 1px solid var(--dc-border-subtle, #ebe8e2);
+  border-bottom: 2px solid var(--billing-border);
   padding-bottom: 1rem;
   margin-bottom: 1.5rem;
 }
@@ -456,15 +642,16 @@
 
 .receipt-title {
   margin: 0;
-  font-size: 1.45rem;
-  font-weight: 700;
-  color: var(--dc-text-primary, #121316);
-  letter-spacing: -0.025em;
+  font-size: 1.35rem;
+  font-weight: 800;
+  background: var(--billing-gradient);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
 }
 
 .receipt-subtitle {
   font-size: 0.85rem;
-  color: var(--dc-text-muted, #666874);
+  color: #64748b;
 }
 
 .receipt-number-block {
@@ -472,9 +659,9 @@
 }
 
 .receipt-number-value {
-  font-size: 1.3rem;
-  font-weight: 700;
-  color: var(--dc-text-primary, #121316);
+  font-size: 1.25rem;
+  font-weight: 800;
+  color: var(--billing-primary-dark);
 }
 
 .receipt-section {
@@ -488,51 +675,17 @@
 .receipt-section-heading {
   font-size: 1rem;
   font-weight: 700;
-  color: var(--dc-text-primary, #121316);
+  color: var(--billing-primary-dark);
   margin: 0 0 0.75rem 0;
-  border-bottom: 1px solid var(--dc-border-subtle, #ebe8e2);
-  padding-bottom: 0.4rem;
+  border-bottom: 1.5px solid var(--billing-border);
+  padding-bottom: 0.35rem;
 }
 
 /* Report Mode Switcher Styles (UI-BIL-05) */
 .report-mode-toggle {
   display: flex;
   gap: 0.5rem;
-  margin-bottom: 1.25rem;
-}
-
-/* Financial Stat Cards (Reports) */
-.financial-stat-card {
-  background: var(--dc-bg-surface, #ffffff);
-  border: 1px solid var(--dc-border-subtle, #ebe8e2);
-  border-top: 3px solid var(--dc-color-sand, #c99b68);
-  border-radius: var(--dc-radius-lg, 16px);
-  padding: 1.75rem;
-  display: flex;
-  flex-direction: column;
-  gap: 0.5rem;
-  box-shadow: var(--dc-shadow-xs, 0 1px 2px rgba(18, 19, 22, 0.03));
-}
-
-.financial-stat-label {
-  font-size: 0.75rem;
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 0.06em;
-  color: var(--dc-text-muted, #666874);
-}
-
-.financial-stat-amount {
-  font-size: 2.25rem;
-  font-weight: 700;
-  letter-spacing: -0.04em;
-  color: var(--dc-text-primary, #121316);
-  line-height: 1.1;
-}
-
-.financial-stat-meta {
-  font-size: 0.82rem;
-  color: var(--dc-text-secondary, #3b3d45);
+  margin-bottom: 1rem;
 }
 
 /* Print Styles for Receipt & Invoices (UI-BIL-04) */

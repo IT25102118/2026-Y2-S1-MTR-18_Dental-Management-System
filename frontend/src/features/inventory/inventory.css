@@ -1,65 +1,68 @@
 /* Feature-scoped styles for Inventory Management */
 
 .inventory-container {
-  /* DentCare Editorial Design Tokens */
-  --inv-brand-primary: #121316;
-  --inv-brand-dark: #262830;
-  --inv-brand-light: #3b3d45;
-  --inv-brand-subtle: #f7f6f2;
-  --inv-accent-teal: #121316;
-  --inv-focus-ring: #121316;
+  /* DentCare Clinical Design Tokens */
+  --inv-brand-primary: #0f766e;
+  --inv-brand-dark: #115e59;
+  --inv-brand-light: #0d9488;
+  --inv-brand-subtle: #f0fdfa;
+  --inv-accent-teal: #14b8a6;
+  --inv-focus-ring: #0f766e;
 
   --inv-surface-card: #ffffff;
-  --inv-surface-subtle: #f9f8f5;
-  --inv-border-default: #dfdcd4;
-  --inv-border-subtle: #ebe8e2;
-  --inv-border-strong: #cac7be;
+  --inv-surface-subtle: #f8fafc;
+  --inv-border-default: #e2e8f0;
+  --inv-border-subtle: #ccfbf1;
+  --inv-border-strong: #cbd5e1;
 
-  --inv-text-primary: #121316;
-  --inv-text-secondary: #3b3d45;
-  --inv-text-muted: #666874;
+  --inv-text-primary: #0f172a;
+  --inv-text-secondary: #334155;
+  --inv-text-muted: #64748b;
   --inv-font-mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace;
 
-  --inv-status-success-bg: #f2f7f4;
-  --inv-status-success-text: #1b5e39;
-  --inv-status-success-border: #c8e1d2;
+  --inv-status-success-bg: #f0fdf4;
+  --inv-status-success-text: #166534;
+  --inv-status-success-border: #bbf7d0;
 
-  --inv-status-warning-bg: #fbf6ec;
-  --inv-status-warning-text: #8d5612;
-  --inv-status-warning-border: #ecd8b4;
+  --inv-status-warning-bg: #fffbeb;
+  --inv-status-warning-text: #b45309;
+  --inv-status-warning-border: #fde68a;
 
-  --inv-status-danger-bg: #fdf2f2;
-  --inv-status-danger-text: #a82323;
-  --inv-status-danger-border: #f5c2c2;
+  --inv-status-danger-bg: #fef2f2;
+  --inv-status-danger-text: #b91c1c;
+  --inv-status-danger-border: #fecaca;
 
-  --inv-status-info-bg: #f1f4f8;
-  --inv-status-info-text: #244163;
-  --inv-status-info-border: #cbd7e6;
+  --inv-status-info-bg: #f0fdfa;
+  --inv-status-info-text: #0f766e;
+  --inv-status-info-border: #ccfbf1;
 
-  --inv-radius-sm: 6px;
-  --inv-radius-md: 10px;
-  --inv-radius-lg: 16px;
-  --inv-radius-xl: 20px;
+  --inv-radius-sm: 4px;
+  --inv-radius-md: 6px;
+  --inv-radius-lg: 10px;
+  --inv-radius-xl: 12px;
   --inv-radius-pill: 9999px;
-  --inv-shadow-sm: 0 1px 3px 0 rgba(18, 19, 22, 0.03);
-  --inv-shadow-md: 0 4px 12px -2px rgba(18, 19, 22, 0.04);
-  --inv-shadow-hover: 0 8px 24px -4px rgba(18, 19, 22, 0.08);
+  --inv-shadow-sm: 0 1px 3px 0 rgba(15, 23, 42, 0.04), 0 1px 2px -1px rgba(15, 23, 42, 0.03);
+  --inv-shadow-md: 0 4px 6px -1px rgba(15, 23, 42, 0.06), 0 2px 4px -2px rgba(15, 23, 42, 0.04);
+  --inv-shadow-hover: 0 10px 15px -3px rgba(15, 118, 110, 0.08), 0 4px 6px -4px rgba(15, 118, 110, 0.04);
 
-  max-width: 1200px;
+  max-width: 1100px;
   margin: 0 auto;
-  padding: 2rem 1.5rem 5rem;
-  color: var(--inv-text-primary, #121316);
-  background-color: var(--dc-bg-page, #fbfbf9);
+  padding: 1.5rem;
+  color: var(--inv-text-primary, #0f172a);
+  background-color: #f8fafc;
+  background-image: 
+    radial-gradient(1200px 450px at 15% 0%, rgba(15, 118, 110, 0.035) 0%, transparent 70%),
+    radial-gradient(900px 380px at 85% 10%, rgba(20, 184, 166, 0.025) 0%, transparent 65%);
   min-height: 100vh;
 }
 
 .inventory-page-header {
   background-color: #ffffff;
-  border: 1px solid var(--inv-border-subtle, #ebe8e2);
-  border-radius: var(--inv-radius-lg, 16px);
-  padding: 1.5rem 1.75rem;
-  margin-bottom: 2rem;
-  box-shadow: var(--inv-shadow-sm);
+  border: 1px solid #ccfbf1;
+  border-radius: 12px;
+  padding: 1.25rem 1.5rem;
+  margin-bottom: 1.75rem;
+  box-shadow: 0 2px 4px rgba(15, 118, 110, 0.03), 0 1px 2px rgba(15, 23, 42, 0.04);
 }
 
 .inventory-header {
@@ -147,64 +150,33 @@
 }
 
 .badge-in-stock {
-  background-color: var(--dc-color-sage-soft, #e9f0e9);
-  color: var(--dc-color-sage-text, #3c5e47);
-  border: 1px solid var(--dc-color-sage-border, #cadaca);
+  background-color: var(--inv-status-success-bg, #f0fdf4);
+  color: var(--inv-status-success-text, #166534);
+  border: 1px solid var(--inv-status-success-border, #bbf7d0);
 }
 
 .badge-low-stock {
-  background-color: var(--dc-color-sand-soft, #f5ebdd);
-  color: var(--dc-color-sand-text, #7d5727);
-  border: 1px solid var(--dc-color-sand-border, #e6d3bd);
+  background-color: var(--inv-status-warning-bg, #fffbeb);
+  color: var(--inv-status-warning-text, #b45309);
+  border: 1px solid var(--inv-status-warning-border, #fde68a);
 }
 
 .badge-out-of-stock {
-  background-color: var(--dc-color-coral-soft, #f8e7e4);
-  color: var(--dc-color-coral-text, #8c3a30);
-  border: 1px solid var(--dc-color-coral-border, #eecbc6);
+  background-color: var(--inv-status-danger-bg, #fef2f2);
+  color: var(--inv-status-danger-text, #b91c1c);
+  border: 1px solid var(--inv-status-danger-border, #fecaca);
 }
 
 .badge-active {
-  background-color: var(--dc-color-teal-soft, #ddefea);
-  color: var(--dc-color-teal-text, #19524c);
-  border: 1px solid var(--dc-color-teal-border, #b6dbd4);
+  background-color: var(--inv-status-info-bg, #f0fdfa);
+  color: var(--inv-status-info-text, #0f766e);
+  border: 1px solid var(--inv-status-info-border, #ccfbf1);
 }
 
 .badge-inactive {
   background-color: #f8fafc;
-  color: var(--dc-text-muted, #666874);
-  border: 1px solid var(--dc-border-subtle, #ebe8e2);
-}
-
-/* ── Movement Type Badges ── */
-.badge-received {
-  background-color: var(--dc-color-teal-soft, #ddefea);
-  color: var(--dc-color-teal-text, #19524c);
-  border: 1px solid var(--dc-color-teal-border, #b6dbd4);
-}
-
-.badge-used {
-  background-color: var(--dc-color-blue-soft, #e8f0f8);
-  color: var(--dc-color-blue-text, #2c527a);
-  border: 1px solid var(--dc-color-blue-border, #c8daf0);
-}
-
-.badge-damaged {
-  background-color: var(--dc-color-coral-soft, #f8e7e4);
-  color: var(--dc-color-coral-text, #8c3a30);
-  border: 1px solid var(--dc-color-coral-border, #eecbc6);
-}
-
-.badge-adjusted {
-  background-color: var(--dc-color-lavender-soft, #eeeaf5);
-  color: var(--dc-color-lavender-text, #594877);
-  border: 1px solid var(--dc-color-lavender-border, #d7cee8);
-}
-
-.badge-expired {
-  background-color: var(--dc-color-coral-soft, #f8e7e4);
-  color: var(--dc-color-coral-text, #8c3a30);
-  border: 1px solid var(--dc-color-coral-border, #eecbc6);
+  color: var(--inv-text-muted, #64748b);
+  border: 1px solid var(--inv-border-strong, #cbd5e1);
 }
 
 /* Buttons */

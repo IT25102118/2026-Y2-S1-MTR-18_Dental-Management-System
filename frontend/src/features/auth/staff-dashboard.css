@@ -1,53 +1,134 @@
 /* =============================================================================
    DentCare Staff Dashboard Styling — Luxury Dental Practice Workspace
-   Visual Direction: Deep Charcoal Hero, Warm Pearl Canvas, Editorial Bento Grid
+   Visual Direction: Deep Dental Teal, Clinical Slate Navy, Aqua/Mint Accents, Pearl Surfaces
    Scoped to .staff-dashboard-root
    ============================================================================= */
 
 :root {
-  /* ── Deep Charcoal & Pearl Palette ── */
-  --dw-hero-bg: #121316;
-  --dw-hero-border: rgba(255, 255, 255, 0.12);
-  --dw-hero-shadow: 0 12px 32px rgba(18, 19, 22, 0.15);
+  /* ── Deep Dental Teal & Clinical Palette ── */
+  --dw-teal-950: #04242b;
+  --dw-teal-900: #073b44;
+  --dw-teal-850: #0a4955;
+  --dw-teal-800: #0d5c6b;
+  --dw-teal-700: #0f766e;
+  --dw-teal-600: #0d9488;
+  --dw-teal-500: #14b8a6;
+  --dw-teal-400: #2dd4bf;
+  --dw-teal-300: #5eead4;
+  --dw-teal-200: #99f6e4;
+  --dw-teal-100: #ccfbf1;
+  --dw-teal-50:  #f0fdfa;
 
-  --dw-text-primary: #121316;
-  --dw-text-secondary: #3b3d45;
-  --dw-text-muted: #666874;
+  /* ── Deep Slate & Navy Family ── */
+  --dw-navy-950: #060a14;
+  --dw-navy-900: #090e1a;
+  --dw-navy-850: #0f172a;
+  --dw-navy-800: #1e293b;
+  --dw-slate-700: #334155;
+  --dw-slate-600: #475569;
+  --dw-slate-500: #64748b;
+  --dw-slate-400: #94a3b8;
+  --dw-slate-300: #cbd5e1;
+  --dw-slate-200: #e2e8f0;
+  --dw-slate-100: #f1f5f9;
+  --dw-slate-50:  #f8fafc;
 
-  --dw-border-subtle: #ebe8e2;
-  --dw-border-default: #dfdcd4;
-  --dw-border-strong: #cac7be;
+  /* ── Hero Dark Teal / Navy Container Tokens ── */
+  --dw-hero-bg: #092e38;
+  --dw-hero-border: rgba(45, 212, 191, 0.24);
+  --dw-hero-shadow: 0 20px 45px -12px rgba(4, 47, 46, 0.38), 0 4px 12px -2px rgba(4, 47, 46, 0.2);
 
-  --dw-danger: #a82323;
+  /* ── Restrained Accents ── */
+  --dw-aqua-500: #06b6d4;
+  --dw-aqua-400: #22d3ee;
+  --dw-aqua-300: #67e8f9;
+  --dw-aqua-100: #cffafe;
+  --dw-aqua-50:  #ecfeff;
 
-  --dw-shadow-sm: 0 1px 3px rgba(18, 19, 22, 0.03);
-  --dw-shadow-card: 0 1px 3px rgba(18, 19, 22, 0.02), 0 6px 18px -4px rgba(18, 19, 22, 0.03);
-  --dw-shadow-card-hover: 0 8px 28px -6px rgba(18, 19, 22, 0.08), 0 2px 8px -2px rgba(18, 19, 22, 0.03);
-}
+  --dw-mint-500: #10b981;
+  --dw-mint-400: #34d399;
+  --dw-mint-300: #6ee7b7;
+  --dw-mint-100: #d1fae5;
+  --dw-mint-50:  #f0fdf4;
 
-/* Page Canvas */
-.staff-dashboard-root {
-  max-width: 1360px;
-  margin: 0 auto;
-  padding: 1.75rem 2rem 5rem;
-  width: 100%;
-  min-height: calc(100vh - 68px);
-  background-color: var(--dc-bg-page, #fbfbf9);
-  color: var(--dw-text-primary);
+  --dw-ice-blue-500: #3b82f6;
+  --dw-ice-blue-100: #dbeafe;
+  --dw-ice-blue-50:  #eff6ff;
+
+  --dw-danger: #ef4444;
+
+  /* ── Soft Layered Shadows ── */
+  --dw-shadow-sm: 0 1px 3px 0 rgba(15, 23, 42, 0.04);
+  --dw-shadow-card: 0 3px 12px -2px rgba(15, 23, 42, 0.04), 0 1px 4px 0 rgba(15, 23, 42, 0.02);
+  --dw-shadow-card-hover: 0 18px 36px -8px rgba(15, 23, 42, 0.09), 0 6px 16px -2px rgba(13, 148, 136, 0.06);
 }
 
 /* =============================================================================
-   1. HERO / HEADER AREA (Dark Charcoal Luxury Surface)
+   PAGE CANVAS (Soft Pearl to Ice-Blue Depth with Subtle Radial Teal Glows)
+   ============================================================================= */
+.staff-dashboard-root {
+  max-width: 1360px;
+  margin: 0 auto;
+  padding: 1.5rem 2rem 4.5rem;
+  width: 100%;
+  min-height: calc(100vh - 64px);
+  background-color: #f8fafc;
+  background-image:
+    radial-gradient(1100px 420px at 15% 0%, rgba(13, 148, 136, 0.07) 0%, transparent 70%),
+    radial-gradient(900px 360px at 85% 6%, rgba(6, 182, 212, 0.05) 0%, transparent 65%),
+    linear-gradient(180deg, #f0fdfa 0%, #f8fbfb 28%, #f8fafc 100%);
+  color: var(--dw-navy-850);
+}
+
+/* =============================================================================
+   1. HERO / HEADER AREA (Deep Teal / Navy Gradient Luxury Surface)
    ============================================================================= */
 .staff-workspace-header {
   position: relative;
   background: var(--dw-hero-bg);
+  background-image:
+    radial-gradient(850px circle at 15% 10%, rgba(45, 212, 191, 0.15) 0%, transparent 60%),
+    radial-gradient(600px circle at 85% 85%, rgba(6, 182, 212, 0.08) 0%, transparent 50%),
+    linear-gradient(135deg, #07262e 0%, #0d3b45 46%, #082630 100%);
   border: 1px solid var(--dw-hero-border);
-  border-radius: var(--dc-radius-xl, 24px);
-  padding: 2rem 2.5rem;
+  border-top: 3px solid var(--dw-teal-400);
+  border-radius: 20px;
+  padding: 1.75rem 2.25rem;
   box-shadow: var(--dw-hero-shadow);
-  margin-bottom: 1.5rem;
+  margin-bottom: 1.25rem;
   overflow: hidden;
+  animation: headerReveal 0.44s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+/* Single continuous ambient animation: slow low-contrast aqua glow shift (14s) */
+.staff-header-ambient {
+  position: absolute;
+  top: -30%;
+  left: -10%;
+  width: 140%;
+  height: 160%;
+  background: radial-gradient(750px circle at 25% 30%, rgba(45, 212, 191, 0.16) 0%, rgba(6, 182, 212, 0.06) 42%, transparent 68%);
+  pointer-events: none;
+  animation: ambientGlowShift 14s ease-in-out infinite alternate;
+  will-change: transform, opacity;
+}
+
+/* Subtle, abstract clinical geometric line motif (top right) */
+.staff-header-clinical-motif {
+  position: absolute;
+  right: -10px;
+  top: -10px;
+  pointer-events: none;
+  opacity: 0.6;
+  transform: rotate(4deg);
+}
+
+.staff-header-clinical-motif path {
+  stroke: rgba(94, 234, 212, 0.18);
+}
+
+.staff-header-clinical-motif circle {
+  stroke: rgba(94, 234, 212, 0.1);
 }
 
 .staff-workspace-header-inner {
@@ -81,32 +162,34 @@
 
 .staff-header-eyebrow {
   font-size: 0.75rem;
-  font-weight: 700;
+  font-weight: 750;
   letter-spacing: 0.09em;
   text-transform: uppercase;
-  color: #a1a4b2;
+  color: #5eead4;
   line-height: 1;
 }
 
 .staff-page-title {
   margin: 0;
   font-size: 2.1rem;
-  font-weight: 700;
+  font-weight: 850;
   color: #ffffff;
   letter-spacing: -0.03em;
   line-height: 1.15;
+  text-shadow: 0 2px 4px rgba(4, 47, 46, 0.4);
 }
 
 .staff-header-subtitle {
   margin: 0;
-  font-size: 0.92rem;
-  color: #b0b3bf;
+  font-size: 0.9rem;
+  color: #ccfbf1;
+  opacity: 0.92;
   line-height: 1.45;
 }
 
 .staff-header-subtitle strong {
   color: #ffffff;
-  font-weight: 700;
+  font-weight: 750;
 }
 
 /* Header Right Side Controls */
@@ -117,30 +200,34 @@
   flex-wrap: wrap;
 }
 
-/* User Identity Chip */
+/* User Identity Chip (Frosted glass on dark teal hero) */
 .staff-user-chip-wrap {
   display: flex;
   align-items: center;
   gap: 0.75rem;
   background: rgba(255, 255, 255, 0.08);
-  border: 1px solid rgba(255, 255, 255, 0.12);
-  border-radius: var(--dc-radius-md, 12px);
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  border-radius: 14px;
   padding: 0.4rem 0.95rem 0.4rem 0.5rem;
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.12);
 }
 
 .staff-avatar-chip {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 40px;
-  height: 40px;
-  border-radius: var(--dc-radius-sm, 8px);
-  background: #23252b;
+  width: 42px;
+  height: 42px;
+  border-radius: 10px;
+  background: linear-gradient(135deg, #0d9488 0%, #0f766e 100%);
   color: #ffffff;
-  font-size: 0.9rem;
-  font-weight: 700;
+  font-size: 0.95rem;
+  font-weight: 800;
   letter-spacing: -0.02em;
-  border: 1px solid rgba(255, 255, 255, 0.2);
+  border: 1px solid rgba(255, 255, 255, 0.25);
+  box-shadow: 0 3px 10px rgba(0, 0, 0, 0.25);
   flex-shrink: 0;
 }
 
@@ -152,18 +239,19 @@
 
 .staff-user-display-name {
   font-size: 0.825rem;
-  font-weight: 700;
+  font-weight: 750;
   color: #ffffff;
   line-height: 1.2;
 }
 
+/* Station status indicator */
 .staff-station-pill {
   display: inline-flex;
   align-items: center;
   gap: 0.35rem;
   font-size: 0.6875rem;
-  font-weight: 650;
-  color: #34d399;
+  font-weight: 700;
+  color: #6ee7b7;
   line-height: 1;
 }
 
@@ -172,6 +260,7 @@
   height: 6px;
   border-radius: 50%;
   background-color: #34d399;
+  box-shadow: 0 0 6px rgba(52, 211, 153, 0.7);
 }
 
 /* Session date pill */
@@ -180,105 +269,154 @@
   align-items: center;
   gap: 0.45rem;
   font-size: 0.775rem;
-  font-weight: 600;
+  font-weight: 650;
   color: #e2e8f0;
   background: rgba(255, 255, 255, 0.08);
-  border: 1px solid rgba(255, 255, 255, 0.12);
-  border-radius: var(--dc-radius-md, 12px);
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  border-radius: 12px;
   padding: 0.55rem 0.95rem;
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
 }
 
 .staff-header-date svg {
-  color: #a1a4b2;
+  color: #5eead4;
 }
 
-/* Role Badges */
+/* Authenticated Role Badges (Tailored jewel badges on dark hero) */
 .staff-role-badge {
   display: inline-flex;
   align-items: center;
   gap: 0.45rem;
   padding: 0.28rem 0.75rem;
-  border-radius: var(--dc-radius-pill, 9999px);
+  border-radius: 9999px;
   font-size: 0.6875rem;
-  font-weight: 700;
+  font-weight: 800;
   letter-spacing: 0.06em;
   text-transform: uppercase;
-  background: rgba(255, 255, 255, 0.12);
-  color: #ffffff;
-  border: 1px solid rgba(255, 255, 255, 0.2);
+  background: rgba(15, 118, 110, 0.45);
+  color: #ecfeff;
+  border: 1px solid rgba(94, 234, 212, 0.35);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
 }
 
 .role-dot {
   width: 6px;
   height: 6px;
   border-radius: 50%;
-  background-color: #ffffff;
+  background-color: #5eead4;
+  box-shadow: 0 0 6px rgba(94, 234, 212, 0.8);
 }
 
 .staff-role-badge.role-admin {
-  background: rgba(168, 85, 247, 0.2);
-  color: #d8b4fe;
-  border-color: rgba(168, 85, 247, 0.4);
+  background: rgba(13, 148, 136, 0.35);
+  color: #5eead4;
+  border-color: rgba(94, 234, 212, 0.45);
 }
 
 .staff-role-badge.role-dentist {
-  background: rgba(45, 212, 191, 0.2);
-  color: #5eead4;
-  border-color: rgba(45, 212, 191, 0.4);
+  background: rgba(8, 145, 178, 0.35);
+  color: #67e8f9;
+  border-color: rgba(103, 232, 249, 0.45);
+}
+
+.staff-role-badge.role-dentist .role-dot {
+  background-color: #22d3ee;
+  box-shadow: 0 0 6px rgba(34, 211, 238, 0.8);
 }
 
 .staff-role-badge.role-receptionist {
-  background: rgba(96, 165, 250, 0.2);
+  background: rgba(37, 99, 235, 0.35);
   color: #93c5fd;
-  border-color: rgba(96, 165, 250, 0.4);
+  border-color: rgba(147, 197, 253, 0.45);
+}
+
+.staff-role-badge.role-receptionist .role-dot {
+  background-color: #60a5fa;
+  box-shadow: 0 0 6px rgba(96, 165, 250, 0.8);
 }
 
 .staff-role-badge.role-assistant {
-  background: rgba(251, 191, 36, 0.2);
-  color: #fde68a;
-  border-color: rgba(251, 191, 36, 0.4);
+  background: rgba(16, 185, 129, 0.35);
+  color: #6ee7b7;
+  border-color: rgba(110, 231, 183, 0.45);
 }
 
+.staff-role-badge.role-assistant .role-dot {
+  background-color: #34d399;
+  box-shadow: 0 0 6px rgba(52, 211, 153, 0.8);
+}
+
+/* My Account Button in Header */
 .staff-account-btn {
   display: inline-flex;
   align-items: center;
   gap: 0.45rem;
   padding: 0.55rem 1.05rem;
-  background: rgba(255, 255, 255, 0.08);
+  background: rgba(255, 255, 255, 0.1);
   color: #ffffff;
-  border: 1px solid rgba(255, 255, 255, 0.15);
-  border-radius: var(--dc-radius-md, 12px);
+  border: 1px solid rgba(94, 234, 212, 0.28);
+  border-radius: 12px;
   font-size: 0.8125rem;
-  font-weight: 650;
+  font-weight: 700;
   text-decoration: none;
-  transition: all var(--dc-transition-fast, 150ms ease);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.12);
+  transition: all 0.22s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.staff-account-btn svg {
+  color: #5eead4;
+  transition: transform 0.2s ease, color 0.2s ease;
 }
 
 .staff-account-btn:hover {
-  background: rgba(255, 255, 255, 0.16);
+  background: rgba(45, 212, 191, 0.22);
+  border-color: #5eead4;
   color: #ffffff;
+  transform: translateY(-2px);
+  box-shadow: 0 6px 18px rgba(13, 148, 136, 0.35);
   text-decoration: none;
-  transform: translateY(-1px);
 }
 
-/* Guidance Notice */
+.staff-account-btn:hover svg {
+  color: #ffffff;
+  transform: scale(1.1);
+}
+
+.staff-account-btn:focus-visible {
+  outline: 2px solid #5eead4;
+  outline-offset: 2px;
+}
+
+/* =============================================================================
+   Security / Access Denied Notice
+   ============================================================================= */
 .staff-dashboard-notice {
   display: flex;
   align-items: center;
   gap: 0.75rem;
-  background-color: var(--dc-status-danger-bg, #fdf2f2);
-  border: 1px solid var(--dc-status-danger-border, #f5c2c2);
-  color: var(--dc-status-danger-text, #a82323);
-  border-radius: var(--dc-radius-md, 10px);
+  background-color: #fef2f2;
+  border: 1px solid #fecaca;
+  border-left: 4px solid var(--dw-danger);
+  color: #991b1b;
+  border-radius: 12px;
   padding: 0.85rem 1.25rem;
   margin-bottom: 1.25rem;
+  box-shadow: var(--dw-shadow-sm);
+  animation: headerGlide 0.3s ease-out;
 }
 
 .staff-notice-icon {
   display: inline-flex;
   align-items: center;
-  color: var(--dc-status-danger-text, #a82323);
+  justify-content: center;
   flex-shrink: 0;
+  color: var(--dw-danger);
 }
 
 .staff-notice-text {
@@ -287,20 +425,23 @@
 }
 
 /* =============================================================================
-   2. REFINED SUMMARY STRIP
+   2. REFINED INFORMATION STRIP (Translucent Pearl / Teal Surface)
    ============================================================================= */
 .staff-summary-strip {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  background: var(--dc-bg-surface, #ffffff);
-  border: 1px solid var(--dc-border-subtle, #ebe8e2);
-  border-radius: var(--dc-radius-lg, 16px);
-  padding: 0.85rem 1.75rem;
-  margin-bottom: 1.75rem;
-  box-shadow: var(--dc-shadow-xs, 0 1px 2px rgba(18, 19, 22, 0.03));
+  background: rgba(255, 255, 255, 0.88);
+  border: 1px solid rgba(15, 118, 110, 0.14);
+  border-radius: 14px;
+  padding: 0.8rem 1.75rem;
+  margin-bottom: 1.5rem;
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  box-shadow: 0 4px 16px -2px rgba(15, 23, 42, 0.03), 0 2px 6px -1px rgba(13, 148, 136, 0.04);
   gap: 1.25rem;
   flex-wrap: wrap;
+  animation: stripReveal 0.46s cubic-bezier(0.16, 1, 0.3, 1) 0.08s both;
 }
 
 .staff-strip-item {
@@ -315,9 +456,10 @@
   justify-content: center;
   width: 32px;
   height: 32px;
-  border-radius: var(--dc-radius-sm, 6px);
-  background-color: var(--dc-bg-pearl, #f7f6f2);
-  color: var(--dc-text-primary, #121316);
+  border-radius: 9px;
+  background-color: var(--dw-teal-50);
+  border: 1px solid var(--dw-teal-100);
+  color: var(--dw-teal-700);
   flex-shrink: 0;
 }
 
@@ -325,7 +467,8 @@
   width: 7px;
   height: 7px;
   border-radius: 50%;
-  background-color: #10b981;
+  background-color: var(--dw-mint-500);
+  box-shadow: 0 0 0 2px rgba(16, 185, 129, 0.25);
 }
 
 .staff-strip-text {
@@ -339,427 +482,1161 @@
   font-weight: 700;
   letter-spacing: 0.06em;
   text-transform: uppercase;
-  color: var(--dc-text-muted, #666874);
+  color: var(--dw-slate-500);
   line-height: 1;
 }
 
 .staff-strip-value {
-  font-size: 0.88rem;
-  font-weight: 700;
-  color: var(--dc-text-primary, #121316);
+  font-size: 0.85rem;
+  font-weight: 750;
+  color: var(--dw-navy-850);
+  letter-spacing: -0.01em;
 }
 
 .staff-strip-divider {
   width: 1px;
   height: 22px;
-  background-color: var(--dc-border-subtle, #ebe8e2);
+  background-color: rgba(203, 213, 225, 0.8);
 }
 
 /* =============================================================================
-   3. SEARCH BAR
+   3. PRACTICE WORKSPACE LAYOUT & SECTION HEADER
    ============================================================================= */
-.staff-search-container {
-  margin-bottom: 2rem;
+.staff-workspace-layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 310px;
+  gap: 1.5rem;
+  align-items: start;
 }
 
-.staff-search-bar {
+.staff-workspace-primary {
+  min-width: 0;
+}
+
+.staff-workspace-bar {
   display: flex;
   align-items: center;
-  gap: 0.75rem;
-  background: var(--dc-bg-surface, #ffffff);
-  border: 1px solid var(--dc-border-default, #dfdcd4);
-  border-radius: var(--dc-radius-lg, 16px);
-  padding: 0.75rem 1.25rem;
-  box-shadow: var(--dc-shadow-xs, 0 1px 2px rgba(18, 19, 22, 0.03));
-  transition: all var(--dc-transition-fast, 150ms ease);
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 1rem;
+  margin-bottom: 1.15rem;
+  padding-bottom: 0.35rem;
+  animation: barReveal 0.46s cubic-bezier(0.16, 1, 0.3, 1) 0.12s both;
 }
 
-.staff-search-bar:focus-within {
-  border-color: var(--dc-text-primary, #121316);
-  box-shadow: 0 0 0 2px rgba(18, 19, 22, 0.08);
+.staff-workspace-titles {
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+}
+
+.staff-workspace-titles h2 {
+  margin: 0;
+  font-size: 1.35rem;
+  font-weight: 800;
+  color: var(--dw-navy-850);
+  letter-spacing: -0.02em;
+}
+
+.staff-workspace-subtitle {
+  margin: 0;
+  font-size: 0.85rem;
+  color: var(--dw-slate-500);
+}
+
+.staff-workspace-controls-group {
+  display: flex;
+  align-items: center;
+  gap: 0.85rem;
+  flex-wrap: wrap;
+}
+
+.staff-module-counter {
+  font-size: 0.725rem;
+  font-weight: 750;
+  color: var(--dw-teal-700);
+  background-color: var(--dw-teal-50);
+  border: 1px solid var(--dw-teal-100);
+  border-radius: 9999px;
+  padding: 0.3rem 0.75rem;
+  white-space: nowrap;
+}
+
+.staff-search-input-wrap {
+  position: relative;
+  display: flex;
+  align-items: center;
+  width: 310px;
 }
 
 .staff-search-icon {
-  color: var(--dc-text-muted, #666874);
-  display: flex;
-  align-items: center;
+  position: absolute;
+  left: 0.85rem;
+  color: var(--dw-slate-400);
+  pointer-events: none;
 }
 
 .staff-search-input {
-  flex: 1;
-  border: none !important;
-  outline: none !important;
-  background: transparent !important;
-  font-family: inherit;
-  font-size: 0.95rem;
-  color: var(--dc-text-primary, #121316);
-  padding: 0 !important;
-  box-shadow: none !important;
+  width: 100%;
+  height: 40px;
+  padding: 0.45rem 1.85rem 0.45rem 2.35rem;
+  background-color: #ffffff;
+  border: 1px solid var(--dw-slate-300);
+  border-radius: 10px;
+  font-size: 0.825rem;
+  color: var(--dw-navy-850);
+  box-shadow: var(--dw-shadow-sm);
+  transition: all 0.18s ease;
 }
 
-.staff-search-kbd {
-  font-size: 0.72rem;
-  font-weight: 650;
-  color: var(--dc-text-muted, #666874);
-  background: var(--dc-bg-pearl, #f7f6f2);
-  border: 1px solid var(--dc-border-subtle, #ebe8e2);
-  border-radius: var(--dc-radius-xs, 4px);
-  padding: 0.2rem 0.5rem;
+.staff-search-input::placeholder {
+  color: var(--dw-slate-400);
+}
+
+.staff-search-input:focus {
+  outline: none;
+  border-color: var(--dw-teal-600);
+  box-shadow: 0 0 0 3px rgba(15, 118, 110, 0.15);
+}
+
+.staff-search-clear {
+  position: absolute;
+  right: 0.5rem;
+  background: none;
+  border: none;
+  color: var(--dw-slate-400);
+  font-size: 1.15rem;
+  line-height: 1;
+  padding: 0.15rem;
+  cursor: pointer;
+  border-radius: 50%;
+  transition: color 0.15s ease;
+}
+
+.staff-search-clear:hover {
+  color: var(--dw-navy-850);
 }
 
 /* =============================================================================
-   4. BENTO MODULE GRID
+   4. BENTO ASYMMETRIC MODULE GRID
+   Unified luxury pearl cards with editorial healthcare proportions
    ============================================================================= */
-.staff-bento-grid {
+.staff-modules-grid {
   display: grid;
   grid-template-columns: repeat(12, 1fr);
-  gap: 1.75rem;
-  margin-bottom: 3rem;
-}
-
-.staff-module-card {
-  background: var(--dc-bg-surface, #ffffff);
-  border: 1px solid var(--dc-border-subtle, #ebe8e2);
-  border-radius: var(--dc-radius-xl, 24px);
-  padding: 2.25rem;
-  display: flex;
-  flex-direction: column;
-  box-shadow: var(--dw-shadow-card);
-  transition: all var(--dc-transition-base, 220ms ease);
-}
-
-.staff-module-card:hover {
-  transform: translateY(-3px);
-  border-color: var(--dw-border-strong);
-  box-shadow: var(--dw-shadow-card-hover);
-}
-
-/* Grid layout variants */
-.bento-inventory-wide {
-  grid-column: span 7;
-}
-
-.bento-inventory-full,
-.bento-reports-full {
-  grid-column: span 12;
-}
-
-.bento-standard {
-  grid-column: span 6;
-}
-
-/* Specific pairing overrides */
-.staff-bento-grid > .staff-module-card:nth-child(2).bento-standard {
-  grid-column: span 5;
-}
-
-.staff-module-header {
-  display: flex;
-  align-items: flex-start;
-  gap: 1rem;
-  margin-bottom: 1rem;
-}
-
-.staff-module-icon-wrap {
-  width: 48px;
-  height: 48px;
-  border-radius: var(--dc-radius-md, 12px);
-  background: var(--dc-bg-dark, #121316);
-  color: #ffffff;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  flex-shrink: 0;
-}
-
-.staff-card-icon-box {
-  width: 48px;
-  height: 48px;
-  border-radius: var(--dc-radius-md, 12px);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  flex-shrink: 0;
-  transition: transform var(--dc-transition-fast, 150ms ease);
-}
-
-.staff-card-icon-box svg,
-.staff-module-icon-wrap svg {
-  width: 22px;
-  height: 22px;
-}
-
-.staff-card-badge {
-  font-size: 0.72rem;
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 0.06em;
-  padding: 0.25rem 0.65rem;
-  border-radius: var(--dc-radius-pill, 9999px);
-  border: 1px solid transparent;
-}
-
-/* ── Operational Module Semantic Color Accents ── */
-.staff-tile-inventory .staff-card-icon-box,
-.staff-tile-inventory .staff-module-icon-wrap {
-  background: var(--dc-color-teal-soft, #ddefea);
-  color: var(--dc-color-teal-text, #19524c);
-  border: 1px solid var(--dc-color-teal-border, #b6dbd4);
-}
-.staff-tile-inventory .staff-card-badge,
-.staff-tile-inventory .staff-module-kicker {
-  color: var(--dc-color-teal-text, #19524c);
-  background: var(--dc-color-teal-soft, #ddefea);
-  border-color: var(--dc-color-teal-border, #b6dbd4);
-}
-
-.staff-tile-clinical .staff-card-icon-box,
-.staff-tile-clinical .staff-module-icon-wrap {
-  background: var(--dc-color-sage-soft, #e9f0e9);
-  color: var(--dc-color-sage-text, #3c5e47);
-  border: 1px solid var(--dc-color-sage-border, #cadaca);
-}
-.staff-tile-clinical .staff-card-badge,
-.staff-tile-clinical .staff-module-kicker {
-  color: var(--dc-color-sage-text, #3c5e47);
-  background: var(--dc-color-sage-soft, #e9f0e9);
-  border-color: var(--dc-color-sage-border, #cadaca);
-}
-
-.staff-tile-prescriptions .staff-card-icon-box,
-.staff-tile-prescriptions .staff-module-icon-wrap {
-  background: var(--dc-color-lavender-soft, #eeeaf5);
-  color: var(--dc-color-lavender-text, #594877);
-  border: 1px solid var(--dc-color-lavender-border, #d7cee8);
-}
-.staff-tile-prescriptions .staff-card-badge,
-.staff-tile-prescriptions .staff-module-kicker {
-  color: var(--dc-color-lavender-text, #594877);
-  background: var(--dc-color-lavender-soft, #eeeaf5);
-  border-color: var(--dc-color-lavender-border, #d7cee8);
-}
-
-.staff-tile-billing .staff-card-icon-box,
-.staff-tile-billing .staff-module-icon-wrap {
-  background: var(--dc-color-sand-soft, #f5ebdd);
-  color: var(--dc-color-sand-text, #7d5727);
-  border: 1px solid var(--dc-color-sand-border, #e6d3bd);
-}
-.staff-tile-billing .staff-card-badge,
-.staff-tile-billing .staff-module-kicker {
-  color: var(--dc-color-sand-text, #7d5727);
-  background: var(--dc-color-sand-soft, #f5ebdd);
-  border-color: var(--dc-color-sand-border, #e6d3bd);
-}
-
-.staff-tile-reports .staff-card-icon-box,
-.staff-tile-reports .staff-module-icon-wrap {
-  background: var(--dc-color-blue-soft, #e8f0f8);
-  color: var(--dc-color-blue-text, #2c527a);
-  border: 1px solid var(--dc-color-blue-border, #c8daf0);
-}
-.staff-tile-reports .staff-card-badge,
-.staff-tile-reports .staff-module-kicker {
-  color: var(--dc-color-blue-text, #2c527a);
-  background: var(--dc-color-blue-soft, #e8f0f8);
-  border-color: var(--dc-color-blue-border, #c8daf0);
-}
-
-.staff-tile-staff-admin .staff-card-icon-box,
-.staff-tile-staff-admin .staff-module-icon-wrap {
-  background: #f4f0fa;
-  color: #581c87;
-  border: 1px solid #e2d6f5;
-}
-.staff-tile-staff-admin .staff-card-badge,
-.staff-tile-staff-admin .staff-module-kicker {
-  color: #581c87;
-  background: #f4f0fa;
-  border-color: #e2d6f5;
-}
-
-.staff-module-titles {
-  display: flex;
-  flex-direction: column;
-  gap: 0.25rem;
-}
-
-.staff-module-kicker {
-  font-size: 0.72rem;
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 0.08em;
-  color: var(--dc-text-muted, #666874);
-}
-
-.staff-module-title {
-  margin: 0;
-  font-size: 1.35rem;
-  font-weight: 650;
-  color: var(--dc-text-primary, #121316);
-  letter-spacing: -0.025em;
-}
-
-.staff-module-desc {
-  font-size: 0.94rem;
-  line-height: 1.55;
-  color: var(--dc-text-secondary, #3b3d45);
-  margin: 0 0 1.5rem 0;
-  flex-grow: 1;
-}
-
-/* Quick links */
-.staff-quicklinks-wrap {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.5rem;
-  margin-bottom: 1.5rem;
-  padding-top: 1rem;
-  border-top: 1px solid var(--dc-border-subtle, #ebe8e2);
-}
-
-.staff-quicklink-chip {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.35rem;
-  font-size: 0.8125rem;
-  font-weight: 600;
-  color: var(--dc-text-secondary, #3b3d45);
-  background: var(--dc-bg-pearl, #f7f6f2);
-  border: 1px solid var(--dc-border-subtle, #ebe8e2);
-  border-radius: var(--dc-radius-pill, 9999px);
-  padding: 0.35rem 0.75rem;
-  text-decoration: none;
-  transition: all var(--dc-transition-fast, 150ms ease);
-}
-
-.staff-quicklink-chip:hover {
-  background: var(--dc-bg-surface, #ffffff);
-  border-color: var(--dc-text-primary, #121316);
-  color: var(--dc-text-primary, #121316);
-  text-decoration: none;
-  transform: translateY(-1px);
-}
-
-/* Primary Open Action */
-.staff-module-actions {
-  margin-top: auto;
-}
-
-.staff-btn-open-primary {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  gap: 0.5rem;
-  width: 100%;
-  padding: 0.75rem 1.25rem;
-  font-size: 0.92rem;
-  font-weight: 600;
-  color: #ffffff;
-  background-color: var(--dc-bg-dark, #121316);
-  border: 1px solid var(--dc-bg-dark, #121316);
-  border-radius: var(--dc-radius-md, 10px);
-  text-decoration: none;
-  transition: all var(--dc-transition-base, 220ms ease);
-}
-
-.staff-btn-open-primary:hover {
-  background-color: #262830;
-  border-color: #262830;
-  color: #ffffff;
-  text-decoration: none;
-  transform: translateY(-1px);
-  box-shadow: 0 4px 12px rgba(18, 19, 22, 0.15);
-}
-
-/* =============================================================================
-   5. QUICK ACTIONS SECTION
-   ============================================================================= */
-.staff-quickactions-section {
-  background: var(--dc-bg-surface, #ffffff);
-  border: 1px solid var(--dc-border-subtle, #ebe8e2);
-  border-radius: var(--dc-radius-xl, 24px);
-  padding: 2.25rem;
-  box-shadow: var(--dw-shadow-card);
-}
-
-.staff-quickactions-header {
-  margin-bottom: 1.5rem;
-}
-
-.staff-quickactions-header h3 {
-  font-size: 1.25rem;
-  font-weight: 650;
-  margin: 0 0 0.25rem 0;
-}
-
-.staff-quickactions-header p {
-  font-size: 0.88rem;
-  color: var(--dc-text-muted, #666874);
-  margin: 0;
-}
-
-.staff-quickactions-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
   gap: 1.25rem;
 }
 
-.staff-quickaction-card {
+/* ── Bento Proportions ── */
+/* 6-module grid (Administrator): Row 1: 7 cols + 5 cols. Row 2 & 3: 6 cols + 6 cols */
+.staff-modules-grid.grid-count-6 .bento-inventory-wide {
+  grid-column: span 7;
+}
+
+.staff-modules-grid.grid-count-6 .staff-module-card:nth-child(2) {
+  grid-column: span 5;
+}
+
+.staff-modules-grid.grid-count-6 .bento-standard {
+  grid-column: span 6;
+}
+
+/* 5-module grid (Receptionist): Inventory (7 cols) + Clinical (5 cols); Prescriptions (6) + Billing (6); Reports (12 full width anchor) */
+.staff-modules-grid.grid-count-5 .bento-inventory-wide {
+  grid-column: span 7;
+}
+
+.staff-modules-grid.grid-count-5 .staff-module-card:nth-child(2) {
+  grid-column: span 5;
+}
+
+.staff-modules-grid.grid-count-5 .bento-standard {
+  grid-column: span 6;
+}
+
+.staff-modules-grid.grid-count-5 .bento-reports-full {
+  grid-column: span 12;
+}
+
+/* 3-module grid (Dentist & Dental Assistant): Inventory full width hero (12 cols); Clinical (6 cols) + Prescriptions (6 cols) */
+.staff-modules-grid.grid-count-3 .bento-inventory-full {
+  grid-column: span 12;
+}
+
+.staff-modules-grid.grid-count-3 .bento-standard {
+  grid-column: span 6;
+}
+
+/* Filtered search counts */
+.staff-modules-grid.grid-count-1 .staff-module-card {
+  grid-column: span 12;
+}
+
+.staff-modules-grid.grid-count-2 .staff-module-card {
+  grid-column: span 6;
+}
+
+.staff-modules-grid.grid-count-4 .staff-module-card {
+  grid-column: span 6;
+}
+
+/* =============================================================================
+   5. MODULE CARD REDESIGN & MICRO-INTERACTIONS
+   ============================================================================= */
+.staff-module-card {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  background-color: #ffffff;
+  background-image: linear-gradient(180deg, #ffffff 0%, #fafdff 100%);
+  border: 1px solid rgba(203, 213, 225, 0.85);
+  border-radius: 18px;
+  box-shadow: var(--dw-shadow-card);
+  padding: 1.5rem 1.75rem;
+  overflow: hidden;
+  animation: cardReveal 0.48s cubic-bezier(0.16, 1, 0.3, 1) calc(0.14s + var(--stagger-idx, 0) * 0.055s) both;
+  transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1),
+              box-shadow 0.25s cubic-bezier(0.16, 1, 0.3, 1),
+              border-color 0.22s ease,
+              background-color 0.22s ease;
+  will-change: transform, box-shadow;
+}
+
+/* Subtle inner light bevel highlight */
+.staff-card-ambient {
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.95);
+  background: radial-gradient(460px circle at 50% 0%, rgba(13, 148, 136, 0.04) 0%, transparent 70%);
+  pointer-events: none;
+  opacity: 0.6;
+  transition: opacity 0.25s ease;
+}
+
+/* Card Hover Elevation (Smooth, restrained translateY -5px, scale ~1.008) */
+.staff-module-card:hover {
+  transform: translateY(-5px) scale(1.008);
+  border-color: rgba(13, 148, 136, 0.38);
+  box-shadow: var(--dw-shadow-card-hover);
+}
+
+.staff-module-card:hover .staff-card-ambient {
+  opacity: 1;
+}
+
+.staff-module-card:focus-within {
+  transform: translateY(-4px) scale(1.006);
+  border-color: var(--dw-teal-600);
+  box-shadow: 0 16px 32px -8px rgba(15, 23, 42, 0.08), 0 0 0 3px rgba(13, 148, 136, 0.18);
+}
+
+/* ── Card Header & 48px Modern Icon Container ── */
+.staff-card-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.85rem;
+  margin-bottom: 1rem;
+}
+
+.staff-card-icon-box {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 48px;
+  height: 48px;
+  border-radius: 14px;
+  flex-shrink: 0;
+  background: linear-gradient(135deg, #f0fdfa 0%, #e6fffa 100%);
+  color: var(--dw-teal-700);
+  border: 1px solid var(--dw-teal-100);
+  box-shadow: 0 2px 8px rgba(15, 118, 110, 0.08);
+  transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1),
+              border-color 0.22s ease,
+              box-shadow 0.22s ease,
+              background-color 0.22s ease;
+}
+
+.staff-module-card:hover .staff-card-icon-box,
+.staff-module-card:focus-within .staff-card-icon-box {
+  transform: translateY(-2px) scale(1.04);
+  border-color: var(--dw-teal-300);
+  box-shadow: 0 4px 14px rgba(15, 118, 110, 0.15);
+}
+
+/* Base icon SVG transition */
+.staff-card-icon-box svg {
+  transition: transform 0.26s cubic-bezier(0.16, 1, 0.3, 1),
+              stroke 0.22s ease;
+  transform-origin: center center;
+}
+
+/* ── Specific Module Accents & Micro-Interactions ── */
+
+/* 1. Inventory Management: Teal / Turquoise accent, package lift micro-interaction */
+.staff-tile-inventory {
+  border-color: rgba(13, 148, 136, 0.22);
+}
+
+.staff-tile-inventory:hover {
+  border-color: rgba(13, 148, 136, 0.44);
+}
+
+.staff-tile-inventory .staff-card-badge {
+  background-color: #f0fdfa;
+  color: #0f766e;
+  border-color: #ccfbf1;
+}
+
+.staff-tile-inventory .staff-card-icon-box,
+.staff-card-icon-box.staff-icon-inventory {
+  background: linear-gradient(135deg, #f0fdfa 0%, #ccfbf1 100%);
+  color: #0f766e;
+  border: 1px solid #99f6e4;
+  box-shadow: 0 3px 8px rgba(15, 118, 110, 0.1), inset 0 1px 0 rgba(255, 255, 255, 0.9);
+}
+
+.staff-tile-inventory:hover .staff-card-icon-box,
+.staff-tile-inventory:focus-within .staff-card-icon-box {
+  border-color: #5eead4;
+  box-shadow: 0 5px 16px rgba(15, 118, 110, 0.2);
+}
+
+.staff-tile-inventory:hover .staff-card-icon-box svg,
+.staff-tile-inventory:focus-within .staff-card-icon-box svg {
+  transform: translateY(-2.5px) rotate(-3deg) scale(1.05);
+  stroke: var(--dw-teal-800);
+}
+
+/* 2. Clinical Management: Blue / Cyan accent, pulse / vertical lift micro-interaction */
+.staff-tile-clinical {
+  border-color: rgba(8, 145, 178, 0.2);
+}
+
+.staff-tile-clinical:hover {
+  border-color: rgba(8, 145, 178, 0.42);
+}
+
+.staff-tile-clinical .staff-card-badge {
+  background-color: #ecfeff;
+  color: #0891b2;
+  border-color: #cffafe;
+}
+
+.staff-tile-clinical .staff-card-icon-box {
+  background: linear-gradient(135deg, #ecfeff 0%, #cffafe 100%);
+  color: #0891b2;
+  border: 1px solid #a5f3fc;
+  box-shadow: 0 3px 8px rgba(8, 145, 178, 0.1), inset 0 1px 0 rgba(255, 255, 255, 0.9);
+}
+
+.staff-tile-clinical:hover .staff-card-icon-box,
+.staff-tile-clinical:focus-within .staff-card-icon-box {
+  border-color: #67e8f9;
+  box-shadow: 0 5px 16px rgba(8, 145, 178, 0.18);
+}
+
+.staff-tile-clinical:hover .staff-card-icon-box svg,
+.staff-tile-clinical:focus-within .staff-card-icon-box svg {
+  transform: translateY(-1.5px) scale(1.06);
+  stroke: #0e7490;
+}
+
+/* 3. Prescription Management: Indigo-Blue / Teal accent, subtle tilt micro-interaction */
+.staff-tile-prescriptions {
+  border-color: rgba(59, 130, 246, 0.18);
+}
+
+.staff-tile-prescriptions:hover {
+  border-color: rgba(59, 130, 246, 0.4);
+}
+
+.staff-tile-prescriptions .staff-card-badge {
+  background-color: #eff6ff;
+  color: #2563eb;
+  border-color: #dbeafe;
+}
+
+.staff-tile-prescriptions .staff-card-icon-box {
+  background: linear-gradient(135deg, #eff6ff 0%, #e0e7ff 100%);
+  color: #2563eb;
+  border: 1px solid #c7d2fe;
+  box-shadow: 0 3px 8px rgba(37, 99, 235, 0.09), inset 0 1px 0 rgba(255, 255, 255, 0.9);
+}
+
+.staff-tile-prescriptions:hover .staff-card-icon-box,
+.staff-tile-prescriptions:focus-within .staff-card-icon-box {
+  border-color: #93c5fd;
+  box-shadow: 0 5px 16px rgba(37, 99, 235, 0.18);
+}
+
+.staff-tile-prescriptions:hover .staff-card-icon-box svg,
+.staff-tile-prescriptions:focus-within .staff-card-icon-box svg {
+  transform: translateY(-1px) rotate(7deg) scale(1.05);
+  stroke: #1d4ed8;
+}
+
+/* 4. Invoices & Billing: Mint / Cyan accent (STRICTLY LIGHT, NO dark card regression) */
+.staff-tile-billing {
+  border-color: rgba(14, 116, 144, 0.22);
+}
+
+.staff-tile-billing:hover {
+  border-color: rgba(14, 116, 144, 0.42);
+}
+
+.staff-tile-billing .staff-card-badge {
+  background-color: #f0fdfa;
+  color: #0e7490;
+  border-color: #cffafe;
+}
+
+.staff-tile-billing .staff-card-icon-box {
+  background: linear-gradient(135deg, #f0fdfa 0%, #e0f2fe 100%);
+  color: #0e7490;
+  border: 1px solid #bae6fd;
+  box-shadow: 0 3px 8px rgba(14, 116, 144, 0.1), inset 0 1px 0 rgba(255, 255, 255, 0.9);
+}
+
+.staff-tile-billing:hover .staff-card-icon-box,
+.staff-tile-billing:focus-within .staff-card-icon-box {
+  background: linear-gradient(135deg, #e0f2fe 0%, #ccfbf1 100%);
+  color: #0369a1;
+  border-color: #7dd3fc;
+  box-shadow: 0 5px 16px rgba(14, 116, 144, 0.18);
+}
+
+.staff-tile-billing:hover .staff-card-icon-box svg,
+.staff-tile-billing:focus-within .staff-card-icon-box svg {
+  transform: translateY(-2.5px) scale(1.05);
+  stroke: #0369a1;
+}
+
+/* 5. Income Reports: Blue-Green accent, chart rise micro-interaction */
+.staff-tile-reports {
+  border-color: rgba(16, 185, 129, 0.2);
+}
+
+.staff-tile-reports:hover {
+  border-color: rgba(16, 185, 129, 0.42);
+}
+
+.staff-tile-reports .staff-card-badge {
+  background-color: #f0fdf4;
+  color: #059669;
+  border-color: #d1fae5;
+}
+
+.staff-tile-reports .staff-card-icon-box {
+  background: linear-gradient(135deg, #f0fdf4 0%, #ecfdf5 100%);
+  color: #059669;
+  border: 1px solid #a7f3d0;
+  box-shadow: 0 3px 8px rgba(16, 185, 129, 0.1), inset 0 1px 0 rgba(255, 255, 255, 0.9);
+}
+
+.staff-tile-reports:hover .staff-card-icon-box,
+.staff-tile-reports:focus-within .staff-card-icon-box {
+  border-color: #6ee7b7;
+  box-shadow: 0 5px 16px rgba(16, 185, 129, 0.18);
+}
+
+.staff-tile-reports:hover .staff-card-icon-box svg,
+.staff-tile-reports:focus-within .staff-card-icon-box svg {
+  transform: translateY(-2.5px) scale(1.05);
+  stroke: #047857;
+}
+
+/* 6. Staff Management: Deep Teal / Blue accent, subtle group scale micro-interaction */
+.staff-tile-staff-admin {
+  border-color: rgba(15, 118, 110, 0.22);
+}
+
+.staff-tile-staff-admin:hover {
+  border-color: rgba(15, 118, 110, 0.44);
+}
+
+.staff-tile-staff-admin .staff-card-badge {
+  background-color: #f0fdfa;
+  color: #0f766e;
+  border-color: #ccfbf1;
+}
+
+.staff-tile-staff-admin .staff-card-icon-box {
+  background: linear-gradient(135deg, #f0fdfa 0%, #dbeafe 100%);
+  color: #0f766e;
+  border: 1px solid #99f6e4;
+  box-shadow: 0 3px 8px rgba(15, 118, 110, 0.1), inset 0 1px 0 rgba(255, 255, 255, 0.9);
+}
+
+.staff-tile-staff-admin:hover .staff-card-icon-box,
+.staff-tile-staff-admin:focus-within .staff-card-icon-box {
+  border-color: #5eead4;
+  box-shadow: 0 5px 16px rgba(15, 118, 110, 0.2);
+}
+
+.staff-tile-staff-admin:hover .staff-card-icon-box svg,
+.staff-tile-staff-admin:focus-within .staff-card-icon-box svg {
+  transform: translateY(-1.5px) scale(1.06);
+  stroke: var(--dw-teal-800);
+}
+
+/* ── Card Meta Badge ── */
+.staff-card-meta {
+  display: flex;
+  align-items: center;
+}
+
+.staff-card-badge {
+  font-size: 0.65rem;
+  font-weight: 750;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--dw-slate-600);
+  background-color: var(--dw-slate-100);
+  border: 1px solid var(--dw-slate-200);
+  border-radius: 9999px;
+  padding: 0.18rem 0.65rem;
+  flex-shrink: 0;
+}
+
+/* ── Card Body & Typography ── */
+.staff-card-body {
+  margin-bottom: 1rem;
+}
+
+.staff-card-title {
+  margin: 0 0 0.35rem;
+  font-size: 1.15rem;
+  font-weight: 800;
+  color: var(--dw-navy-850);
+  letter-spacing: -0.02em;
+}
+
+.bento-inventory-wide .staff-card-title,
+.bento-inventory-full .staff-card-title {
+  font-size: 1.25rem;
+}
+
+.staff-card-desc {
+  margin: 0;
+  font-size: 0.85rem;
+  color: var(--dw-slate-600);
+  line-height: 1.55;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+/* ── Card Shortcuts ── */
+.staff-card-shortcuts {
+  margin-top: auto;
+  padding-top: 0.85rem;
+  border-top: 1px solid rgba(226, 232, 240, 0.8);
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+
+.staff-shortcuts-label {
+  font-size: 0.65rem;
+  font-weight: 750;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--dw-slate-400);
+}
+
+.staff-shortcuts-chips {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  flex-wrap: wrap;
+}
+
+.staff-shortcut-chip {
+  display: inline-flex;
+  align-items: center;
+  font-size: 0.775rem;
+  font-weight: 650;
+  color: var(--dw-slate-700);
+  background-color: var(--dw-slate-50);
+  border: 1px solid var(--dw-slate-200);
+  border-radius: 7px;
+  padding: 0.22rem 0.6rem;
+  text-decoration: none;
+  transition: all 0.16s ease;
+}
+
+.staff-shortcut-chip:hover {
+  background-color: var(--dw-teal-50);
+  border-color: var(--dw-teal-700);
+  color: var(--dw-teal-800);
+  transform: translateY(-1px);
+  text-decoration: none;
+}
+
+.staff-shortcut-chip:focus-visible {
+  outline: 2px solid var(--dw-teal-600);
+  outline-offset: 1px;
+}
+
+/* ── Card Primary CTA Button ── */
+.staff-card-footer {
+  margin-top: 1rem;
+}
+
+.staff-primary-link {
+  width: 100%;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  font-size: 0.825rem;
+  font-weight: 750;
+  color: var(--dw-teal-700);
+  text-decoration: none;
+  padding: 0.58rem 1rem;
+  border-radius: 10px;
+  background-color: var(--dw-teal-50);
+  border: 1px solid var(--dw-teal-100);
+  transition: all 0.22s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.staff-link-arrow {
+  display: inline-block;
+  transition: transform 0.22s cubic-bezier(0.16, 1, 0.3, 1);
+  font-size: 0.95rem;
+  line-height: 1;
+}
+
+/* Module card hover / focus advances CTA arrow 5px and shifts background */
+.staff-module-card:hover .staff-primary-link,
+.staff-module-card:focus-within .staff-primary-link {
+  background-color: #e6fffa;
+  border-color: var(--dw-teal-200);
+  color: var(--dw-teal-800);
+}
+
+.staff-module-card:hover .staff-link-arrow,
+.staff-module-card:focus-within .staff-link-arrow {
+  transform: translateX(5px);
+}
+
+.staff-primary-link:hover {
+  text-decoration: none;
+  background-color: var(--dw-teal-700);
+  border-color: var(--dw-teal-700);
+  color: #ffffff;
+  box-shadow: 0 4px 14px rgba(15, 118, 110, 0.25);
+  transform: translateY(-1px);
+}
+
+.staff-primary-link:hover .staff-link-arrow {
+  transform: translateX(7px);
+}
+
+.staff-primary-link:focus-visible {
+  outline: 2px solid var(--dw-teal-600);
+  outline-offset: 2px;
+}
+
+/* Empty Search State */
+.staff-empty-search {
+  grid-column: span 12;
+  padding: 3rem 1.5rem;
+  text-align: center;
+  background-color: #ffffff;
+  border: 1px dashed var(--dw-slate-300);
+  border-radius: 16px;
+  color: var(--dw-slate-500);
+  font-size: 0.875rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.staff-empty-search svg {
+  color: var(--dw-slate-400);
+}
+
+.staff-clear-btn {
+  padding: 0.45rem 1.1rem;
+  font-size: 0.8125rem;
+  font-weight: 700;
+  border-radius: 8px;
+  background-color: var(--dw-teal-700);
+  border: 1px solid var(--dw-teal-700);
+  color: #ffffff;
+  cursor: pointer;
+  box-shadow: 0 2px 6px rgba(15, 118, 110, 0.2);
+  transition: all 0.18s ease;
+}
+
+.staff-clear-btn:hover {
+  background-color: var(--dw-teal-800);
+  transform: translateY(-1px);
+}
+
+/* =============================================================================
+   6. SIDE RAIL (Quick Actions & Role Governance)
+   ============================================================================= */
+.staff-workspace-rail {
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+  animation: railReveal 0.5s cubic-bezier(0.16, 1, 0.3, 1) 0.18s both;
+}
+
+.staff-rail-card {
+  background-color: #ffffff;
+  border: 1px solid rgba(226, 232, 240, 0.9);
+  border-radius: 16px;
+  box-shadow: var(--dw-shadow-sm);
+  padding: 1.35rem;
+  overflow: hidden;
+}
+
+.staff-rail-header {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  margin-bottom: 0.95rem;
+  padding-bottom: 0.75rem;
+  border-bottom: 1px solid var(--dw-slate-100);
+}
+
+.staff-rail-icon-wrap {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border-radius: 9px;
+  background-color: var(--dw-teal-50);
+  color: var(--dw-teal-700);
+  border: 1px solid var(--dw-teal-100);
+  flex-shrink: 0;
+}
+
+.staff-rail-title-group {
+  display: flex;
+  flex-direction: column;
+}
+
+.staff-rail-title-group h3 {
+  margin: 0;
+  font-size: 0.95rem;
+  font-weight: 800;
+  color: var(--dw-navy-850);
+  line-height: 1.2;
+}
+
+.staff-rail-subtitle {
+  font-size: 0.65rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--dw-slate-400);
+}
+
+.staff-action-list {
   display: flex;
   flex-direction: column;
   gap: 0.35rem;
-  padding: 1.25rem;
-  background: var(--dc-bg-pearl, #f7f6f2);
-  border: 1px solid var(--dc-border-subtle, #ebe8e2);
-  border-radius: var(--dc-radius-lg, 16px);
+}
+
+.staff-action-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.55rem 0.75rem;
+  border-radius: 9px;
   text-decoration: none;
-  transition: all var(--dc-transition-base, 220ms ease);
+  background-color: #ffffff;
+  border: 1px solid transparent;
+  transition: transform 0.2s cubic-bezier(0.16, 1, 0.3, 1),
+              background-color 0.18s ease,
+              border-color 0.18s ease,
+              box-shadow 0.18s ease;
 }
 
-.staff-quickaction-card:hover {
-  background: var(--dc-bg-surface, #ffffff);
-  border-color: var(--dc-text-primary, #121316);
-  transform: translateY(-2px);
-  box-shadow: var(--dw-shadow-card-hover);
+.staff-action-item:hover {
+  background-color: #f8fafc;
+  border-color: var(--dw-slate-200);
+  transform: translateX(4px);
+  box-shadow: 0 2px 8px rgba(15, 23, 42, 0.04);
   text-decoration: none;
 }
 
-.staff-quickaction-card strong {
-  font-size: 0.95rem;
-  color: var(--dc-text-primary, #121316);
+.staff-action-item:focus-visible {
+  outline: 2px solid var(--dw-teal-600);
+  outline-offset: 1px;
+  transform: translateX(3px);
+  background-color: #f8fafc;
+  border-color: var(--dw-teal-200);
 }
 
-.staff-quickaction-card span {
-  font-size: 0.82rem;
-  color: var(--dc-text-muted, #666874);
+.staff-action-details {
+  display: flex;
+  flex-direction: column;
+  gap: 0.1rem;
+  min-width: 0;
 }
 
-/* Responsive */
-@media (max-width: 1024px) {
-  .staff-bento-grid {
+.staff-action-name {
+  font-size: 0.8125rem;
+  font-weight: 750;
+  color: var(--dw-navy-850);
+  line-height: 1.3;
+  transition: color 0.15s ease;
+}
+
+.staff-action-item:hover .staff-action-name,
+.staff-action-item:focus-visible .staff-action-name {
+  color: var(--dw-teal-700);
+}
+
+.staff-action-sub {
+  font-size: 0.7rem;
+  color: var(--dw-slate-500);
+  line-height: 1.3;
+}
+
+.staff-action-arrow {
+  font-size: 1.15rem;
+  font-weight: 700;
+  color: var(--dw-slate-300);
+  line-height: 1;
+  padding-left: 0.5rem;
+  transition: transform 0.2s cubic-bezier(0.16, 1, 0.3, 1), color 0.18s ease;
+}
+
+.staff-action-item:hover .staff-action-arrow,
+.staff-action-item:focus-visible .staff-action-arrow {
+  color: var(--dw-teal-700);
+  transform: translateX(3px);
+}
+
+.staff-governance-text {
+  margin: 0 0 0.95rem;
+  font-size: 0.825rem;
+  color: var(--dw-slate-600);
+  line-height: 1.5;
+}
+
+.staff-governance-specs {
+  display: flex;
+  flex-direction: column;
+  gap: 0.45rem;
+  padding-top: 0.75rem;
+  border-top: 1px solid var(--dw-slate-100);
+  font-size: 0.775rem;
+}
+
+.staff-spec-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+}
+
+.spec-label {
+  color: var(--dw-slate-500);
+  font-weight: 600;
+}
+
+.spec-val {
+  color: var(--dw-navy-850);
+  font-weight: 750;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 170px;
+}
+
+/* =============================================================================
+   7. KEYFRAMES & MOTION
+   ============================================================================= */
+@keyframes headerReveal {
+  from {
+    opacity: 0;
+    transform: translateY(16px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes stripReveal {
+  from {
+    opacity: 0;
+    transform: translateY(14px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes barReveal {
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes cardReveal {
+  from {
+    opacity: 0;
+    transform: translateY(18px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes railReveal {
+  from {
+    opacity: 0;
+    transform: translateY(16px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Single ambient animation concept: hero aqua glow slow shift (14s) */
+@keyframes ambientGlowShift {
+  0% {
+    transform: translate3d(0, 0, 0) scale(1);
+    opacity: 0.55;
+  }
+  50% {
+    transform: translate3d(24px, 12px, 0) scale(1.08);
+    opacity: 0.85;
+  }
+  100% {
+    transform: translate3d(-10px, 4px, 0) scale(1.02);
+    opacity: 0.6;
+  }
+}
+
+/* Backward compatibility keyframe aliases */
+@keyframes headerGlide {
+  from { opacity: 0; transform: translateY(-8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes stripSlide {
+  from { opacity: 0; transform: translateY(6px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes barSlide {
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes cardFadeUp {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes railSlide {
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* =============================================================================
+   8. ACCESSIBILITY: REDUCED MOTION
+   ============================================================================= */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+    scroll-behavior: auto !important;
+  }
+
+  .staff-workspace-header,
+  .staff-summary-strip,
+  .staff-workspace-bar,
+  .staff-module-card,
+  .staff-workspace-rail,
+  .staff-dashboard-notice {
+    animation: none !important;
+    opacity: 1 !important;
+    transform: none !important;
+  }
+
+  .staff-header-ambient {
+    animation: none !important;
+    transform: none !important;
+  }
+
+  .staff-module-card:hover,
+  .staff-module-card:focus-within {
+    transform: none !important;
+  }
+
+  .staff-card-icon-box,
+  .staff-module-card:hover .staff-card-icon-box,
+  .staff-module-card:focus-within .staff-card-icon-box,
+  .staff-card-icon-box svg,
+  .staff-tile-inventory:hover .staff-card-icon-box svg,
+  .staff-tile-clinical:hover .staff-card-icon-box svg,
+  .staff-tile-prescriptions:hover .staff-card-icon-box svg,
+  .staff-tile-billing:hover .staff-card-icon-box svg,
+  .staff-tile-reports:hover .staff-card-icon-box svg,
+  .staff-tile-staff-admin:hover .staff-card-icon-box svg {
+    transform: none !important;
+  }
+
+  .staff-link-arrow,
+  .staff-module-card:hover .staff-link-arrow,
+  .staff-module-card:focus-within .staff-link-arrow,
+  .staff-primary-link:hover .staff-link-arrow,
+  .staff-action-item:hover,
+  .staff-action-item:hover .staff-action-arrow,
+  .staff-shortcut-chip:hover,
+  .staff-account-btn:hover {
+    transform: none !important;
+  }
+}
+
+/* =============================================================================
+   9. RESPONSIVE BREAKPOINTS
+   ============================================================================= */
+@media (max-width: 1120px) {
+  .staff-workspace-layout {
+    grid-template-columns: 1fr;
+    gap: 1.5rem;
+  }
+
+  .staff-workspace-rail {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 1.25rem;
+  }
+}
+
+@media (max-width: 820px) {
+  .staff-modules-grid {
     grid-template-columns: 1fr;
   }
-  .bento-inventory-wide,
-  .bento-inventory-full,
-  .bento-reports-full,
-  .bento-standard,
-  .staff-bento-grid > .staff-module-card:nth-child(2).bento-standard {
-    grid-column: span 1 !important;
+
+  .staff-modules-grid.grid-count-6 .bento-inventory-wide,
+  .staff-modules-grid.grid-count-6 .staff-module-card:nth-child(2),
+  .staff-modules-grid.grid-count-6 .bento-standard,
+  .staff-modules-grid.grid-count-5 .bento-inventory-wide,
+  .staff-modules-grid.grid-count-5 .staff-module-card:nth-child(2),
+  .staff-modules-grid.grid-count-5 .bento-standard,
+  .staff-modules-grid.grid-count-5 .bento-reports-full,
+  .staff-modules-grid.grid-count-3 .bento-inventory-full,
+  .staff-modules-grid.grid-count-3 .bento-standard,
+  .staff-modules-grid.grid-count-2 .staff-module-card,
+  .staff-modules-grid.grid-count-4 .staff-module-card {
+    grid-column: span 1;
   }
 }
 
 @media (max-width: 768px) {
   .staff-dashboard-root {
-    padding: 1rem 1rem 3rem;
+    padding: 1.15rem 1.15rem 3.5rem;
   }
+
   .staff-workspace-header {
-    padding: 1.5rem;
+    padding: 1.35rem;
+    border-radius: 16px;
   }
+
+  .staff-workspace-header-inner {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 1.15rem;
+  }
+
+  .staff-workspace-controls {
+    justify-content: space-between;
+    width: 100%;
+  }
+
+  .staff-summary-strip {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 0.75rem;
+    padding: 1rem 1.25rem;
+  }
+
+  .staff-strip-divider {
+    display: none;
+  }
+
+  .staff-workspace-bar {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 0.85rem;
+  }
+
+  .staff-workspace-controls-group {
+    width: 100%;
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .staff-search-input-wrap {
+    width: 100%;
+  }
+
+  .staff-module-counter {
+    align-self: flex-start;
+  }
+
+  .staff-workspace-rail {
+    grid-template-columns: 1fr;
+    gap: 1.15rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .staff-dashboard-root {
+    padding: 0.85rem 0.85rem 3rem;
+  }
+
   .staff-page-title {
-    font-size: 1.6rem;
+    font-size: 1.55rem;
   }
+
+  .staff-workspace-controls {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 0.65rem;
+  }
+
+  .staff-user-chip-wrap {
+    justify-content: flex-start;
+    width: 100%;
+  }
+
+  .staff-header-date,
+  .staff-account-btn {
+    justify-content: center;
+    width: 100%;
+  }
+
   .staff-module-card {
-    padding: 1.5rem;
+    padding: 1.25rem;
   }
 }

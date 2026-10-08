@@ -1,15 +1,15 @@
 :root {
-  --entry-ink: #121316;
-  --entry-muted: #666874;
-  --entry-blue: #121316;
-  --entry-blue-dark: #262830;
-  --entry-mist: #f7f6f2;
-  --entry-line: #ebe8e2;
+  --entry-ink: #0f172a;
+  --entry-muted: #526176;
+  --entry-blue: #0284c7;
+  --entry-blue-dark: #075985;
+  --entry-mist: #eaf7fb;
+  --entry-line: #d9e7ee;
 }
 
 .entry-page,
 .role-dashboard {
-  width: min(1200px, calc(100% - 2rem));
+  width: min(1180px, calc(100% - 2rem));
   margin: 0 auto;
   padding: clamp(2rem, 5vw, 4.5rem) 0;
 }
@@ -27,18 +27,18 @@
   margin: 0;
   max-width: 760px;
   color: var(--entry-ink);
-  font-size: clamp(2.45rem, 6vw, 4.75rem);
-  line-height: 1.05;
-  letter-spacing: -0.04em;
+  font-size: clamp(2.45rem, 6vw, 5.25rem);
+  line-height: 0.98;
+  letter-spacing: -0.055em;
 }
 
 .entry-eyebrow,
 .role-card-kicker {
   margin: 0 0 0.75rem;
-  color: var(--entry-muted);
+  color: var(--entry-blue-dark);
   font-size: 0.75rem;
-  font-weight: 700;
-  letter-spacing: 0.1em;
+  font-weight: 800;
+  letter-spacing: 0.12em;
   text-transform: uppercase;
 }
 
@@ -48,7 +48,7 @@
   margin: 1.5rem 0 0;
   color: var(--entry-muted);
   font-size: clamp(1rem, 2vw, 1.2rem);
-  line-height: 1.7;
+  line-height: 1.75;
 }
 
 .entry-actions {
@@ -67,11 +67,11 @@
 .entry-assurance {
   position: relative;
   overflow: hidden;
-  padding: 2.5rem;
-  color: #f7f6f2;
-  background: #121316;
-  border-radius: 24px;
-  box-shadow: 0 16px 40px rgba(18, 19, 22, 0.12);
+  padding: 2rem;
+  color: #e0f2fe;
+  background: linear-gradient(145deg, #0f172a 0%, #0c4a6e 100%);
+  border-radius: 20px 20px 64px 20px;
+  box-shadow: 0 24px 60px rgba(15, 23, 42, 0.18);
 }
 
 .entry-assurance::after {
