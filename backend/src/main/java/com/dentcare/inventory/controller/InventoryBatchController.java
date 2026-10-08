@@ -29,37 +29,36 @@ public class InventoryBatchController {
         this.inventoryBatchService = inventoryBatchService;
     }
 
+    // Search all batches
     @GetMapping("/batches")
+    // Search inventory batches
     public ResponseEntity<Page<InventoryBatchResponse>> searchBatches(
-            @RequestParam(required = false) Long itemId,
+            @RequestParam(required = false) Long itemId, // reads query parameters
             @RequestParam(required = false) String batchNumber,
             @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate expiryFrom,
             @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate expiryTo,
-            @RequestParam(required = false, defaultValue = "false") boolean positiveStockOnly,
-            @PageableDefault(size = 20, sort = "expiryDate", direction = Sort.Direction.ASC) Pageable pageable
-    ) {
+            @RequestParam(required = false, defaultValue = "false") boolean positiveStockOnly, // Positive stock filter
+            @PageableDefault(size = 20, sort = "expiryDate", direction = Sort.Direction.ASC) Pageable pageable) {
         Page<InventoryBatchResponse> response = inventoryBatchService.searchBatches(
                 itemId,
                 batchNumber,
                 expiryFrom,
                 expiryTo,
                 positiveStockOnly,
-                pageable
-        );
+                pageable);
         return ResponseEntity.ok(response);
     }
 
+    // Search inventory item batches
     @GetMapping("/items/{itemId}/batches")
     public ResponseEntity<Page<InventoryBatchResponse>> getBatchesForItem(
             @PathVariable Long itemId,
             @RequestParam(required = false, defaultValue = "true") boolean positiveStockOnly,
-            @PageableDefault(size = 50, sort = "expiryDate", direction = Sort.Direction.ASC) Pageable pageable
-    ) {
+            @PageableDefault(size = 50, sort = "expiryDate", direction = Sort.Direction.ASC) Pageable pageable) {
         Page<InventoryBatchResponse> response = inventoryBatchService.getBatchesForItem(
                 itemId,
                 positiveStockOnly,
-                pageable
-        );
+                pageable);
         return ResponseEntity.ok(response);
     }
 }

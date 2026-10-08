@@ -16,27 +16,30 @@ import org.springframework.web.bind.annotation.RestController;
 
 import java.time.LocalDate;
 
-/**
- * REST controller for retrieving operational inventory alerts.
- */
+//  Spring Boot that this class is a REST API controller.
 @RestController
 @RequestMapping("/api/inventory/alerts")
 public class InventoryAlertController {
 
     private final InventoryAlertService inventoryAlertService;
 
+    // constructor dependency injection.
     public InventoryAlertController(InventoryAlertService inventoryAlertService) {
         this.inventoryAlertService = inventoryAlertService;
     }
 
+    // This method creates the low-stock alert API endpoint
     @GetMapping("/low-stock")
+    // Get low stock Alerts
     public ResponseEntity<Page<LowStockAlertResponse>> getLowStockAlerts(
             @RequestParam(required = false) String category,
             @PageableDefault(size = 20, sort = "currentQuantity", direction = Sort.Direction.ASC) Pageable pageable) {
         return ResponseEntity.ok(inventoryAlertService.getLowStockAlerts(category, pageable));
     }
 
+    // This method creates the expiry alert API endpoint.
     @GetMapping("/expiry")
+    // Get Expiry Alerts
     public ResponseEntity<Page<ExpiryAlertResponse>> getExpiryAlerts(
             @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate through,
             @PageableDefault(size = 20, sort = "expiryDate", direction = Sort.Direction.ASC) Pageable pageable) {

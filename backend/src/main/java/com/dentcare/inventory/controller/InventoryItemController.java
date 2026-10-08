@@ -52,16 +52,14 @@ public class InventoryItemController {
     @PutMapping("/{id}")
     public ResponseEntity<InventoryItemResponse> updateItem(
             @PathVariable Long id,
-            @Valid @RequestBody UpdateInventoryItemRequest request
-    ) {
+            @Valid @RequestBody UpdateInventoryItemRequest request) {
         return ResponseEntity.ok(inventoryItemService.updateItem(id, request));
     }
 
     @PatchMapping("/{id}/status")
     public ResponseEntity<InventoryItemResponse> updateItemStatus(
             @PathVariable Long id,
-            @Valid @RequestBody UpdateInventoryItemStatusRequest request
-    ) {
+            @Valid @RequestBody UpdateInventoryItemStatusRequest request) {
         return ResponseEntity.ok(inventoryItemService.updateItemStatus(id, request.getActive()));
     }
 
@@ -71,8 +69,7 @@ public class InventoryItemController {
             @RequestParam(required = false) String category,
             @RequestParam(required = false) Boolean active,
             @RequestParam(required = false) StockStatusFilter stockStatus,
-            @PageableDefault(size = 20, sort = "name", direction = Sort.Direction.ASC) Pageable pageable
-    ) {
+            @PageableDefault(size = 20, sort = "name", direction = Sort.Direction.ASC) Pageable pageable) {
         return ResponseEntity.ok(inventoryItemService.searchItems(search, category, active, stockStatus, pageable));
     }
 }
