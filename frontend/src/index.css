@@ -2,14 +2,74 @@
   box-sizing: border-box;
 }
 
+html {
+  scroll-behavior: smooth;
+}
+
 body {
   margin: 0;
   padding: 0;
-  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  font-family: 'Plus Jakarta Sans', 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
   color: #1e293b;
   background-color: #f8fafc;
   line-height: 1.5;
   -webkit-font-smoothing: antialiased;
+}
+
+/* =============================================================================
+   Global Motion & Animation Keyframes
+   ============================================================================= */
+@keyframes brandPulse {
+  0%, 100% {
+    box-shadow: 0 2px 8px rgba(15, 118, 110, 0.25);
+  }
+  50% {
+    box-shadow: 0 4px 16px rgba(20, 184, 166, 0.45);
+  }
+}
+
+@keyframes buttonShineSweep {
+  0% {
+    left: -100%;
+  }
+  100% {
+    left: 200%;
+  }
+}
+
+@keyframes pulseRing {
+  0% {
+    transform: scale(0.95);
+    box-shadow: 0 0 0 0 rgba(20, 184, 166, 0.6);
+  }
+  70% {
+    transform: scale(1);
+    box-shadow: 0 0 0 7px rgba(20, 184, 166, 0);
+  }
+  100% {
+    transform: scale(0.95);
+    box-shadow: 0 0 0 0 rgba(20, 184, 166, 0);
+  }
+}
+
+@keyframes floatGentle {
+  0%, 100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-4px);
+  }
+}
+
+@keyframes fadeInPop {
+  0% {
+    opacity: 0;
+    transform: scale(0.96) translateY(6px);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
 }
 
 a {
@@ -38,12 +98,15 @@ a:focus-visible, button:focus-visible, input:focus-visible, select:focus-visible
 }
 
 .app-header {
-  background-color: #ffffff;
-  border-bottom: 1px solid #e2e8f0;
+  background-color: rgba(255, 255, 255, 0.88);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  border-bottom: 1px solid rgba(226, 232, 240, 0.8);
   position: sticky;
   top: 0;
   z-index: 50;
-  box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.05);
+  box-shadow: 0 4px 20px -2px rgba(15, 23, 42, 0.04), 0 1px 3px 0 rgba(15, 23, 42, 0.02);
+  transition: all 200ms ease;
 }
 
 .app-header-inner {
@@ -68,10 +131,12 @@ a:focus-visible, button:focus-visible, input:focus-visible, select:focus-visible
   gap: 0.625rem;
   text-decoration: none;
   color: #0f172a;
+  transition: transform 180ms cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 .brand-logo-link:hover {
   text-decoration: none;
+  transform: translateY(-1px);
 }
 
 .brand-icon {
@@ -80,16 +145,40 @@ a:focus-visible, button:focus-visible, input:focus-visible, select:focus-visible
   justify-content: center;
   width: 36px;
   height: 36px;
-  background: linear-gradient(135deg, #0284c7 0%, #0369a1 100%);
+  background: linear-gradient(135deg, #0f766e 0%, #0d9488 50%, #14b8a6 100%);
   color: #ffffff;
-  border-radius: 8px;
-  box-shadow: 0 2px 4px rgba(2, 132, 199, 0.25);
+  border-radius: 9px;
+  box-shadow: 0 2px 8px rgba(15, 118, 110, 0.25);
+  transition: transform 220ms cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 220ms ease;
+  position: relative;
+  overflow: hidden;
+}
+
+.brand-logo-link:hover .brand-icon {
+  transform: scale(1.08) rotate(-4deg);
+  box-shadow: 0 4px 16px rgba(20, 184, 166, 0.45);
+}
+
+.brand-icon::after {
+  content: '';
+  position: absolute;
+  top: -50%;
+  left: -50%;
+  width: 200%;
+  height: 200%;
+  background: linear-gradient(60deg, transparent 40%, rgba(255, 255, 255, 0.35) 50%, transparent 60%);
+  transform: translateX(-100%);
+  transition: transform 600ms ease;
+}
+
+.brand-logo-link:hover .brand-icon::after {
+  transform: translateX(100%);
 }
 
 .brand-name {
   font-size: 1.25rem;
-  font-weight: 700;
-  letter-spacing: -0.02em;
+  font-weight: 750;
+  letter-spacing: -0.025em;
   color: #0f172a;
 }
 
@@ -101,6 +190,12 @@ a:focus-visible, button:focus-visible, input:focus-visible, select:focus-visible
   padding: 0.5rem;
   cursor: pointer;
   color: #475569;
+  transition: all 180ms ease;
+}
+
+.mobile-nav-toggle:hover {
+  background-color: #f1f5f9;
+  color: #0f172a;
 }
 
 .app-header-nav {
@@ -110,25 +205,44 @@ a:focus-visible, button:focus-visible, input:focus-visible, select:focus-visible
 }
 
 .app-nav-link {
+  position: relative;
   padding: 0.5rem 0.875rem;
-  border-radius: 6px;
+  border-radius: 7px;
   font-size: 0.9rem;
-  font-weight: 500;
+  font-weight: 550;
   color: #475569;
   text-decoration: none;
-  transition: all 0.15s ease;
+  transition: all 180ms cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 .app-nav-link:hover {
-  color: #0284c7;
-  background-color: #f0f9ff;
+  color: #0f766e;
+  background-color: #f0fdfa;
   text-decoration: none;
+  transform: translateY(-1px);
 }
 
 .app-nav-link.active {
-  color: #0284c7;
-  background-color: #e0f2fe;
-  font-weight: 600;
+  color: #0f766e;
+  background-color: #ccfbf1;
+  font-weight: 650;
+}
+
+.app-nav-link::after {
+  content: '';
+  position: absolute;
+  bottom: 2px;
+  left: 50%;
+  transform: translateX(-50%) scaleX(0);
+  width: 16px;
+  height: 2px;
+  background: #0f766e;
+  border-radius: 9999px;
+  transition: transform 200ms cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.app-nav-link.active::after {
+  transform: translateX(-50%) scaleX(1);
 }
 
 .app-header-user {
@@ -165,12 +279,29 @@ a:focus-visible, button:focus-visible, input:focus-visible, select:focus-visible
 }
 
 .user-role-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
   font-size: 0.7rem;
   font-weight: 700;
-  padding: 0.2rem 0.5rem;
+  padding: 0.2rem 0.55rem;
   border-radius: 9999px;
   text-transform: uppercase;
   letter-spacing: 0.04em;
+  transition: transform 180ms ease, box-shadow 180ms ease;
+}
+
+.user-role-badge:hover {
+  transform: translateY(-1px);
+}
+
+.user-role-badge::before {
+  content: '';
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: currentColor;
+  animation: pulseRing 2.2s infinite;
 }
 
 .badge-role-administrator {
@@ -213,16 +344,22 @@ a:focus-visible, button:focus-visible, input:focus-visible, select:focus-visible
   color: #dc2626;
   border: 1px solid #fecaca;
   padding: 0.35rem 0.75rem;
-  border-radius: 6px;
+  border-radius: 7px;
   font-size: 0.8125rem;
   font-weight: 600;
   cursor: pointer;
-  transition: all 0.15s ease;
+  transition: all 180ms cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 .btn-header-logout:hover:not(:disabled) {
   background-color: #fef2f2;
   border-color: #f87171;
+  transform: translateY(-1px);
+  box-shadow: 0 2px 8px rgba(220, 38, 38, 0.15);
+}
+
+.btn-header-logout:active:not(:disabled) {
+  transform: scale(0.96);
 }
 
 .btn-header-logout:disabled {
@@ -249,27 +386,34 @@ a:focus-visible, button:focus-visible, input:focus-visible, select:focus-visible
 
 .btn-outline-primary {
   background-color: transparent;
-  color: #0284c7;
-  border: 1px solid #0284c7;
-  border-radius: 6px;
+  color: #0f766e;
+  border: 1px solid #0f766e;
+  border-radius: 7px;
   font-weight: 600;
+  transition: all 180ms cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 .btn-outline-primary:hover {
-  background-color: #f0f9ff;
+  background-color: #f0fdfa;
   text-decoration: none;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(15, 118, 110, 0.15);
+}
+
+.btn-outline-primary:active {
+  transform: scale(0.97);
 }
 
 .btn-outline-secondary {
   background-color: transparent;
   color: #334155;
   border: 1px solid #cbd5e1;
-  border-radius: 6px;
+  border-radius: 7px;
   font-weight: 600;
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  transition: all 0.15s ease;
+  transition: all 180ms cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 .btn-outline-secondary:hover {
@@ -277,6 +421,12 @@ a:focus-visible, button:focus-visible, input:focus-visible, select:focus-visible
   color: #0f172a;
   border-color: #94a3b8;
   text-decoration: none;
+  transform: translateY(-1px);
+  box-shadow: 0 3px 8px rgba(15, 23, 42, 0.06);
+}
+
+.btn-outline-secondary:active {
+  transform: scale(0.97);
 }
 
 .app-header-public .btn-primary {
@@ -284,6 +434,24 @@ a:focus-visible, button:focus-visible, input:focus-visible, select:focus-visible
   background-color: #0f766e;
   border-color: #0f766e;
   box-shadow: 0 2px 6px rgba(15, 118, 110, 0.2);
+  position: relative;
+  overflow: hidden;
+}
+
+.app-header-public .btn-primary::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 60%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.25), transparent);
+  transform: skewX(-20deg);
+  transition: left 500ms ease;
+}
+
+.app-header-public .btn-primary:hover::after {
+  left: 150%;
 }
 
 .app-header-public .btn-primary:hover {
@@ -291,7 +459,12 @@ a:focus-visible, button:focus-visible, input:focus-visible, select:focus-visible
   background-color: #115e59;
   border-color: #115e59;
   text-decoration: none;
-  box-shadow: 0 4px 12px rgba(15, 118, 110, 0.28);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 14px rgba(15, 118, 110, 0.32);
+}
+
+.app-header-public .btn-primary:active {
+  transform: scale(0.97);
 }
 
 .app-header-public .app-header-inner {
@@ -300,9 +473,9 @@ a:focus-visible, button:focus-visible, input:focus-visible, select:focus-visible
 }
 
 .app-header-public .brand-icon {
-  background: #0f766e;
-  border-radius: 7px;
-  box-shadow: none;
+  background: linear-gradient(135deg, #0f766e 0%, #0d9488 100%);
+  border-radius: 8px;
+  box-shadow: 0 2px 6px rgba(15, 118, 110, 0.25);
 }
 
 .app-header-public .brand-name {
@@ -320,22 +493,63 @@ a:focus-visible, button:focus-visible, input:focus-visible, select:focus-visible
   color: #475569;
   font-size: 0.875rem;
   font-weight: 600;
-  transition: color 160ms ease;
+  transition: all 180ms ease;
 }
 
 .app-header-public .app-nav-link.active,
 .app-header-public .app-nav-link:hover {
   color: #0f766e;
   background: transparent;
+  transform: translateY(-1px);
 }
 
 .app-header-public .app-header-user { margin-left: 0.25rem; }
 .app-header-public .auth-action-buttons { gap: 0.5rem; display: flex; align-items: center; }
-.app-header-public .auth-action-buttons .btn { min-height: 38px; padding: 0.45rem 0.95rem; border-radius: 7px; font-weight: 600; font-size: 0.875rem; transition: all 180ms ease; }
-.app-header-public .header-staff-login-btn { color: #1e293b; background: #f8fafc; border-color: #cbd5e1; }
-.app-header-public .header-staff-login-btn:hover { color: #0f172a; background: #f1f5f9; border-color: #94a3b8; }
-.app-header-public .header-register-btn { color: #0f766e; border-color: #ccfbf1; background: #f0fdfa; }
-.app-header-public .header-register-btn:hover { color: #115e59; background: #e6fffa; border-color: #99f6e4; }
+.app-header-public .auth-action-buttons .btn {
+  min-height: 38px;
+  padding: 0.45rem 0.95rem;
+  border-radius: 8px;
+  font-weight: 650;
+  font-size: 0.875rem;
+  transition: all 180ms cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.app-header-public .header-staff-login-btn {
+  color: #1e293b;
+  background: #f8fafc;
+  border: 1px solid #cbd5e1;
+}
+
+.app-header-public .header-staff-login-btn:hover {
+  color: #0f172a;
+  background: #f1f5f9;
+  border-color: #94a3b8;
+  transform: translateY(-1px);
+  box-shadow: 0 3px 10px rgba(15, 23, 42, 0.08);
+}
+
+.app-header-public .header-staff-login-btn:active {
+  transform: scale(0.97);
+}
+
+.app-header-public .header-register-btn {
+  color: #0f766e;
+  border: 1px solid #ccfbf1;
+  background: #f0fdfa;
+}
+
+.app-header-public .header-register-btn:hover {
+  color: #115e59;
+  background: #e6fffa;
+  border-color: #99f6e4;
+  transform: translateY(-1px);
+  box-shadow: 0 3px 10px rgba(15, 118, 110, 0.12);
+}
+
+.app-header-public .header-register-btn:active {
+  transform: scale(0.97);
+}
+
 .header-register-label-short { display: none; }
 
 .app-content-wrapper {

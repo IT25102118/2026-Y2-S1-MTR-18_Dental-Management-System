@@ -1314,11 +1314,15 @@
   padding: 1rem;
   vertical-align: middle;
   border-bottom: 1px solid #f1f5f9;
-  transition: background-color 0.15s ease;
+  transition: background-color 0.18s ease;
+}
+
+.alerts-table tbody tr {
+  transition: background-color 0.18s ease;
 }
 
 .alerts-table tbody tr:hover td {
-  background-color: #f8fafc;
+  background-color: #f0fdfa;
 }
 
 .item-link-wrap {
@@ -1337,6 +1341,47 @@
   align-items: center;
   justify-content: center;
   flex-shrink: 0;
+  transition: transform 220ms cubic-bezier(0.34, 1.56, 0.64, 1), background-color 200ms ease, color 200ms ease;
+}
+
+.alerts-table tbody tr:hover .item-icon-box {
+  transform: scale(1.1) rotate(-4deg);
+  background: #ccfbf1;
+  color: #0f766e;
+}
+
+.stock-alert-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.25rem 0.65rem;
+  border-radius: 9999px;
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.03em;
+  transition: transform 180ms ease;
+}
+
+.stock-alert-badge:hover {
+  transform: scale(1.05);
+}
+
+.stock-alert-badge.badge-out-of-stock::before {
+  content: '';
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background-color: #dc2626;
+  animation: pulseRing 1.8s infinite;
+}
+
+.stock-alert-badge.badge-low-stock::before {
+  content: '';
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background-color: #d97706;
+  animation: pulseRing 2.2s infinite;
 }
 
 .item-title-text {

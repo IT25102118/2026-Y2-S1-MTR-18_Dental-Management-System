@@ -32,16 +32,14 @@ public class InventoryAlertController {
     @GetMapping("/low-stock")
     public ResponseEntity<Page<LowStockAlertResponse>> getLowStockAlerts(
             @RequestParam(required = false) String category,
-            @PageableDefault(size = 20, sort = "currentQuantity", direction = Sort.Direction.ASC) Pageable pageable
-    ) {
+            @PageableDefault(size = 20, sort = "currentQuantity", direction = Sort.Direction.ASC) Pageable pageable) {
         return ResponseEntity.ok(inventoryAlertService.getLowStockAlerts(category, pageable));
     }
 
     @GetMapping("/expiry")
     public ResponseEntity<Page<ExpiryAlertResponse>> getExpiryAlerts(
             @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate through,
-            @PageableDefault(size = 20, sort = "expiryDate", direction = Sort.Direction.ASC) Pageable pageable
-    ) {
+            @PageableDefault(size = 20, sort = "expiryDate", direction = Sort.Direction.ASC) Pageable pageable) {
         return ResponseEntity.ok(inventoryAlertService.getExpiryAlerts(through, pageable));
     }
 }
