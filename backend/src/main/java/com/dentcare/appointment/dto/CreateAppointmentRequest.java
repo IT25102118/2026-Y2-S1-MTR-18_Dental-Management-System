@@ -25,5 +25,7 @@ public record CreateAppointmentRequest(
         String reason,
 
         @Size(max = 1000, message = "Notes cannot exceed 1000 characters")
-        String notes
+        String notes,
+
+        Boolean smsConsent
 ) {}

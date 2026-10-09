@@ -38,6 +38,7 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
@@ -295,6 +296,12 @@ public class PatientPortalServiceImpl implements PatientPortalService {
                 request.notes() != null && !request.notes().isBlank() ? request.notes().trim() : null
         );
         appointment.setStatus(AppointmentStatus.PENDING);
+
+        boolean consent = Boolean.TRUE.equals(request.smsConsent());
+        appointment.setSmsConsent(consent);
+        if (consent) {
+            appointment.setSmsConsentAt(LocalDateTime.now());
+        }
 
         Appointment saved = appointmentRepository.save(appointment);
         return mapToAppointmentResponse(saved);

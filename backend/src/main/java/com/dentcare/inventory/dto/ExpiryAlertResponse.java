@@ -1,3 +1,4 @@
+// send inventory batch expiry alert information to the frontend
 package com.dentcare.inventory.dto;
 
 import com.dentcare.inventory.entity.InventoryBatch;
@@ -5,9 +6,6 @@ import com.dentcare.inventory.entity.InventoryBatch;
 import java.time.LocalDate;
 import java.time.temporal.ChronoUnit;
 
-/**
- * Response DTO representing an operational expiry alert for an inventory batch with positive stock.
- */
 public record ExpiryAlertResponse(
         Long batchId,
         Long itemId,
@@ -20,8 +18,7 @@ public record ExpiryAlertResponse(
         LocalDate expiryDate,
         String status,
         Long daysRemaining,
-        String supplierReference
-) {
+        String supplierReference) {
     public static ExpiryAlertResponse fromEntity(InventoryBatch batch, LocalDate today) {
         if (batch == null) {
             return null;
@@ -39,10 +36,12 @@ public record ExpiryAlertResponse(
             unit = batch.getInventoryItem().getUnit();
         }
 
+        // Check whether the batch is EXPIRED or EXPIRING
         LocalDate exp = batch.getExpiryDate();
         String status = (exp != null && exp.isBefore(today)) ? "EXPIRED" : "EXPIRING";
         Long daysRemaining = exp != null ? ChronoUnit.DAYS.between(today, exp) : null;
 
+        // Get expiry date and stock quantity
         return new ExpiryAlertResponse(
                 batch.getId(),
                 itemId,
@@ -55,7 +54,6 @@ public record ExpiryAlertResponse(
                 exp,
                 status,
                 daysRemaining,
-                batch.getSupplierReference()
-        );
+                batch.getSupplierReference());
     }
 }

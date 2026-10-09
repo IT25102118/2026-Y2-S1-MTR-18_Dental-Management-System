@@ -48,6 +48,8 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
@@ -247,7 +249,8 @@ class PatientPortalServiceTest {
                 futureDate,
                 "10:30",
                 "Routine checkup and dental cleaning",
-                "Prefer morning slot if possible"
+                "Prefer morning slot if possible",
+                false
         );
 
         when(appointmentRepository.save(any(Appointment.class))).thenAnswer(invocation -> {
@@ -281,7 +284,8 @@ class PatientPortalServiceTest {
                 today,
                 "23:59",
                 "Urgent tooth pain evaluation",
-                null
+                null,
+                false
         );
 
         when(appointmentRepository.save(any(Appointment.class))).thenAnswer(invocation -> {
@@ -306,7 +310,8 @@ class PatientPortalServiceTest {
                 pastDate,
                 "10:00",
                 "Checkup",
-                null
+                null,
+                false
         );
 
         assertThatThrownBy(() -> patientPortalService.createAppointmentRequest("patient1@dentcare.test", request))
@@ -328,7 +333,8 @@ class PatientPortalServiceTest {
                     today,
                     "00:01",
                     "Checkup",
-                    null
+                    null,
+                    false
             );
 
             assertThatThrownBy(() -> patientPortalService.createAppointmentRequest("patient1@dentcare.test", request))
@@ -348,7 +354,8 @@ class PatientPortalServiceTest {
                 LocalDate.now().plusDays(1),
                 "10:00",
                 "   ",
-                null
+                null,
+                false
         );
 
         assertThatThrownBy(() -> patientPortalService.createAppointmentRequest("patient1@dentcare.test", request))
@@ -371,7 +378,8 @@ class PatientPortalServiceTest {
                 futureDate,
                 null,
                 "Consultation",
-                null
+                null,
+                false
         );
 
         when(appointmentRepository.save(any(Appointment.class))).thenAnswer(invocation -> {
@@ -398,7 +406,8 @@ class PatientPortalServiceTest {
                 futureDate,
                 "   ",
                 "Consultation",
-                null
+                null,
+                false
         );
 
         when(appointmentRepository.save(any(Appointment.class))).thenAnswer(invocation -> {
@@ -425,7 +434,8 @@ class PatientPortalServiceTest {
                 futureDate,
                 "09:30",
                 "Morning cleaning",
-                null
+                null,
+                false
         );
 
         when(appointmentRepository.save(any(Appointment.class))).thenAnswer(invocation -> {
@@ -452,7 +462,8 @@ class PatientPortalServiceTest {
                 futureDate,
                 "23:59",
                 "Late slot request",
-                null
+                null,
+                false
         );
 
         when(appointmentRepository.save(any(Appointment.class))).thenAnswer(invocation -> {
@@ -475,7 +486,8 @@ class PatientPortalServiceTest {
                 LocalDate.now().plusDays(3),
                 "morning",
                 "Checkup",
-                null
+                null,
+                false
         );
 
         assertThatThrownBy(() -> patientPortalService.createAppointmentRequest("patient1@dentcare.test", request))
@@ -494,7 +506,8 @@ class PatientPortalServiceTest {
                 LocalDate.now().plusDays(3),
                 "9am",
                 "Checkup",
-                null
+                null,
+                false
         );
 
         assertThatThrownBy(() -> patientPortalService.createAppointmentRequest("patient1@dentcare.test", request))
@@ -513,7 +526,8 @@ class PatientPortalServiceTest {
                 LocalDate.now().plusDays(3),
                 "25:00",
                 "Checkup",
-                null
+                null,
+                false
         );
 
         assertThatThrownBy(() -> patientPortalService.createAppointmentRequest("patient1@dentcare.test", request))
@@ -532,7 +546,8 @@ class PatientPortalServiceTest {
                 LocalDate.now().plusDays(3),
                 "09:75",
                 "Checkup",
-                null
+                null,
+                false
         );
 
         assertThatThrownBy(() -> patientPortalService.createAppointmentRequest("patient1@dentcare.test", request))
@@ -555,7 +570,8 @@ class PatientPortalServiceTest {
                 LocalDate.now().plusDays(2),
                 "14:00",
                 "Initial consultation and exam",
-                "New patient"
+                "New patient",
+                false
         );
 
         when(appointmentRepository.save(any(Appointment.class))).thenAnswer(invocation -> {
@@ -1088,6 +1104,101 @@ class PatientPortalServiceTest {
                 });
     }
 
+    @Test
+    @DisplayName("Changing phone number invalidates patient phone verification state and timestamp")
+    void testUpdatePatientProfilePhoneChangeInvalidatesVerification() {
+        when(userRepository.findByEmailIgnoreCase("patient1@dentcare.test"))
+                .thenReturn(Optional.of(patientUser1));
+        when(userRepository.save(any(User.class))).thenAnswer(invocation -> invocation.getArgument(0));
+
+        patientUser1.setPhone("+1 555-0101");
+        patientUser1.setPhoneVerified(true);
+        patientUser1.setPhoneVerifiedAt(java.time.LocalDateTime.now());
+
+        com.dentcare.patient.dto.UpdatePatientProfileRequest request =
+                new com.dentcare.patient.dto.UpdatePatientProfileRequest("+1 555-9999");
+
+        patientPortalService.updatePatientProfile("patient1@dentcare.test", request);
+
+        assertThat(patientUser1.getPhone()).isEqualTo("+1 555-9999");
+        assertThat(patientUser1.isPhoneVerified()).isFalse();
+        assertThat(patientUser1.getPhoneVerifiedAt()).isNull();
+    }
+
+    @Test
+    @DisplayName("Clearing phone number invalidates patient phone verification state and timestamp")
+    void testUpdatePatientProfileClearingPhoneInvalidatesVerification() {
+        when(userRepository.findByEmailIgnoreCase("patient1@dentcare.test"))
+                .thenReturn(Optional.of(patientUser1));
+        when(userRepository.save(any(User.class))).thenAnswer(invocation -> invocation.getArgument(0));
+
+        patientUser1.setPhone("+1 555-0101");
+        patientUser1.setPhoneVerified(true);
+        patientUser1.setPhoneVerifiedAt(java.time.LocalDateTime.now());
+
+        com.dentcare.patient.dto.UpdatePatientProfileRequest request =
+                new com.dentcare.patient.dto.UpdatePatientProfileRequest("   ");
+
+        patientPortalService.updatePatientProfile("patient1@dentcare.test", request);
+
+        assertThat(patientUser1.getPhone()).isNull();
+        assertThat(patientUser1.isPhoneVerified()).isFalse();
+        assertThat(patientUser1.getPhoneVerifiedAt()).isNull();
+    }
+
+    @Test
+    @DisplayName("Submitting identical phone preserves existing phone verification state and timestamp")
+    void testUpdatePatientProfileSamePhonePreservesVerification() {
+        when(userRepository.findByEmailIgnoreCase("patient1@dentcare.test"))
+                .thenReturn(Optional.of(patientUser1));
+        when(userRepository.save(any(User.class))).thenAnswer(invocation -> invocation.getArgument(0));
+
+        java.time.LocalDateTime verifiedAt = java.time.LocalDateTime.now().minusHours(2);
+        patientUser1.setPhone("+1 555-0101");
+        patientUser1.setPhoneVerified(true);
+        patientUser1.setPhoneVerifiedAt(verifiedAt);
+
+        com.dentcare.patient.dto.UpdatePatientProfileRequest request =
+                new com.dentcare.patient.dto.UpdatePatientProfileRequest("+1 555-0101");
+
+        patientPortalService.updatePatientProfile("patient1@dentcare.test", request);
+
+        assertThat(patientUser1.getPhone()).isEqualTo("+1 555-0101");
+        assertThat(patientUser1.isPhoneVerified()).isTrue();
+        assertThat(patientUser1.getPhoneVerifiedAt()).isEqualTo(verifiedAt);
+    }
+
+    @Test
+    @DisplayName("Appointment booking with smsConsent true does not imply or grant phone verification")
+    void testBookingWithSmsConsentDoesNotVerifyPhone() {
+        when(userRepository.findByEmailIgnoreCase("patient1@dentcare.test"))
+                .thenReturn(Optional.of(patientUser1));
+        when(appointmentRepository.save(any(com.dentcare.appointment.entity.Appointment.class)))
+                .thenAnswer(invocation -> {
+                    com.dentcare.appointment.entity.Appointment a = invocation.getArgument(0);
+                    a.setId(7001L);
+                    return a;
+                });
+
+        patientUser1.setPhone("+1 555-0101");
+        assertThat(patientUser1.isPhoneVerified()).isFalse();
+
+        com.dentcare.appointment.dto.CreateAppointmentRequest request =
+                new com.dentcare.appointment.dto.CreateAppointmentRequest(
+                        java.time.LocalDate.now().plusDays(3),
+                        "10:00",
+                        "Consultation",
+                        null,
+                        true // smsConsent opt-in
+                );
+
+        patientPortalService.createAppointmentRequest("patient1@dentcare.test", request);
+
+        // SMS consent must NEVER imply or derive phone verification
+        assertThat(patientUser1.isPhoneVerified()).isFalse();
+        assertThat(patientUser1.getPhoneVerifiedAt()).isNull();
+    }
+
     // =========================================================================
     // Patient Self-Service: Password Change Tests
     // =========================================================================
@@ -1206,5 +1317,141 @@ class PatientPortalServiceTest {
                     assertThat(rse.getStatusCode()).isEqualTo(HttpStatus.FORBIDDEN);
                     assertThat(rse.getReason()).contains("Access denied: patient self-service only");
                 });
+    }
+
+    @Test
+    @DisplayName("createAppointmentRequest with null smsConsent defaults to false and records no timestamp")
+    void testCreateAppointmentRequestWithNullSmsConsentDefaultsToFalse() {
+        when(userRepository.findByEmailIgnoreCase("patient1@dentcare.test"))
+                .thenReturn(Optional.of(patientUser1));
+
+        CreateAppointmentRequest request = new CreateAppointmentRequest(
+                LocalDate.now().plusDays(5),
+                "10:00",
+                "Checkup",
+                null,
+                null // null consent
+        );
+
+        when(appointmentRepository.save(any(Appointment.class))).thenAnswer(invocation -> {
+            Appointment a = invocation.getArgument(0);
+            assertThat(a.isSmsConsent()).isFalse();
+            assertThat(a.getSmsConsentAt()).isNull();
+            assertThat(a.getStatus()).isEqualTo(AppointmentStatus.PENDING);
+            a.setId(6001L);
+            return a;
+        });
+
+        PatientAppointmentResponse response = patientPortalService.createAppointmentRequest("patient1@dentcare.test", request);
+
+        assertThat(response).isNotNull();
+        assertThat(response.id()).isEqualTo(6001L);
+        assertThat(response.status()).isEqualTo("PENDING");
+    }
+
+    @Test
+    @DisplayName("createAppointmentRequest with explicit false smsConsent persists false and null timestamp")
+    void testCreateAppointmentRequestWithExplicitFalseConsent() {
+        when(userRepository.findByEmailIgnoreCase("patient1@dentcare.test"))
+                .thenReturn(Optional.of(patientUser1));
+
+        CreateAppointmentRequest request = new CreateAppointmentRequest(
+                LocalDate.now().plusDays(5),
+                "10:00",
+                "Checkup",
+                null,
+                Boolean.FALSE
+        );
+
+        when(appointmentRepository.save(any(Appointment.class))).thenAnswer(invocation -> {
+            Appointment a = invocation.getArgument(0);
+            assertThat(a.isSmsConsent()).isFalse();
+            assertThat(a.getSmsConsentAt()).isNull();
+            assertThat(a.getStatus()).isEqualTo(AppointmentStatus.PENDING);
+            a.setId(6002L);
+            return a;
+        });
+
+        PatientAppointmentResponse response = patientPortalService.createAppointmentRequest("patient1@dentcare.test", request);
+
+        assertThat(response).isNotNull();
+        assertThat(response.id()).isEqualTo(6002L);
+    }
+
+    @Test
+    @DisplayName("createAppointmentRequest with explicit true smsConsent persists true and server-side timestamp")
+    void testCreateAppointmentRequestWithExplicitTrueConsent() {
+        when(userRepository.findByEmailIgnoreCase("patient1@dentcare.test"))
+                .thenReturn(Optional.of(patientUser1));
+
+        CreateAppointmentRequest request = new CreateAppointmentRequest(
+                LocalDate.now().plusDays(5),
+                "10:00",
+                "Checkup",
+                null,
+                Boolean.TRUE
+        );
+
+        when(appointmentRepository.save(any(Appointment.class))).thenAnswer(invocation -> {
+            Appointment a = invocation.getArgument(0);
+            assertThat(a.isSmsConsent()).isTrue();
+            assertThat(a.getSmsConsentAt()).isNotNull();
+            assertThat(a.getSmsConsentAt()).isBeforeOrEqualTo(java.time.LocalDateTime.now());
+            assertThat(a.getStatus()).isEqualTo(AppointmentStatus.PENDING);
+            a.setId(6003L);
+            return a;
+        });
+
+        PatientAppointmentResponse response = patientPortalService.createAppointmentRequest("patient1@dentcare.test", request);
+
+        assertThat(response).isNotNull();
+        assertThat(response.id()).isEqualTo(6003L);
+        assertThat(response.status()).isEqualTo("PENDING");
+    }
+
+    @Test
+    @DisplayName("createAppointmentRequest validation failure does not save appointment or persist consent")
+    void testCreateAppointmentRequestValidationFailureDoesNotPersistConsent() {
+        CreateAppointmentRequest invalidRequest = new CreateAppointmentRequest(
+                LocalDate.now().minusDays(1), // past date
+                "10:00",
+                "Checkup",
+                null,
+                Boolean.TRUE
+        );
+
+        assertThatThrownBy(() -> patientPortalService.createAppointmentRequest("patient1@dentcare.test", invalidRequest))
+                .isInstanceOf(ResponseStatusException.class);
+
+        verify(appointmentRepository, never()).save(any(Appointment.class));
+    }
+
+    @Test
+    @DisplayName("createAppointmentRequest with consent true creates no outbox records and only saves Appointment")
+    void testCreateAppointmentRequestDoesNotInsertOutboxOrDispatchSms() {
+        when(userRepository.findByEmailIgnoreCase("patient1@dentcare.test"))
+                .thenReturn(Optional.of(patientUser1));
+
+        CreateAppointmentRequest request = new CreateAppointmentRequest(
+                LocalDate.now().plusDays(5),
+                "10:00",
+                "Checkup",
+                null,
+                Boolean.TRUE
+        );
+
+        when(appointmentRepository.save(any(Appointment.class))).thenAnswer(invocation -> {
+            Appointment a = invocation.getArgument(0);
+            a.setId(6004L);
+            return a;
+        });
+
+        PatientAppointmentResponse response = patientPortalService.createAppointmentRequest("patient1@dentcare.test", request);
+
+        assertThat(response).isNotNull();
+        assertThat(response.id()).isEqualTo(6004L);
+        // Architectural boundary: Only appointmentRepository.save was invoked - no notification repository or external dispatch occurs
+        verify(appointmentRepository).save(any(Appointment.class));
+        verify(userRepository, never()).save(any(User.class));
     }
 }

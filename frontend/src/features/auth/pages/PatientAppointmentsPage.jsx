@@ -86,6 +86,7 @@ export default function PatientAppointmentsPage() {
   const [preferredTime, setPreferredTime] = useState('');
   const [reason, setReason] = useState('');
   const [notes, setNotes] = useState('');
+  const [smsConsent, setSmsConsent] = useState(false);
 
   // Form Validation & Submission State
   const [fieldErrors, setFieldErrors] = useState({});
@@ -203,7 +204,8 @@ export default function PatientAppointmentsPage() {
         appointmentDate,
         preferredTime: preferredTime || null,
         reason: reason.trim(),
-        notes: notes.trim() || null
+        notes: notes.trim() || null,
+        smsConsent
       };
 
       const response = await createAppointmentRequest(payload);
@@ -221,6 +223,7 @@ export default function PatientAppointmentsPage() {
       setPreferredTime('');
       setReason('');
       setNotes('');
+      setSmsConsent(false);
       setFieldErrors({});
 
       // Refresh appointments list
@@ -465,6 +468,51 @@ export default function PatientAppointmentsPage() {
                     {fieldErrors.notes}
                   </span>
                 )}
+              </div>
+
+              {/* Optional SMS Consent */}
+              <div className="appointment-form-group appointment-consent-group" style={{ marginBottom: '1.25rem' }}>
+                <label
+                  htmlFor="appointment-sms-consent"
+                  style={{
+                    display: 'flex',
+                    alignItems: 'flex-start',
+                    gap: '0.625rem',
+                    cursor: 'pointer',
+                    fontWeight: 'normal',
+                    fontSize: '0.9375rem',
+                    color: '#374151'
+                  }}
+                >
+                  <input
+                    id="appointment-sms-consent"
+                    name="smsConsent"
+                    type="checkbox"
+                    checked={smsConsent}
+                    onChange={(e) => setSmsConsent(e.target.checked)}
+                    data-testid="checkbox-appointment-sms-consent"
+                    style={{
+                      marginTop: '0.2rem',
+                      cursor: 'pointer',
+                      accentColor: 'var(--primary, #0ea5e9)',
+                      width: '16px',
+                      height: '16px'
+                    }}
+                  />
+                  <span>I agree to receive SMS updates about this appointment request.</span>
+                </label>
+                <p
+                  className="appointment-consent-notice"
+                  data-testid="notice-appointment-sms-consent"
+                  style={{
+                    margin: '0.375rem 0 0 1.625rem',
+                    fontSize: '0.8125rem',
+                    color: '#6b7280',
+                    lineHeight: '1.4'
+                  }}
+                >
+                  SMS delivery is not active yet. Your preference will be saved for future notification support.
+                </p>
               </div>
 
               {/* Submit Button with Duplicate Submit Prevention */}

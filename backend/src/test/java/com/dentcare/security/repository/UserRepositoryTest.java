@@ -178,4 +178,125 @@ class UserRepositoryTest {
         assertThat(userRepository.existsByRole(Role.ADMINISTRATOR)).isTrue();
         assertThat(userRepository.existsByRole(Role.DENTAL_ASSISTANT)).isFalse();
     }
+
+    @Test
+    @DisplayName("New user defaults to unverified with null verification timestamp")
+    void testNewUserDefaultsToUnverified() {
+        User user = new User(
+                "new.patient@dentcare.com",
+                "$2a$10$hashedPasswordNew",
+                "New",
+                "Patient",
+                "0770001122",
+                Role.PATIENT
+        );
+        User saved = userRepository.saveAndFlush(user);
+
+        assertThat(saved.isPhoneVerified()).isFalse();
+        assertThat(saved.getPhoneVerifiedAt()).isNull();
+
+        User reloaded = userRepository.findById(saved.getId()).orElseThrow();
+        assertThat(reloaded.isPhoneVerified()).isFalse();
+        assertThat(reloaded.getPhoneVerifiedAt()).isNull();
+    }
+
+    @Test
+    @DisplayName("Changing phone number invalidates verification and clears timestamp")
+    void testChangingPhoneInvalidatesVerification() {
+        User user = new User(
+                "verified.patient@dentcare.com",
+                "$2a$10$hashedPasswordVerified",
+                "Verified",
+                "Patient",
+                "0771112233",
+                Role.PATIENT
+        );
+        user.setPhoneVerified(true);
+        user.setPhoneVerifiedAt(java.time.LocalDateTime.now());
+        User saved = userRepository.saveAndFlush(user);
+
+        assertThat(saved.isPhoneVerified()).isTrue();
+        assertThat(saved.getPhoneVerifiedAt()).isNotNull();
+
+        // Change phone number
+        saved.setPhone("0779998877");
+        assertThat(saved.isPhoneVerified()).isFalse();
+        assertThat(saved.getPhoneVerifiedAt()).isNull();
+
+        User reloaded = userRepository.saveAndFlush(saved);
+        assertThat(reloaded.getPhone()).isEqualTo("0779998877");
+        assertThat(reloaded.isPhoneVerified()).isFalse();
+        assertThat(reloaded.getPhoneVerifiedAt()).isNull();
+    }
+
+    @Test
+    @DisplayName("Clearing phone number invalidates verification and clears timestamp")
+    void testClearingPhoneInvalidatesVerification() {
+        User user = new User(
+                "cleared.patient@dentcare.com",
+                "$2a$10$hashedPasswordClear",
+                "Clear",
+                "Patient",
+                "0771112233",
+                Role.PATIENT
+        );
+        user.setPhoneVerified(true);
+        user.setPhoneVerifiedAt(java.time.LocalDateTime.now());
+        User saved = userRepository.saveAndFlush(user);
+
+        // Clear phone number
+        saved.setPhone(null);
+        assertThat(saved.isPhoneVerified()).isFalse();
+        assertThat(saved.getPhoneVerifiedAt()).isNull();
+
+        User reloaded = userRepository.saveAndFlush(saved);
+        assertThat(reloaded.getPhone()).isNull();
+        assertThat(reloaded.isPhoneVerified()).isFalse();
+        assertThat(reloaded.getPhoneVerifiedAt()).isNull();
+    }
+
+    @Test
+    @DisplayName("Setting identical phone preserves verification state and timestamp")
+    void testSamePhonePreservesVerificationState() {
+        User user = new User(
+                "same.patient@dentcare.com",
+                "$2a$10$hashedPasswordSame",
+                "Same",
+                "Patient",
+                "0771112233",
+                Role.PATIENT
+        );
+        java.time.LocalDateTime verifiedAt = java.time.LocalDateTime.now().minusDays(1);
+        user.setPhoneVerified(true);
+        user.setPhoneVerifiedAt(verifiedAt);
+        User saved = userRepository.saveAndFlush(user);
+
+        // Set identical phone
+        saved.setPhone("0771112233");
+        assertThat(saved.isPhoneVerified()).isTrue();
+        assertThat(saved.getPhoneVerifiedAt()).isEqualTo(verifiedAt);
+
+        User reloaded = userRepository.saveAndFlush(saved);
+        assertThat(reloaded.isPhoneVerified()).isTrue();
+        assertThat(reloaded.getPhoneVerifiedAt()).isNotNull();
+    }
+
+    @Test
+    @DisplayName("Entity lifecycle cleanses timestamp to null if phoneVerified is false")
+    void testLifecycleClearsTimestampWhenUnverified() {
+        User user = new User(
+                "lifecycle.patient@dentcare.com",
+                "$2a$10$hashedPasswordLifecycle",
+                "Life",
+                "Cycle",
+                "0771112233",
+                Role.PATIENT
+        );
+        user.setPhoneVerified(false);
+        user.setPhoneVerifiedAt(java.time.LocalDateTime.now()); // should be cleansed
+        User saved = userRepository.saveAndFlush(user);
+
+        assertThat(saved.isPhoneVerified()).isFalse();
+        assertThat(saved.getPhoneVerifiedAt()).isNull();
+    }
 }

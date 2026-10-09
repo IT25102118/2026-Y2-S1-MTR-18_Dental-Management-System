@@ -4,6 +4,7 @@ import { useAuth } from '../context/AuthContext';
 import { canRoleAccessPath, getDashboardPath, isSafeInternalPath, isStaffRole } from '../roleAccess';
 import staffWorkspaceImg from '../../../assets/staff-workspace.jpg';
 import patientAccessImg from '../../../assets/patient-access.jpg';
+import heroClinicImg from '../../../assets/hero-clinic.jpg';
 import '../auth.css';
 import '../public-auth.css';
 
@@ -467,100 +468,184 @@ export default function LoginPage({ portalType: propPortalType }) {
 
   // Unified / Fallback Login View
   return (
-    <main className="public-auth-page public-auth-login" aria-labelledby="login-title">
-      <div className="public-auth-card" data-testid={`login-card-${portalType}`}>
-        <Link to="/" className="public-auth-back"><span aria-hidden="true">←</span> Back to home</Link>
-
-        <header className="public-auth-header">
-          <div className="public-portal-tag">
-            <span className="portal-sparkle" aria-hidden="true">✦</span>
-            <span>DentCare Account</span>
-          </div>
-          <h1 id="login-title">Sign in to your account</h1>
-          <p>Enter your DentCare email and password to continue.</p>
-          <div className="portal-choice-pills" role="navigation" aria-label="Portal Selection">
-            <Link to="/patient/login" className="portal-pill-btn">
-              <UserIcon /> Patient Portal →
+    <main className="public-auth-page unified-portal-layout" aria-labelledby="login-title">
+      <div className="unified-split-shell" data-testid={`login-card-${portalType}`}>
+        {/* Left / Visual Overview Panel */}
+        <aside className="unified-visual-panel" aria-label="DentCare Account Overview">
+          <div className="unified-panel-header unified-anim-header">
+            <Link to="/" className="unified-panel-brand" aria-label="DentCare Home">
+              <span className="unified-brand-icon" aria-hidden="true">
+                <ToothIcon />
+              </span>
+              <span className="unified-brand-title">DentCare</span>
             </Link>
-            <Link to="/staff/login" className="portal-pill-btn staff-pill">
-              <ShieldIcon /> Staff Portal →
-            </Link>
-          </div>
-        </header>
-
-        {errorMessage && (
-          <div id="login-error" className="public-auth-alert" role="alert" aria-live="polite" data-testid="login-error-alert">
-            <span aria-hidden="true">!</span>
-            <p>{errorMessage}</p>
-          </div>
-        )}
-
-        <form onSubmit={handleSubmit} className="public-auth-form" noValidate>
-          <div className="public-field">
-            <label htmlFor="login-email">Email address</label>
-            <input
-              id="login-email"
-              type="email"
-              name="email"
-              value={email}
-              onChange={(event) => setEmail(event.target.value)}
-              required
-              autoComplete="email"
-              inputMode="email"
-              placeholder="name@example.com"
-              disabled={isSubmitting}
-              aria-invalid={hasError}
-              aria-describedby={hasError ? 'login-error' : undefined}
-              data-testid="login-email-input"
-            />
-          </div>
-
-          <div className="public-field">
-            <label htmlFor="login-password">Password</label>
-            <div className="public-password-field">
-              <input
-                id="login-password"
-                type={showPassword ? 'text' : 'password'}
-                name="password"
-                value={password}
-                onChange={(event) => setPassword(event.target.value)}
-                required
-                autoComplete="current-password"
-                placeholder="Enter your password"
-                disabled={isSubmitting}
-                aria-invalid={hasError}
-                aria-describedby={hasError ? 'login-error' : undefined}
-                data-testid="login-password-input"
-              />
-              <button
-                type="button"
-                onClick={() => setShowPassword((current) => !current)}
-                aria-label={showPassword ? 'Hide password' : 'Show password'}
-                aria-pressed={showPassword}
-                disabled={isSubmitting}
-              >
-                <VisibilityIcon visible={showPassword} />
-              </button>
+            <div className="unified-portal-badge">
+              <span className="unified-badge-pulse" aria-hidden="true" />
+              <span>UNIFIED ACCESS</span>
             </div>
           </div>
 
-          <button
-            type="submit"
-            className="public-auth-submit"
-            disabled={isSubmitting}
-            data-testid="login-submit-button"
-          >
-            {isSubmitting ? (
-              <span className="public-submit-loading"><span aria-hidden="true" />Signing In...</span>
-            ) : (
-              'Sign In'
-            )}
-          </button>
-        </form>
+          <div className="unified-panel-content">
+            <div className="unified-panel-copy unified-anim-copy">
+              <span className="unified-panel-kicker">Clinical &amp; Patient Services</span>
+              <h2 className="unified-panel-headline">Complete digital care for modern dentistry.</h2>
+              <p className="unified-panel-desc">
+                Sign in with your verified credentials to access patient appointments, dental records, or clinic administration tools.
+              </p>
+            </div>
 
-        <div className="public-auth-footer">
-          <p>New patient? <Link to="/register">Register as a Patient</Link></p>
-          <span>Dedicated access: <Link to="/patient/login">Patient Login</Link> · <Link to="/staff/login">Staff Login</Link></span>
+            <div className="unified-panel-media unified-anim-media">
+              <img
+                src={heroClinicImg}
+                alt="Modern DentCare dental operatory clinic"
+                className="unified-panel-img"
+                loading="lazy"
+              />
+              <div className="unified-panel-media-overlay" aria-hidden="true" />
+              <div className="unified-panel-media-badge">
+                <span className="unified-badge-pulse" aria-hidden="true" />
+                <span>Representative Clinical Setting</span>
+              </div>
+            </div>
+
+            <div className="unified-capabilities-list unified-anim-chips" aria-label="Portal Capabilities">
+              <span className="unified-capability-chip">
+                <span className="chip-dot" aria-hidden="true" />
+                Appointment Booking
+              </span>
+              <span className="unified-capability-chip">
+                <span className="chip-dot" aria-hidden="true" />
+                Digital Records &amp; Bills
+              </span>
+              <span className="unified-capability-chip">
+                <span className="chip-dot" aria-hidden="true" />
+                Staff Operations
+              </span>
+            </div>
+          </div>
+
+          <div className="unified-security-notice unified-anim-notice">
+            <span className="notice-icon" aria-hidden="true">
+              <ShieldIcon />
+            </span>
+            <p>
+              <strong>Session Security:</strong> Protected with server-managed sessions and CSRF validation.
+            </p>
+          </div>
+        </aside>
+
+        {/* Right / Interactive Form Panel */}
+        <div className="unified-form-panel unified-anim-form">
+          <Link to="/" className="public-auth-back">
+            <span aria-hidden="true">←</span> Back to home
+          </Link>
+
+          <header className="unified-form-header">
+            <div className="public-portal-tag unified-tag">
+              <span className="portal-sparkle" aria-hidden="true">✦</span>
+              <span>DentCare Account</span>
+            </div>
+            <h1 id="login-title">Sign in to your account</h1>
+            <p className="unified-welcome-text">
+              Enter your DentCare email and password to continue.
+            </p>
+            <div className="portal-choice-pills" role="navigation" aria-label="Portal Selection">
+              <Link to="/patient/login" className="portal-pill-btn">
+                <UserIcon /> Patient Portal →
+              </Link>
+              <Link to="/staff/login" className="portal-pill-btn staff-pill">
+                <ShieldIcon /> Staff Portal →
+              </Link>
+            </div>
+          </header>
+
+          {errorMessage && (
+            <div
+              id="login-error"
+              className="public-auth-alert"
+              role="alert"
+              aria-live="polite"
+              data-testid="login-error-alert"
+            >
+              <span aria-hidden="true">!</span>
+              <p>{errorMessage}</p>
+            </div>
+          )}
+
+          <form onSubmit={handleSubmit} className="public-auth-form" noValidate>
+            <div className="public-field">
+              <label htmlFor="login-email">Email address</label>
+              <input
+                id="login-email"
+                type="email"
+                name="email"
+                value={email}
+                onChange={(event) => setEmail(event.target.value)}
+                required
+                autoComplete="email"
+                inputMode="email"
+                placeholder="name@example.com"
+                disabled={isSubmitting}
+                aria-invalid={hasError}
+                aria-describedby={hasError ? 'login-error' : undefined}
+                data-testid="login-email-input"
+              />
+            </div>
+
+            <div className="public-field">
+              <label htmlFor="login-password">Password</label>
+              <div className="public-password-field">
+                <input
+                  id="login-password"
+                  type={showPassword ? 'text' : 'password'}
+                  name="password"
+                  value={password}
+                  onChange={(event) => setPassword(event.target.value)}
+                  required
+                  autoComplete="current-password"
+                  placeholder="Enter your password"
+                  disabled={isSubmitting}
+                  aria-invalid={hasError}
+                  aria-describedby={hasError ? 'login-error' : undefined}
+                  data-testid="login-password-input"
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowPassword((current) => !current)}
+                  aria-label={showPassword ? 'Hide password' : 'Show password'}
+                  aria-pressed={showPassword}
+                  disabled={isSubmitting}
+                >
+                  <VisibilityIcon visible={showPassword} />
+                </button>
+              </div>
+            </div>
+
+            <button
+              type="submit"
+              className="public-auth-submit submit-unified-btn"
+              disabled={isSubmitting}
+              data-testid="login-submit-button"
+            >
+              {isSubmitting ? (
+                <span className="public-submit-loading"><span aria-hidden="true" />Signing In...</span>
+              ) : (
+                <>
+                  <span>Sign In</span>
+                  <ArrowIcon />
+                </>
+              )}
+            </button>
+
+            <p className="unified-auth-disclaimer">
+              DentCare Dental Clinic • Secure Patient &amp; Staff Access
+            </p>
+          </form>
+
+          <div className="public-auth-footer unified-auth-footer">
+            <p>New patient? <Link to="/register">Register as a Patient</Link></p>
+            <span>Dedicated access: <Link to="/patient/login">Patient Login</Link> · <Link to="/staff/login">Staff Login</Link></span>
+          </div>
         </div>
       </div>
     </main>

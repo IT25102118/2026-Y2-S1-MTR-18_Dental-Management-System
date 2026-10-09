@@ -412,4 +412,29 @@ describe('LoginPage', () => {
     );
     expect(mockLogout).toHaveBeenCalledTimes(1);
   });
+
+  it('renders redesigned split-screen unified login with clinical overview panel and operatory image', () => {
+    render(
+      <MemoryRouter initialEntries={['/login']}>
+        <LoginPage />
+      </MemoryRouter>
+    );
+
+    expect(screen.getByTestId('login-card-unified')).toBeInTheDocument();
+    expect(screen.getByLabelText(/DentCare Account Overview/i)).toBeInTheDocument();
+    expect(screen.getByText(/Clinical & Patient Services/i)).toBeInTheDocument();
+    expect(screen.getByText(/Complete digital care for modern dentistry\./i)).toBeInTheDocument();
+    expect(screen.getByText(/UNIFIED ACCESS/i)).toBeInTheDocument();
+
+    const clinicImage = screen.getByRole('img', { name: /Modern DentCare dental operatory clinic/i });
+    expect(clinicImage).toBeInTheDocument();
+    expect(clinicImage.getAttribute('src')).toMatch(/hero-clinic/i);
+
+    expect(screen.getByRole('heading', { name: /Sign in to your account/i, level: 1 })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /Sign In/i })).toBeInTheDocument();
+    expect(screen.getByText(/Representative Clinical Setting/i)).toBeInTheDocument();
+    expect(screen.getByText(/Session Security:/i)).toBeInTheDocument();
+    expect(screen.getByText(/Protected with server-managed sessions and CSRF validation\./i)).toBeInTheDocument();
+  });
 });
+

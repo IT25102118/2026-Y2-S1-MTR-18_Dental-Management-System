@@ -65,6 +65,12 @@ public class Appointment {
     @Column(name = "status", nullable = false, length = 30)
     private AppointmentStatus status = AppointmentStatus.PENDING;
 
+    @Column(name = "sms_consent", nullable = false)
+    private boolean smsConsent = false;
+
+    @Column(name = "sms_consent_at")
+    private LocalDateTime smsConsentAt;
+
     @Column(name = "created_at", nullable = false, updatable = false)
     private LocalDateTime createdAt;
 
@@ -81,6 +87,8 @@ public class Appointment {
         this.reason = reason;
         this.notes = notes;
         this.status = AppointmentStatus.PENDING;
+        this.smsConsent = false;
+        this.smsConsentAt = null;
     }
 
     @PrePersist
@@ -92,11 +100,17 @@ public class Appointment {
         if (this.updatedAt == null) {
             this.updatedAt = now;
         }
+        if (!this.smsConsent) {
+            this.smsConsentAt = null;
+        }
     }
 
     @PreUpdate
     protected void onUpdate() {
         this.updatedAt = LocalDateTime.now();
+        if (!this.smsConsent) {
+            this.smsConsentAt = null;
+        }
     }
 
     public Long getId() {
@@ -169,5 +183,24 @@ public class Appointment {
 
     public LocalDateTime getUpdatedAt() {
         return updatedAt;
+    }
+
+    public boolean isSmsConsent() {
+        return smsConsent;
+    }
+
+    public void setSmsConsent(boolean smsConsent) {
+        this.smsConsent = smsConsent;
+        if (!smsConsent) {
+            this.smsConsentAt = null;
+        }
+    }
+
+    public LocalDateTime getSmsConsentAt() {
+        return smsConsentAt;
+    }
+
+    public void setSmsConsentAt(LocalDateTime smsConsentAt) {
+        this.smsConsentAt = this.smsConsent ? smsConsentAt : null;
     }
 }

@@ -1,0 +1,25 @@
+-- Flyway migration V9: Create phone_verification_challenges table for persistent OTP verification
+CREATE TABLE phone_verification_challenges (
+    id BIGINT AUTO_INCREMENT PRIMARY KEY,
+    user_id BIGINT NOT NULL,
+    phone_snapshot VARCHAR(30) NOT NULL,
+    otp_mac VARCHAR(128) NOT NULL,
+    status VARCHAR(30) NOT NULL,
+    delivery_mode VARCHAR(20) NOT NULL,
+    attempt_count INT NOT NULL DEFAULT 0,
+    max_attempts INT NOT NULL DEFAULT 3,
+    expires_at TIMESTAMP NOT NULL,
+    submitted_at TIMESTAMP NULL,
+    verified_at TIMESTAMP NULL,
+    created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    CONSTRAINT fk_pvc_user FOREIGN KEY (user_id) REFERENCES users (id) ON DELETE RESTRICT,
+    CONSTRAINT chk_pvc_status CHECK (status IN ('CREATED', 'SUBMITTED', 'DELIVERY_UNCERTAIN', 'SEND_FAILED', 'VERIFIED', 'EXPIRED', 'EXHAUSTED', 'SUPERSEDED')),
+    CONSTRAINT chk_pvc_delivery_mode CHECK (delivery_mode IN ('TEST', 'LIVE')),
+    CONSTRAINT chk_pvc_attempt_count CHECK (attempt_count >= 0),
+    CONSTRAINT chk_pvc_max_attempts CHECK (max_attempts > 0),
+    KEY idx_pvc_user (user_id),
+    KEY idx_pvc_user_created (user_id, created_at),
+    KEY idx_pvc_phone_created (phone_snapshot, created_at),
+    KEY idx_pvc_status_expires (status, expires_at)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;

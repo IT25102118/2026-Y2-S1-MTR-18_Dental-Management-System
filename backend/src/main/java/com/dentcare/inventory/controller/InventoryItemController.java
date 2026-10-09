@@ -37,6 +37,7 @@ public class InventoryItemController {
         this.inventoryItemService = inventoryItemService;
     }
 
+    // Create Inventory Item
     @PostMapping
     public ResponseEntity<InventoryItemResponse> createItem(@Valid @RequestBody CreateInventoryItemRequest request) {
         InventoryItemResponse created = inventoryItemService.createItem(request);
@@ -44,11 +45,13 @@ public class InventoryItemController {
         return ResponseEntity.created(location).body(created);
     }
 
+    // Get Inventory Item by ID
     @GetMapping("/{id}")
     public ResponseEntity<InventoryItemResponse> getItemById(@PathVariable Long id) {
         return ResponseEntity.ok(inventoryItemService.getItemById(id));
     }
 
+    // Update Inventory Item
     @PutMapping("/{id}")
     public ResponseEntity<InventoryItemResponse> updateItem(
             @PathVariable Long id,
@@ -56,6 +59,7 @@ public class InventoryItemController {
         return ResponseEntity.ok(inventoryItemService.updateItem(id, request));
     }
 
+    // Update Inventory Item Status
     @PatchMapping("/{id}/status")
     public ResponseEntity<InventoryItemResponse> updateItemStatus(
             @PathVariable Long id,
@@ -63,6 +67,7 @@ public class InventoryItemController {
         return ResponseEntity.ok(inventoryItemService.updateItemStatus(id, request.getActive()));
     }
 
+    // Search Inventory Items
     @GetMapping
     public ResponseEntity<Page<InventoryItemResponse>> searchItems(
             @RequestParam(required = false) String search,

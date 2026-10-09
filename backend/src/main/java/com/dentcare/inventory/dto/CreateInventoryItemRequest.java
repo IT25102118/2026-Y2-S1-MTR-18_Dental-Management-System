@@ -1,14 +1,15 @@
+
+// Uesd recive and valid information from the frontend
+//  when creating a new item 
 package com.dentcare.inventory.dto;
 
+// check whether the submitted item information is valid.
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 
-/**
- * Request payload for creating a new inventory catalog item.
- * Initial currentQuantity is always zero and active is true.
- */
+// creating a new inventory item
 public class CreateInventoryItemRequest {
 
     @NotBlank(message = "Item code is required")
@@ -34,11 +35,13 @@ public class CreateInventoryItemRequest {
     @Size(max = 150, message = "Default supplier reference must not exceed 150 characters")
     private String defaultSupplierReference;
 
+    // This constructor creates an empty CreateInventoryItemRequest object
     public CreateInventoryItemRequest() {
     }
 
+    // Parameterized Constructor
     public CreateInventoryItemRequest(String itemCode, String name, String category, String unit,
-                                      Integer reorderLevel, String defaultSupplierReference) {
+            Integer reorderLevel, String defaultSupplierReference) {
         this.itemCode = itemCode;
         this.name = name;
         this.category = category;
@@ -47,6 +50,8 @@ public class CreateInventoryItemRequest {
         this.defaultSupplierReference = defaultSupplierReference;
     }
 
+    // Getters and setters
+    // (get (read) and set (update) the values of private variables.)
     public String getItemCode() {
         return itemCode;
     }
