@@ -7,7 +7,9 @@ import {
 } from '../api/prescriptionApi';
 import { useAuth } from '../../auth/context/AuthContext';
 import PrescriptionStatusBadge from '../components/PrescriptionStatusBadge';
-import PrescriptionPrintView from '../components/PrescriptionPrintView';
+import PrescriptionPrintView, {
+    printPrescriptionRecord
+} from '../components/PrescriptionPrintView';
 import PrescriptionNav from '../components/PrescriptionNav';
 import '../prescription.css';
 
@@ -125,9 +127,9 @@ export default function PrescriptionDetailPage() {
     }
   };
 
-  const handlePrint = () => {
-    window.print();
-  };
+    const handlePrint = () => {
+        printPrescriptionRecord(prescription);
+    };
 
   if (loading) {
     return (
