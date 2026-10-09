@@ -14,7 +14,8 @@ export default function PrescriptionCreatePage() {
   const { user } = useAuth();
 
   // If the logged-in user is a DENTIST, prepopulate their ID
-  const defaultDentistId = user?.role === 'DENTIST' ? String(user.id) : '';
+  const defaultDentistId =
+      user?.role === 'DENTIST' ? String(user.id) : '';
 
   const [formData, setFormData] = useState({
     patientId: '',
@@ -41,23 +42,31 @@ export default function PrescriptionCreatePage() {
     const errs = {};
 
     // Patient ID validation
-    if (!formData.patientId || String(formData.patientId).trim() === '') {
+    if (
+        !formData.patientId ||
+        String(formData.patientId).trim() === ''
+    ) {
       errs.patientId = 'Patient ID is required.';
     } else if (
         isNaN(Number(formData.patientId)) ||
         Number(formData.patientId) <= 0
     ) {
-      errs.patientId = 'Patient ID must be a valid positive number.';
+      errs.patientId =
+          'Patient ID must be a valid positive number.';
     }
 
     // Dentist ID validation
-    if (!formData.dentistId || String(formData.dentistId).trim() === '') {
+    if (
+        !formData.dentistId ||
+        String(formData.dentistId).trim() === ''
+    ) {
       errs.dentistId = 'Dentist ID is required.';
     } else if (
         isNaN(Number(formData.dentistId)) ||
         Number(formData.dentistId) <= 0
     ) {
-      errs.dentistId = 'Dentist ID must be a valid positive number.';
+      errs.dentistId =
+          'Dentist ID must be a valid positive number.';
     }
 
     // Notes validation
@@ -72,19 +81,29 @@ export default function PrescriptionCreatePage() {
       formData.items.forEach((item, index) => {
         const itemErr = {};
 
-        if (!item.medicineName || item.medicineName.trim() === '') {
-          itemErr.medicineName = 'Medicine name is required.';
+        if (
+            !item.medicineName ||
+            item.medicineName.trim() === ''
+        ) {
+          itemErr.medicineName =
+              'Medicine name is required.';
         }
 
         if (!item.dosage || item.dosage.trim() === '') {
           itemErr.dosage = 'Dosage is required.';
         }
 
-        if (!item.frequency || item.frequency.trim() === '') {
+        if (
+            !item.frequency ||
+            item.frequency.trim() === ''
+        ) {
           itemErr.frequency = 'Frequency is required.';
         }
 
-        if (!item.duration || item.duration.trim() === '') {
+        if (
+            !item.duration ||
+            item.duration.trim() === ''
+        ) {
           itemErr.duration = 'Duration is required.';
         }
 
@@ -98,7 +117,8 @@ export default function PrescriptionCreatePage() {
             isNaN(Number(item.quantity)) ||
             Number(item.quantity) <= 0
         ) {
-          itemErr.quantity = 'Quantity must be greater than zero.';
+          itemErr.quantity =
+              'Quantity must be greater than zero.';
         }
 
         if (Object.keys(itemErr).length > 0) {
@@ -133,7 +153,6 @@ export default function PrescriptionCreatePage() {
       items: newItems
     }));
 
-    // Clear general items error
     if (errors.items) {
       setErrors((prev) => ({
         ...prev,
@@ -165,11 +184,15 @@ export default function PrescriptionCreatePage() {
 
       navigate(`/prescriptions/${created.id}`, {
         state: {
-          message: 'Prescription draft created successfully!'
+          message:
+              'Prescription draft created successfully!'
         }
       });
     } catch (err) {
-      if (err.fieldErrors && Object.keys(err.fieldErrors).length > 0) {
+      if (
+          err.fieldErrors &&
+          Object.keys(err.fieldErrors).length > 0
+      ) {
         setErrors((prev) => ({
           ...prev,
           ...err.fieldErrors
@@ -189,22 +212,53 @@ export default function PrescriptionCreatePage() {
       <div className="prescription-container">
         <PrescriptionNav />
 
-        <div className="prescription-header">
+        {/* Page heading */}
+        <div
+            className="prescription-header"
+            style={{
+              marginBottom: '1.75rem'
+            }}
+        >
           <div>
-            <h1>Create New Prescription</h1>
+            <div
+                style={{
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: '0.45rem',
+                  padding: '0.35rem 0.7rem',
+                  background: '#eff6ff',
+                  color: '#2563eb',
+                  borderRadius: '999px',
+                  fontSize: '0.72rem',
+                  fontWeight: 700,
+                  letterSpacing: '0.05em',
+                  marginBottom: '0.8rem'
+                }}
+            >
+              NEW PRESCRIPTION
+            </div>
+
+            <h1 style={{ marginBottom: '0.35rem' }}>
+              Create New Prescription
+            </h1>
 
             <p
                 style={{
-                  margin: '0.25rem 0 0 0',
+                  margin: 0,
                   color: '#64748b',
-                  fontSize: '0.9rem'
+                  fontSize: '0.92rem'
                 }}
             >
-              Author a new prescription order. Saves initially as a DRAFT.
+              Create a safe medication order for your
+              patient. New prescriptions are saved as a
+              draft first.
             </p>
           </div>
 
-          <Link to="/prescriptions" className="btn btn-secondary">
+          <Link
+              to="/prescriptions"
+              className="btn btn-secondary"
+          >
             Cancel
           </Link>
         </div>
@@ -217,150 +271,379 @@ export default function PrescriptionCreatePage() {
         )}
 
         <form onSubmit={handleSubmit} noValidate>
-          <div className="prescription-card">
-            <h2
+          {/* Clinical details */}
+          <div
+              className="prescription-card"
+              style={{
+                padding: 0,
+                overflow: 'hidden',
+                border: '1px solid #dbeafe',
+                boxShadow:
+                    '0 8px 28px rgba(37, 99, 235, 0.07)'
+              }}
+          >
+            <div
                 style={{
-                  fontSize: '1.25rem',
-                  marginTop: 0,
-                  marginBottom: '1.25rem',
-                  color: '#0f172a'
+                  height: '4px',
+                  background:
+                      'linear-gradient(90deg, #2563eb, #38bdf8)'
                 }}
-            >
-              Clinical Details
-            </h2>
-
-            <div className="grid-2">
-              <div className="form-group">
-                <label htmlFor="patientId">
-                  Patient ID <span style={{ color: '#dc2626' }}>*</span>
-                </label>
-
-                <input
-                    id="patientId"
-                    name="patientId"
-                    type="number"
-                    min="1"
-                    placeholder="Enter patient user ID (e.g. 1)"
-                    value={formData.patientId}
-                    onChange={handleChange}
-                    disabled={submitting}
-                    className={errors.patientId ? 'has-error' : ''}
-                    required
-                />
-
-                {errors.patientId && (
-                    <span className="field-error">
-                  {errors.patientId}
-                </span>
-                )}
-
-                <span className="form-help">
-                Must reference a registered user with PATIENT role.
-              </span>
-              </div>
-
-              <div className="form-group">
-                <label htmlFor="dentistId">
-                  Prescribing Dentist ID{' '}
-                  <span style={{ color: '#dc2626' }}>*</span>
-                </label>
-
-                <input
-                    id="dentistId"
-                    name="dentistId"
-                    type="number"
-                    min="1"
-                    placeholder="Enter dentist user ID (e.g. 2)"
-                    value={formData.dentistId}
-                    onChange={handleChange}
-                    readOnly={user?.role === 'DENTIST'}
-                    disabled={submitting}
-                    className={errors.dentistId ? 'has-error' : ''}
-                    required
-                />
-
-                {errors.dentistId && (
-                    <span className="field-error">
-                  {errors.dentistId}
-                </span>
-                )}
-
-                {user?.role === 'DENTIST' ? (
-                    <span
-                        className="form-help"
-                        style={{ color: '#16a34a' }}
-                    >
-                  Logged-in dentist: {user.firstName} {user.lastName} —
-                  ID {user.id}. This field is read-only.
-                </span>
-                ) : (
-                    <span className="form-help">
-                  Must reference a registered user with DENTIST role.
-                </span>
-                )}
-              </div>
-            </div>
-
-            <div className="form-group">
-              <label htmlFor="notes">
-                Clinical Notes / Diagnosis Summary (Optional)
-              </label>
-
-              <textarea
-                  id="notes"
-                  name="notes"
-                  rows={3}
-                  placeholder="e.g. Post-extraction pain management, acute apical abscess, prophylaxis..."
-                  value={formData.notes}
-                  onChange={handleChange}
-                  disabled={submitting}
-                  className={errors.notes ? 'has-error' : ''}
-              />
-
-              {errors.notes && (
-                  <span className="field-error">
-                {errors.notes}
-              </span>
-              )}
-
-              <span className="form-help">
-              Max 2,000 characters.
-            </span>
-            </div>
-          </div>
-
-          <div className="prescription-card">
-            <PrescriptionItemEditor
-                items={formData.items}
-                onChange={handleItemsChange}
-                errors={errors}
-                disabled={submitting}
             />
+
+            <div style={{ padding: '1.5rem' }}>
+              <div
+                  style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '0.9rem',
+                    paddingBottom: '1rem',
+                    marginBottom: '1.35rem',
+                    borderBottom: '1px solid #e2e8f0'
+                  }}
+              >
+                <div
+                    style={{
+                      width: '42px',
+                      height: '42px',
+                      borderRadius: '12px',
+                      background: '#dbeafe',
+                      color: '#1d4ed8',
+                      display: 'flex',
+                      justifyContent: 'center',
+                      alignItems: 'center',
+                      fontWeight: 800
+                    }}
+                >
+                  01
+                </div>
+
+                <div>
+                  <h2
+                      style={{
+                        fontSize: '1.2rem',
+                        margin: 0,
+                        color: '#0f172a'
+                      }}
+                  >
+                    Clinical Details
+                  </h2>
+
+                  <p
+                      style={{
+                        margin: '0.2rem 0 0',
+                        color: '#64748b',
+                        fontSize: '0.8rem'
+                      }}
+                  >
+                    Select the patient and review the
+                    prescribing dentist.
+                  </p>
+                </div>
+              </div>
+
+              <div className="grid-2">
+                {/* Patient */}
+                <div className="form-group">
+                  <label htmlFor="patientId">
+                    Patient ID{' '}
+                    <span style={{ color: '#dc2626' }}>
+                    *
+                  </span>
+                  </label>
+
+                  <input
+                      id="patientId"
+                      name="patientId"
+                      type="number"
+                      min="1"
+                      placeholder="Enter patient user ID (e.g. 1)"
+                      value={formData.patientId}
+                      onChange={handleChange}
+                      disabled={submitting}
+                      className={
+                        errors.patientId ? 'has-error' : ''
+                      }
+                      required
+                  />
+
+                  {errors.patientId && (
+                      <span className="field-error">
+                    {errors.patientId}
+                  </span>
+                  )}
+
+                  <span className="form-help">
+                  Must reference a registered user with
+                  PATIENT role.
+                </span>
+                </div>
+
+                {/* Dentist */}
+                <div className="form-group">
+                  <label htmlFor="dentistId">
+                    Prescribing Dentist ID{' '}
+                    <span style={{ color: '#dc2626' }}>
+                    *
+                  </span>
+                  </label>
+
+                  <input
+                      id="dentistId"
+                      name="dentistId"
+                      type="number"
+                      min="1"
+                      placeholder="Enter dentist user ID (e.g. 2)"
+                      value={formData.dentistId}
+                      onChange={handleChange}
+                      readOnly={user?.role === 'DENTIST'}
+                      disabled={submitting}
+                      className={
+                        errors.dentistId ? 'has-error' : ''
+                      }
+                      required
+                  />
+
+                  {errors.dentistId && (
+                      <span className="field-error">
+                    {errors.dentistId}
+                  </span>
+                  )}
+
+                  {user?.role === 'DENTIST' ? (
+                      <span
+                          className="form-help"
+                          style={{
+                            color: '#15803d',
+                            display: 'inline-flex',
+                            alignItems: 'center',
+                            gap: '0.35rem',
+                            fontWeight: 500
+                          }}
+                      >
+                    ✓ Logged-in dentist: {user.firstName}{' '}
+                        {user.lastName} — ID {user.id}. This
+                    field is read-only.
+                  </span>
+                  ) : (
+                      <span className="form-help">
+                    Must reference a registered user with
+                    DENTIST role.
+                  </span>
+                  )}
+                </div>
+              </div>
+
+              {/* Notes */}
+              <div
+                  className="form-group"
+                  style={{
+                    marginBottom: 0,
+                    marginTop: '0.5rem'
+                  }}
+              >
+                <label htmlFor="notes">
+                  Clinical Notes / Diagnosis Summary
+                  <span
+                      style={{
+                        color: '#94a3b8',
+                        fontWeight: 400,
+                        marginLeft: '0.4rem'
+                      }}
+                  >
+                  Optional
+                </span>
+                </label>
+
+                <textarea
+                    id="notes"
+                    name="notes"
+                    rows={4}
+                    placeholder="e.g. Post-extraction pain management, acute apical abscess, prophylaxis..."
+                    value={formData.notes}
+                    onChange={handleChange}
+                    disabled={submitting}
+                    className={
+                      errors.notes ? 'has-error' : ''
+                    }
+                    style={{
+                      resize: 'vertical',
+                      minHeight: '105px'
+                    }}
+                />
+
+                {errors.notes && (
+                    <span className="field-error">
+                  {errors.notes}
+                </span>
+                )}
+
+                <div
+                    style={{
+                      display: 'flex',
+                      justifyContent: 'space-between',
+                      gap: '1rem',
+                      flexWrap: 'wrap'
+                    }}
+                >
+                <span className="form-help">
+                  Add diagnosis or treatment notes if
+                  required.
+                </span>
+
+                  <span className="form-help">
+                  {formData.notes.length} / 2000
+                </span>
+                </div>
+              </div>
+            </div>
           </div>
 
+          {/* Medicine section */}
+          <div
+              className="prescription-card"
+              style={{
+                padding: 0,
+                overflow: 'hidden',
+                border: '1px solid #ccfbf1',
+                boxShadow:
+                    '0 8px 28px rgba(13, 148, 136, 0.07)'
+              }}
+          >
+            <div
+                style={{
+                  height: '4px',
+                  background:
+                      'linear-gradient(90deg, #0d9488, #22c55e)'
+                }}
+            />
+
+            <div style={{ padding: '1.5rem' }}>
+              <div
+                  style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '0.9rem',
+                    marginBottom: '1rem'
+                  }}
+              >
+                <div
+                    style={{
+                      width: '42px',
+                      height: '42px',
+                      borderRadius: '12px',
+                      background: '#ccfbf1',
+                      color: '#0f766e',
+                      display: 'flex',
+                      justifyContent: 'center',
+                      alignItems: 'center',
+                      fontWeight: 800
+                    }}
+                >
+                  02
+                </div>
+
+                <div>
+                  <h2
+                      style={{
+                        fontSize: '1.2rem',
+                        margin: 0,
+                        color: '#0f172a'
+                      }}
+                  >
+                    Medication Order
+                  </h2>
+
+                  <p
+                      style={{
+                        margin: '0.2rem 0 0',
+                        color: '#64748b',
+                        fontSize: '0.8rem'
+                      }}
+                  >
+                    Enter medicine, dosage, frequency,
+                    duration and quantity.
+                  </p>
+                </div>
+              </div>
+
+              <PrescriptionItemEditor
+                  items={formData.items}
+                  onChange={handleItemsChange}
+                  errors={errors}
+                  disabled={submitting}
+              />
+            </div>
+          </div>
+
+          {/* Bottom action area */}
           <div
               style={{
                 display: 'flex',
-                justifyContent: 'flex-end',
+                alignItems: 'center',
+                justifyContent: 'space-between',
                 gap: '1rem',
-                marginTop: '1.5rem'
+                flexWrap: 'wrap',
+                marginTop: '1.5rem',
+                padding: '1rem 1.25rem',
+                background: '#ffffff',
+                border: '1px solid #e2e8f0',
+                borderRadius: '10px',
+                boxShadow:
+                    '0 6px 20px rgba(15, 23, 42, 0.05)'
               }}
           >
-            <Link
-                to="/prescriptions"
-                className="btn btn-secondary"
-            >
-              Cancel
-            </Link>
+            <div>
+              <strong
+                  style={{
+                    display: 'block',
+                    color: '#0f172a',
+                    fontSize: '0.9rem'
+                  }}
+              >
+                Ready to save?
+              </strong>
 
-            <button
-                type="submit"
-                className="btn btn-primary"
-                id="btn-save-draft"
-                disabled={submitting}
+              <span
+                  style={{
+                    color: '#64748b',
+                    fontSize: '0.76rem'
+                  }}
+              >
+              The prescription will be saved as a DRAFT
+              and can be edited before finalization.
+            </span>
+            </div>
+
+            <div
+                style={{
+                  display: 'flex',
+                  gap: '0.75rem',
+                  alignItems: 'center'
+                }}
             >
-              {submitting ? 'Saving Draft...' : 'Save as Draft'}
-            </button>
+              <Link
+                  to="/prescriptions"
+                  className="btn btn-secondary"
+              >
+                Cancel
+              </Link>
+
+              <button
+                  type="submit"
+                  className="btn btn-primary"
+                  id="btn-save-draft"
+                  disabled={submitting}
+                  style={{
+                    minWidth: '145px',
+                    boxShadow:
+                        '0 5px 14px rgba(37, 99, 235, 0.2)'
+                  }}
+              >
+                {submitting
+                    ? 'Saving Draft...'
+                    : 'Save as Draft'}
+              </button>
+            </div>
           </div>
         </form>
       </div>
