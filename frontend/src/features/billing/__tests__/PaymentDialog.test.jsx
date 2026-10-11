@@ -614,6 +614,9 @@ describe('PaymentDialog & Payment Recording (UI-BIL-03)', () => {
       expect(screen.getByTestId('invoice-action-success')).toHaveTextContent(
         /payment recorded successfully/i
       );
+      const printBtn = screen.getByTestId('print-receipt-btn');
+      expect(printBtn).toBeInTheDocument();
+      expect(printBtn).toHaveAttribute('href', '/billing/payments/5/receipt?autoprint=true');
 
       // 33. Dialog closes
       expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
@@ -630,6 +633,50 @@ describe('PaymentDialog & Payment Recording (UI-BIL-03)', () => {
 
       // 31. PAID refresh removes Record Payment button
       expect(screen.queryByRole('button', { name: /record payment/i })).not.toBeInTheDocument();
+    });
+
+    it('33b. dismiss button in success feedback clears banner and print option', async () => {
+      billingApi.getInvoice.mockResolvedValueOnce(sampleUnpaidInvoice);
+      billingApi.recordPayment.mockResolvedValueOnce({
+        id: 5,
+        invoiceId: 10,
+        amount: 150.00,
+        paymentMethod: PaymentMethod.CARD,
+        status: 'RECORDED'
+      });
+      billingApi.getInvoice.mockResolvedValueOnce({
+        ...sampleUnpaidInvoice,
+        paidAmount: 150.00,
+        balanceAmount: 0.00,
+        status: InvoiceStatus.PAID
+      });
+
+      render(
+        <MemoryRouter initialEntries={['/billing/invoices/10']}>
+          <Routes>
+            <Route path="/billing/invoices/:id" element={<InvoiceDetailPage />} />
+          </Routes>
+        </MemoryRouter>
+      );
+
+      await waitFor(() => {
+        expect(screen.getByRole('button', { name: /record payment/i })).toBeInTheDocument();
+      });
+
+      fireEvent.click(screen.getByRole('button', { name: /record payment/i }));
+      fireEvent.change(screen.getByLabelText(/payment amount/i), { target: { value: '150.00' } });
+      fireEvent.change(screen.getByLabelText(/payment method/i), {
+        target: { value: PaymentMethod.CARD }
+      });
+      fireEvent.click(screen.getByRole('button', { name: /^record payment$/i }));
+
+      await waitFor(() => {
+        expect(screen.getByTestId('print-receipt-btn')).toBeInTheDocument();
+      });
+
+      fireEvent.click(screen.getByRole('button', { name: /dismiss/i }));
+      expect(screen.queryByTestId('invoice-action-success')).not.toBeInTheDocument();
+      expect(screen.queryByTestId('print-receipt-btn')).not.toBeInTheDocument();
     });
   });
 

@@ -693,6 +693,8 @@ body:has(.billing-container),
   .no-print,
   .billing-nav,
   .billing-actions,
+  .table-actions,
+  .invoice-bottom-actions,
   button,
   nav,
   header {

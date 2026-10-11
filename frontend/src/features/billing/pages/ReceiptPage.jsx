@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Link, useParams } from 'react-router-dom';
+import { Link, useParams, useLocation } from 'react-router-dom';
 import { getPaymentReceipt, BillingApiError } from '../api/billingApi';
 import '../billing.css';
 
@@ -32,6 +32,7 @@ function formatDateTime(val) {
  */
 export default function ReceiptPage() {
   const { paymentId } = useParams();
+  const location = useLocation();
   const [receipt, setReceipt] = useState(null);
   const [loading, setLoading] = useState(true);
   const [notFound, setNotFound] = useState(false);
@@ -47,6 +48,14 @@ export default function ReceiptPage() {
       .then((data) => {
         if (isMounted) {
           setReceipt(data);
+          const searchParams = new URLSearchParams(location.search);
+          if (searchParams.get('autoprint') === 'true' && typeof window !== 'undefined' && window.print) {
+            setTimeout(() => {
+              if (window.print) {
+                window.print();
+              }
+            }, 300);
+          }
         }
       })
       .catch((err) => {
