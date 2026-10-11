@@ -913,7 +913,7 @@ describe('InvoiceDetailPage (UI-BIL-03)', () => {
   // PRINT INVOICE ACTION
   // ==========================================
   describe('PRINT INVOICE ACTION', () => {
-    it('33a. PAID invoice displays Print Invoice button in header and bottom actions', async () => {
+    it('33a. PAID invoice displays Print Invoice button in bottom actions and keeps header clean', async () => {
       billingApi.getInvoice.mockResolvedValueOnce(samplePaidInvoice);
 
       render(
@@ -925,12 +925,12 @@ describe('InvoiceDetailPage (UI-BIL-03)', () => {
       );
 
       await waitFor(() => {
-        expect(screen.getByTestId('print-invoice-btn')).toBeInTheDocument();
         expect(screen.getByTestId('print-invoice-bottom-btn')).toBeInTheDocument();
       });
+      expect(screen.queryByTestId('print-invoice-btn')).not.toBeInTheDocument();
     });
 
-    it('33b. clicking Print Invoice triggers window.print()', async () => {
+    it('33b. clicking bottom Print Invoice triggers window.print()', async () => {
       billingApi.getInvoice.mockResolvedValueOnce(samplePaidInvoice);
       const printSpy = vi.spyOn(window, 'print').mockImplementation(() => {});
 
@@ -943,14 +943,11 @@ describe('InvoiceDetailPage (UI-BIL-03)', () => {
       );
 
       await waitFor(() => {
-        expect(screen.getByTestId('print-invoice-btn')).toBeInTheDocument();
+        expect(screen.getByTestId('print-invoice-bottom-btn')).toBeInTheDocument();
       });
 
-      fireEvent.click(screen.getByTestId('print-invoice-btn'));
-      expect(printSpy).toHaveBeenCalledTimes(1);
-
       fireEvent.click(screen.getByTestId('print-invoice-bottom-btn'));
-      expect(printSpy).toHaveBeenCalledTimes(2);
+      expect(printSpy).toHaveBeenCalledTimes(1);
 
       printSpy.mockRestore();
     });

@@ -311,17 +311,6 @@ export default function InvoiceDetailPage() {
                 {actionSubmitting && isCancelling ? 'Cancelling...' : 'Cancel Invoice'}
               </button>
             )}
-            {canPrint && (
-              <button
-                type="button"
-                className={invoice.status === 'PAID' ? 'btn btn-primary' : 'btn btn-secondary'}
-                onClick={handlePrint}
-                aria-label="Print Invoice"
-                data-testid="print-invoice-btn"
-              >
-                <span aria-hidden="true">🖨️</span> Print Invoice
-              </button>
-            )}
           </div>
         )}
       </div>
