@@ -1,7 +1,23 @@
 import React from 'react';
-import { render, screen, fireEvent, waitFor } from '@testing-library/react';
-import { MemoryRouter, Routes, Route } from 'react-router-dom';
-import { describe, it, expect, vi, beforeEach } from 'vitest';
+import {
+  render,
+  screen,
+  fireEvent,
+  waitFor
+} from '@testing-library/react';
+import {
+  MemoryRouter,
+  Routes,
+  Route
+} from 'react-router-dom';
+import {
+  describe,
+  it,
+  expect,
+  vi,
+  beforeEach
+} from 'vitest';
+
 import { AuthProvider } from '../../auth/context/AuthContext';
 import PrescriptionStatusBadge from '../components/PrescriptionStatusBadge';
 import PrescriptionListPage from '../pages/PrescriptionListPage';
@@ -14,6 +30,7 @@ import * as authApi from '../../auth/api/authApi';
 vi.mock('../api/prescriptionApi', () => ({
   getPrescriptions: vi.fn(),
   getPrescriptionById: vi.fn(),
+  getPatientSafety: vi.fn(),
   createPrescription: vi.fn(),
   updatePrescription: vi.fn(),
   finalizePrescription: vi.fn(),
@@ -29,24 +46,40 @@ vi.mock('../../auth/api/authApi', () => ({
 
 describe('PrescriptionStatusBadge', () => {
   it('renders Draft badge correctly', () => {
-    render(<PrescriptionStatusBadge status="DRAFT" />);
+    render(
+        <PrescriptionStatusBadge status="DRAFT" />
+    );
+
     const badge = screen.getByRole('status');
+
     expect(badge).toHaveTextContent('Draft');
     expect(badge.className).toContain('badge-draft');
   });
 
   it('renders Finalized badge correctly', () => {
-    render(<PrescriptionStatusBadge status="FINALIZED" />);
+    render(
+        <PrescriptionStatusBadge status="FINALIZED" />
+    );
+
     const badge = screen.getByRole('status');
+
     expect(badge).toHaveTextContent('Finalized');
-    expect(badge.className).toContain('badge-finalized');
+    expect(badge.className).toContain(
+        'badge-finalized'
+    );
   });
 
   it('renders Cancelled badge correctly', () => {
-    render(<PrescriptionStatusBadge status="CANCELLED" />);
+    render(
+        <PrescriptionStatusBadge status="CANCELLED" />
+    );
+
     const badge = screen.getByRole('status');
+
     expect(badge).toHaveTextContent('Cancelled');
-    expect(badge.className).toContain('badge-cancelled');
+    expect(badge.className).toContain(
+        'badge-cancelled'
+    );
   });
 });
 
@@ -80,7 +113,9 @@ describe('PrescriptionListPage', () => {
 
     await waitFor(() => {
       expect(
-          screen.getByText(/No prescriptions recorded yet/i)
+          screen.getByText(
+              /No prescriptions recorded yet/i
+          )
       ).toBeInTheDocument();
     });
   });
@@ -125,8 +160,13 @@ describe('PrescriptionListPage', () => {
     );
 
     await waitFor(() => {
-      expect(screen.getByText('Jane Doe')).toBeInTheDocument();
-      expect(screen.getByText('Bob Miller')).toBeInTheDocument();
+      expect(
+          screen.getByText('Jane Doe')
+      ).toBeInTheDocument();
+
+      expect(
+          screen.getByText('Bob Miller')
+      ).toBeInTheDocument();
 
       expect(
           screen.getByRole('status', {
@@ -153,6 +193,14 @@ describe('PrescriptionCreatePage', () => {
       lastName: 'Surgeon',
       role: 'DENTIST'
     });
+
+    prescriptionApi.getPatientSafety.mockResolvedValue({
+      userId: 1,
+      patientName: 'Alice Patient',
+      allergies: null,
+      medicalProfileAvailable: false,
+      hasRecordedAllergies: false
+    });
   });
 
   it('validates required fields and blocks submission when invalid', async () => {
@@ -164,31 +212,44 @@ describe('PrescriptionCreatePage', () => {
         </MemoryRouter>
     );
 
-    const submitBtn = screen.getByRole('button', {
-      name: /Save as Draft/i
-    });
+    const submitBtn = screen.getByRole(
+        'button',
+        {
+          name: /Save as Draft/i
+        }
+    );
 
     fireEvent.click(submitBtn);
 
     await waitFor(() => {
       expect(
-          screen.getByText(/Patient ID is required/i)
+          screen.getByText(
+              /Patient ID is required/i
+          )
       ).toBeInTheDocument();
 
       expect(
-          screen.getByText(/Medicine name is required/i)
+          screen.getByText(
+              /Medicine name is required/i
+          )
       ).toBeInTheDocument();
 
       expect(
-          screen.getByText(/Dosage is required/i)
+          screen.getByText(
+              /Dosage is required/i
+          )
       ).toBeInTheDocument();
 
       expect(
-          screen.getByText(/Frequency is required/i)
+          screen.getByText(
+              /Frequency is required/i
+          )
       ).toBeInTheDocument();
 
       expect(
-          screen.getByText(/Duration is required/i)
+          screen.getByText(
+              /Duration is required/i
+          )
       ).toBeInTheDocument();
     });
 
@@ -197,23 +258,125 @@ describe('PrescriptionCreatePage', () => {
     ).not.toHaveBeenCalled();
   });
 
+  it('loads and displays recorded allergy warning for patient', async () => {
+    prescriptionApi.getPatientSafety.mockResolvedValueOnce({
+      userId: 3,
+      patientName: 'Gayan Bandara',
+      allergies: 'Penicillin',
+      medicalProfileAvailable: true,
+      hasRecordedAllergies: true
+    });
+
+    render(
+        <MemoryRouter>
+          <AuthProvider>
+            <PrescriptionCreatePage />
+          </AuthProvider>
+        </MemoryRouter>
+    );
+
+    fireEvent.change(
+        screen.getByLabelText(/Patient ID/i),
+        {
+          target: {
+            value: '3'
+          }
+        }
+    );
+
+    await waitFor(() => {
+      expect(
+          prescriptionApi.getPatientSafety
+      ).toHaveBeenCalledWith(3);
+    });
+
+    await waitFor(() => {
+      expect(
+          screen.getByTestId('allergy-warning')
+      ).toBeInTheDocument();
+
+      expect(
+          screen.getByText(
+              /Recorded Allergy Warning/i
+          )
+      ).toBeInTheDocument();
+
+      expect(
+          screen.getByText('Penicillin')
+      ).toBeInTheDocument();
+
+      expect(
+          screen.getByText(
+              /Gayan Bandara/i
+          )
+      ).toBeInTheDocument();
+    });
+  });
+
+  it('shows medical profile unavailable warning when no linked profile exists', async () => {
+    prescriptionApi.getPatientSafety.mockResolvedValueOnce({
+      userId: 3,
+      patientName: 'Gayan Bandara',
+      allergies: null,
+      medicalProfileAvailable: false,
+      hasRecordedAllergies: false
+    });
+
+    render(
+        <MemoryRouter>
+          <AuthProvider>
+            <PrescriptionCreatePage />
+          </AuthProvider>
+        </MemoryRouter>
+    );
+
+    fireEvent.change(
+        screen.getByLabelText(/Patient ID/i),
+        {
+          target: {
+            value: '3'
+          }
+        }
+    );
+
+    await waitFor(() => {
+      expect(
+          screen.getByTestId(
+              'patient-profile-unavailable'
+          )
+      ).toBeInTheDocument();
+    });
+
+    expect(
+        screen.getByText(
+            /Medical profile not available/i
+        )
+    ).toBeInTheDocument();
+  });
+
   it('submits valid prescription draft and navigates', async () => {
     prescriptionApi.createPrescription.mockResolvedValue({
       id: 99
     });
 
     render(
-        <MemoryRouter initialEntries={['/prescriptions/new']}>
+        <MemoryRouter
+            initialEntries={['/prescriptions/new']}
+        >
           <AuthProvider>
             <Routes>
               <Route
                   path="/prescriptions/new"
-                  element={<PrescriptionCreatePage />}
+                  element={
+                    <PrescriptionCreatePage />
+                  }
               />
 
               <Route
                   path="/prescriptions/:id"
-                  element={<div>Detail Page 99</div>}
+                  element={
+                    <div>Detail Page 99</div>
+                  }
               />
             </Routes>
           </AuthProvider>
@@ -230,7 +393,9 @@ describe('PrescriptionCreatePage', () => {
     );
 
     fireEvent.change(
-        screen.getByLabelText(/Prescribing Dentist ID/i),
+        screen.getByLabelText(
+            /Prescribing Dentist ID/i
+        ),
         {
           target: {
             value: '2'
@@ -283,9 +448,12 @@ describe('PrescriptionCreatePage', () => {
         }
     );
 
-    const submitBtn = screen.getByRole('button', {
-      name: /Save as Draft/i
-    });
+    const submitBtn = screen.getByRole(
+        'button',
+        {
+          name: /Save as Draft/i
+        }
+    );
 
     fireEvent.click(submitBtn);
 
@@ -350,12 +518,16 @@ describe('PrescriptionDetailPage', () => {
     });
 
     render(
-        <MemoryRouter initialEntries={['/prescriptions/10']}>
+        <MemoryRouter
+            initialEntries={['/prescriptions/10']}
+        >
           <AuthProvider>
             <Routes>
               <Route
                   path="/prescriptions/:id"
-                  element={<PrescriptionDetailPage />}
+                  element={
+                    <PrescriptionDetailPage />
+                  }
               />
             </Routes>
           </AuthProvider>
@@ -364,7 +536,9 @@ describe('PrescriptionDetailPage', () => {
 
     await waitFor(() => {
       expect(
-          screen.getByText(/Prescription #10/i)
+          screen.getByText(
+              /Prescription #10/i
+          )
       ).toBeInTheDocument();
 
       expect(
@@ -416,19 +590,26 @@ describe('PrescriptionDetailPage', () => {
       patientId: 1,
       dentistId: 2,
       status: 'FINALIZED',
-      finalizedAt: '2026-09-14T01:10:00',
-      createdAt: '2026-09-14T01:00:00',
-      updatedAt: '2026-09-14T01:10:00',
+      finalizedAt:
+          '2026-09-14T01:10:00',
+      createdAt:
+          '2026-09-14T01:00:00',
+      updatedAt:
+          '2026-09-14T01:10:00',
       items: []
     });
 
     render(
-        <MemoryRouter initialEntries={['/prescriptions/10']}>
+        <MemoryRouter
+            initialEntries={['/prescriptions/10']}
+        >
           <AuthProvider>
             <Routes>
               <Route
                   path="/prescriptions/:id"
-                  element={<PrescriptionDetailPage />}
+                  element={
+                    <PrescriptionDetailPage />
+                  }
               />
             </Routes>
           </AuthProvider>
@@ -449,9 +630,10 @@ describe('PrescriptionDetailPage', () => {
         })
     );
 
-    // Modal appears
     expect(
-        screen.getByText(/Finalize Prescription #10\?/i)
+        screen.getByText(
+            /Finalize Prescription #10\?/i
+        )
     ).toBeInTheDocument();
 
     fireEvent.click(
@@ -463,10 +645,15 @@ describe('PrescriptionDetailPage', () => {
     await waitFor(() => {
       expect(
           prescriptionApi.finalizePrescription
-      ).toHaveBeenCalledWith('10', '2');
+      ).toHaveBeenCalledWith(
+          '10',
+          '2'
+      );
 
       expect(
-          screen.getByText(/Prescription has been finalized/i)
+          screen.getByText(
+              /Prescription has been finalized/i
+          )
       ).toBeInTheDocument();
     });
   });
@@ -477,19 +664,26 @@ describe('PrescriptionDetailPage', () => {
       patientId: 1,
       dentistId: 2,
       status: 'FINALIZED',
-      finalizedAt: '2026-09-14T01:00:00',
-      createdAt: '2026-09-14T01:00:00',
-      updatedAt: '2026-09-14T01:00:00',
+      finalizedAt:
+          '2026-09-14T01:00:00',
+      createdAt:
+          '2026-09-14T01:00:00',
+      updatedAt:
+          '2026-09-14T01:00:00',
       items: []
     });
 
     render(
-        <MemoryRouter initialEntries={['/prescriptions/15']}>
+        <MemoryRouter
+            initialEntries={['/prescriptions/15']}
+        >
           <AuthProvider>
             <Routes>
               <Route
                   path="/prescriptions/:id"
-                  element={<PrescriptionDetailPage />}
+                  element={
+                    <PrescriptionDetailPage />
+                  }
               />
             </Routes>
           </AuthProvider>
@@ -498,7 +692,9 @@ describe('PrescriptionDetailPage', () => {
 
     await waitFor(() => {
       expect(
-          screen.getByText(/Prescription #15/i)
+          screen.getByText(
+              /Prescription #15/i
+          )
       ).toBeInTheDocument();
 
       expect(
@@ -527,19 +723,25 @@ describe('PrescriptionEditPage', () => {
       patientId: 1,
       dentistId: 2,
       status: 'FINALIZED',
-      createdAt: '2026-09-14T01:00:00',
-      updatedAt: '2026-09-14T01:00:00',
+      createdAt:
+          '2026-09-14T01:00:00',
+      updatedAt:
+          '2026-09-14T01:00:00',
       items: []
     });
 
     render(
         <MemoryRouter
-            initialEntries={['/prescriptions/20/edit']}
+            initialEntries={[
+              '/prescriptions/20/edit'
+            ]}
         >
           <Routes>
             <Route
                 path="/prescriptions/:id/edit"
-                element={<PrescriptionEditPage />}
+                element={
+                  <PrescriptionEditPage />
+                }
             />
           </Routes>
         </MemoryRouter>
