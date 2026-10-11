@@ -96,7 +96,7 @@ async function request(endpoint, options = {}) {
 
   /**
    * Spring Security requires a CSRF token for requests
-   * that change data, such as POST and PUT.
+   * that change data, such as POST, PUT and DELETE.
    */
   const method = (config.method || 'GET').toUpperCase();
 
@@ -361,6 +361,20 @@ export async function updatePrescription(id, payload) {
     method: 'PUT',
     body
   });
+}
+
+/**
+ * Permanently delete a DRAFT prescription.
+ *
+ * FINALIZED and CANCELLED prescriptions are protected by the backend.
+ */
+export async function deleteDraftPrescription(id) {
+  return request(
+      `/api/prescriptions/${Number(id)}`,
+      {
+        method: 'DELETE'
+      }
+  );
 }
 
 /**

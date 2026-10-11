@@ -225,6 +225,26 @@ public class PrescriptionServiceImpl implements PrescriptionService {
 
     @Override
     @Transactional
+    public void deleteDraftPrescription(Long id) {
+
+        Prescription prescription =
+                prescriptionRepository
+                        .findByIdWithItems(id)
+                        .orElseThrow(
+                                () -> new PrescriptionNotFoundException(id)
+                        );
+
+        if (prescription.getStatus() != PrescriptionStatus.DRAFT) {
+            throw new PrescriptionStateException(
+                    "Only DRAFT prescriptions can be deleted."
+            );
+        }
+
+        prescriptionRepository.delete(prescription);
+    }
+
+    @Override
+    @Transactional
     public PrescriptionResponse finalizePrescription(
             Long id,
             Long finalizingDentistId

@@ -35,6 +35,8 @@ public interface PrescriptionService {
             UpdatePrescriptionRequest request
     );
 
+    void deleteDraftPrescription(Long id);
+
     PrescriptionResponse finalizePrescription(
             Long id,
             Long finalizingDentistId

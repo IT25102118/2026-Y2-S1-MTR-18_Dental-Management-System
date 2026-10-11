@@ -14,6 +14,7 @@ import {
   getPatientSafety,
   createPrescription,
   updatePrescription,
+  deleteDraftPrescription,
   finalizePrescription,
   cancelPrescription,
   PrescriptionApiError,
@@ -329,6 +330,35 @@ describe('prescriptionApi client', () => {
       );
 
       expect(res.notes).toBe('Updated note');
+    });
+  });
+
+  describe('deleteDraftPrescription', () => {
+    it('sends DELETE request with CSRF token', async () => {
+      global.fetch.mockResolvedValueOnce({
+        ok: true,
+        status: 204,
+        headers: new Headers()
+      });
+
+      const res = await deleteDraftPrescription(5);
+
+      expect(getCsrfToken).toHaveBeenCalled();
+
+      expect(global.fetch).toHaveBeenCalledWith(
+          '/api/prescriptions/5',
+          expect.objectContaining({
+            method: 'DELETE',
+            credentials: 'same-origin',
+
+            headers: expect.objectContaining({
+              Accept: 'application/json',
+              'X-XSRF-TOKEN': 'test-csrf-token'
+            })
+          })
+      );
+
+      expect(res).toBeNull();
     });
   });
 
