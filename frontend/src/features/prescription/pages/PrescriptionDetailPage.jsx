@@ -1,9 +1,10 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { useParams, Link, useLocation } from 'react-router-dom';
+import { useParams, Link, useLocation, useNavigate } from 'react-router-dom';
 import {
     getPrescriptionById,
     finalizePrescription,
-    cancelPrescription
+    cancelPrescription,
+    deleteDraftPrescription
 } from '../api/prescriptionApi';
 import { useAuth } from '../../auth/context/AuthContext';
 import PrescriptionStatusBadge from '../components/PrescriptionStatusBadge';
@@ -20,6 +21,7 @@ import '../prescription.css';
 export default function PrescriptionDetailPage() {
     const { id } = useParams();
     const location = useLocation();
+    const navigate = useNavigate();
     const { user } = useAuth();
 
     const [prescription, setPrescription] = useState(null);
@@ -33,6 +35,7 @@ export default function PrescriptionDetailPage() {
 
     const [showFinalizeModal, setShowFinalizeModal] = useState(false);
     const [finalizingDentistId, setFinalizingDentistId] = useState('');
+    const [showDeleteModal, setShowDeleteModal] = useState(false);
     const [showCancelModal, setShowCancelModal] = useState(false);
 
     const fetchPrescription = useCallback(async () => {
@@ -100,6 +103,29 @@ export default function PrescriptionDetailPage() {
         } catch (err) {
             setActionError(
                 err.message || 'Failed to finalize prescription.'
+            );
+        } finally {
+            setActionLoading(false);
+        }
+    };
+
+    const handleConfirmDelete = async () => {
+        setActionLoading(true);
+        setActionError(null);
+
+        try {
+            await deleteDraftPrescription(id);
+            setShowDeleteModal(false);
+
+            navigate('/prescriptions', {
+                replace: true,
+                state: {
+                    message: `Prescription #${id} was permanently deleted.`
+                }
+            });
+        } catch (err) {
+            setActionError(
+                err.message || 'Failed to delete draft prescription.'
             );
         } finally {
             setActionLoading(false);
@@ -335,6 +361,18 @@ export default function PrescriptionDetailPage() {
                                     }
                                 >
                                     Finalize Prescription
+                                </button>
+
+                                <button
+                                    type="button"
+                                    className="btn btn-danger"
+                                    onClick={() => {
+                                        setActionError(null);
+                                        setShowDeleteModal(true);
+                                    }}
+                                    disabled={actionLoading}
+                                >
+                                    Delete Draft
                                 </button>
 
                                 <button
@@ -1112,6 +1150,117 @@ export default function PrescriptionDetailPage() {
                                 </button>
                             </div>
                         </form>
+                    </div>
+                </div>
+            )}
+
+            {/* Delete Draft Modal */}
+            {showDeleteModal && (
+                <div
+                    role="dialog"
+                    aria-modal="true"
+                    aria-labelledby="delete-dialog-title"
+                    style={{
+                        position: 'fixed',
+                        inset: 0,
+                        backgroundColor: 'rgba(15, 23, 42, 0.55)',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        zIndex: 1000,
+                        padding: '1rem'
+                    }}
+                >
+                    <div
+                        style={{
+                            backgroundColor: '#ffffff',
+                            borderRadius: '14px',
+                            padding: '1.5rem',
+                            maxWidth: '480px',
+                            width: '100%',
+                            boxShadow:
+                                '0 24px 55px rgba(15, 23, 42, 0.2)'
+                        }}
+                    >
+                        <div
+                            style={{
+                                width: '46px',
+                                height: '46px',
+                                borderRadius: '12px',
+                                background: '#fee2e2',
+                                color: '#b91c1c',
+                                display: 'flex',
+                                alignItems: 'center',
+                                justifyContent: 'center',
+                                fontSize: '1.2rem',
+                                fontWeight: 800,
+                                marginBottom: '1rem'
+                            }}
+                        >
+                            🗑
+                        </div>
+
+                        <h2
+                            id="delete-dialog-title"
+                            style={{
+                                marginTop: 0,
+                                color: '#991b1b',
+                                fontSize: '1.25rem'
+                            }}
+                        >
+                            Delete Draft Prescription #{prescription.id}?
+                        </h2>
+
+                        <p
+                            style={{
+                                color: '#475569',
+                                fontSize: '0.875rem',
+                                lineHeight: 1.6
+                            }}
+                        >
+                            This permanently deletes this <strong>DRAFT</strong>{' '}
+                            prescription and its medicine items from the database.
+                            This action cannot be undone.
+                        </p>
+
+                        {actionError && (
+                            <div
+                                className="error-alert"
+                                style={{ marginBottom: '1rem' }}
+                            >
+                                {actionError}
+                            </div>
+                        )}
+
+                        <div
+                            style={{
+                                display: 'flex',
+                                justifyContent: 'flex-end',
+                                gap: '0.75rem',
+                                marginTop: '1.5rem'
+                            }}
+                        >
+                            <button
+                                type="button"
+                                className="btn btn-secondary"
+                                onClick={() => setShowDeleteModal(false)}
+                                disabled={actionLoading}
+                            >
+                                No, Keep Draft
+                            </button>
+
+                            <button
+                                type="button"
+                                className="btn btn-danger"
+                                id="btn-confirm-delete"
+                                onClick={handleConfirmDelete}
+                                disabled={actionLoading}
+                            >
+                                {actionLoading
+                                    ? 'Deleting...'
+                                    : 'Yes, Delete Draft'}
+                            </button>
+                        </div>
                     </div>
                 </div>
             )}
