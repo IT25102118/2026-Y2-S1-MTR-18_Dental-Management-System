@@ -695,6 +695,25 @@ body:has(.billing-container),
 }
 
 @media print {
+  :root:has(.billing-container),
+  body:has(.billing-container),
+  .app-layout,
+  .app-content-wrapper,
+  .app-content-wrapper:has(.billing-container) {
+    background: #ffffff !important;
+    background-image: none !important;
+    background-color: #ffffff !important;
+    background-attachment: scroll !important;
+    min-height: 0 !important;
+    height: auto !important;
+    display: block !important;
+  }
+
+  .billing-container::before {
+    display: none !important;
+    content: none !important;
+  }
+
   html,
   body {
     height: auto !important;
@@ -702,6 +721,7 @@ body:has(.billing-container),
     margin: 0 !important;
     padding: 0 !important;
     background: #ffffff !important;
+    background-image: none !important;
     color: #0f172a !important;
     font-size: 8pt !important;
     line-height: 1.2 !important;
@@ -714,6 +734,10 @@ body:has(.billing-container),
   .billing-actions,
   .table-actions,
   .invoice-bottom-actions,
+  .filter-card,
+  .active-filters-bar,
+  th.actions-col,
+  td.actions-col,
   .btn,
   button,
   nav,
@@ -724,8 +748,11 @@ body:has(.billing-container),
   .billing-container {
     max-width: 100% !important;
     width: 100% !important;
+    min-height: 0 !important;
+    height: auto !important;
     margin: 0 !important;
     padding: 0 !important;
+    background: transparent !important;
   }
 
   .billing-header {
@@ -737,7 +764,11 @@ body:has(.billing-container),
     border-bottom: 1.5px solid #0284c7 !important;
   }
 
-  .billing-header h1 {
+  .billing-header h1,
+  h1, h2, h3, h4, h5, h6 {
+    background: none !important;
+    -webkit-background-clip: border-box !important;
+    -webkit-text-fill-color: #0369a1 !important;
     font-size: 1.05rem !important;
     margin: 0 !important;
     color: #0369a1 !important;

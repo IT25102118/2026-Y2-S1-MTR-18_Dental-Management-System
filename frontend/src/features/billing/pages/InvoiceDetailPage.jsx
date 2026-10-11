@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Link, useParams } from 'react-router-dom';
+import { Link, useParams, useLocation } from 'react-router-dom';
 import { getInvoice, getInvoicePayments, issueInvoice, cancelInvoice, BillingApiError } from '../api/billingApi';
 import InvoiceStatusBadge from '../components/InvoiceStatusBadge';
 import PaymentDialog from '../components/PaymentDialog';
@@ -43,6 +43,7 @@ function formatDateTime(isoString) {
  */
 export default function InvoiceDetailPage() {
   const { id } = useParams();
+  const location = useLocation();
 
   const [invoice, setInvoice] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -89,6 +90,14 @@ export default function InvoiceDetailPage() {
         if (isMounted) {
           setInvoice(data);
           fetchPayments(data.id);
+          const searchParams = new URLSearchParams(location.search);
+          if (searchParams.get('autoprint') === 'true' && typeof window !== 'undefined' && window.print) {
+            setTimeout(() => {
+              if (window.print) {
+                window.print();
+              }
+            }, 300);
+          }
         }
       })
       .catch((err) => {
