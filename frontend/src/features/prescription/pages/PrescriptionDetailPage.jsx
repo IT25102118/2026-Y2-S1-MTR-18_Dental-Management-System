@@ -1,9 +1,9 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { useParams, Link, useLocation } from 'react-router-dom';
 import {
-  getPrescriptionById,
-  finalizePrescription,
-  cancelPrescription
+    getPrescriptionById,
+    finalizePrescription,
+    cancelPrescription
 } from '../api/prescriptionApi';
 import { useAuth } from '../../auth/context/AuthContext';
 import PrescriptionStatusBadge from '../components/PrescriptionStatusBadge';
@@ -18,1165 +18,1221 @@ import '../prescription.css';
  * with actions for editing draft, finalization, cancellation, and printing.
  */
 export default function PrescriptionDetailPage() {
-  const { id } = useParams();
-  const location = useLocation();
-  const { user } = useAuth();
+    const { id } = useParams();
+    const location = useLocation();
+    const { user } = useAuth();
 
-  const [prescription, setPrescription] = useState(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
-  const [successMessage, setSuccessMessage] = useState(
-      location.state?.message || null
-  );
-  const [actionError, setActionError] = useState(null);
-  const [actionLoading, setActionLoading] = useState(false);
+    const [prescription, setPrescription] = useState(null);
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState(null);
+    const [successMessage, setSuccessMessage] = useState(
+        location.state?.message || null
+    );
+    const [actionError, setActionError] = useState(null);
+    const [actionLoading, setActionLoading] = useState(false);
 
-  const [showFinalizeModal, setShowFinalizeModal] = useState(false);
-  const [finalizingDentistId, setFinalizingDentistId] = useState('');
-  const [showCancelModal, setShowCancelModal] = useState(false);
+    const [showFinalizeModal, setShowFinalizeModal] = useState(false);
+    const [finalizingDentistId, setFinalizingDentistId] = useState('');
+    const [showCancelModal, setShowCancelModal] = useState(false);
 
-  const fetchPrescription = useCallback(async () => {
-    setLoading(true);
-    setError(null);
+    const fetchPrescription = useCallback(async () => {
+        setLoading(true);
+        setError(null);
 
-    try {
-      const data = await getPrescriptionById(id);
-      setPrescription(data);
+        try {
+            const data = await getPrescriptionById(id);
+            setPrescription(data);
 
-      if (user?.role === 'DENTIST') {
-        setFinalizingDentistId(String(user.id));
-      } else if (data?.dentistId) {
-        setFinalizingDentistId(String(data.dentistId));
-      }
-    } catch (err) {
-      setError(err.message || `Failed to load prescription #${id}`);
-    } finally {
-      setLoading(false);
-    }
-  }, [id, user]);
+            if (user?.role === 'DENTIST') {
+                setFinalizingDentistId(String(user.id));
+            } else if (data?.dentistId) {
+                setFinalizingDentistId(String(data.dentistId));
+            }
+        } catch (err) {
+            setError(err.message || `Failed to load prescription #${id}`);
+        } finally {
+            setLoading(false);
+        }
+    }, [id, user]);
 
-  useEffect(() => {
-    fetchPrescription();
-  }, [fetchPrescription]);
+    useEffect(() => {
+        fetchPrescription();
+    }, [fetchPrescription]);
 
-  const handleOpenFinalize = () => {
-    setActionError(null);
+    const handleOpenFinalize = () => {
+        setActionError(null);
 
-    if (user?.role === 'DENTIST') {
-      setFinalizingDentistId(String(user.id));
-    } else if (prescription?.dentistId) {
-      setFinalizingDentistId(String(prescription.dentistId));
-    }
+        if (user?.role === 'DENTIST') {
+            setFinalizingDentistId(String(user.id));
+        } else if (prescription?.dentistId) {
+            setFinalizingDentistId(String(prescription.dentistId));
+        }
 
-    setShowFinalizeModal(true);
-  };
+        setShowFinalizeModal(true);
+    };
 
-  const handleConfirmFinalize = async (e) => {
-    e.preventDefault();
+    const handleConfirmFinalize = async (e) => {
+        e.preventDefault();
 
-    if (
-        !finalizingDentistId ||
-        isNaN(Number(finalizingDentistId)) ||
-        Number(finalizingDentistId) <= 0
-    ) {
-      setActionError('A valid Dentist ID is required to finalize.');
-      return;
-    }
+        if (
+            !finalizingDentistId ||
+            isNaN(Number(finalizingDentistId)) ||
+            Number(finalizingDentistId) <= 0
+        ) {
+            setActionError('A valid Dentist ID is required to finalize.');
+            return;
+        }
 
-    setActionLoading(true);
-    setActionError(null);
+        setActionLoading(true);
+        setActionError(null);
 
-    try {
-      const updated = await finalizePrescription(
-          id,
-          finalizingDentistId
-      );
+        try {
+            const updated = await finalizePrescription(
+                id,
+                finalizingDentistId
+            );
 
-      setPrescription(updated);
-      setSuccessMessage(
-          'Prescription has been finalized. It is now a permanent clinical order.'
-      );
-      setShowFinalizeModal(false);
-    } catch (err) {
-      setActionError(
-          err.message || 'Failed to finalize prescription.'
-      );
-    } finally {
-      setActionLoading(false);
-    }
-  };
+            setPrescription(updated);
+            setSuccessMessage(
+                'Prescription has been finalized. It is now a permanent clinical order.'
+            );
+            setShowFinalizeModal(false);
+        } catch (err) {
+            setActionError(
+                err.message || 'Failed to finalize prescription.'
+            );
+        } finally {
+            setActionLoading(false);
+        }
+    };
 
-  const handleConfirmCancel = async () => {
-    setActionLoading(true);
-    setActionError(null);
+    const handleConfirmCancel = async () => {
+        setActionLoading(true);
+        setActionError(null);
 
-    try {
-      const updated = await cancelPrescription(id);
+        try {
+            const updated = await cancelPrescription(id);
 
-      setPrescription(updated);
-      setSuccessMessage(
-          'Prescription was cancelled. Historical record has been preserved.'
-      );
-      setShowCancelModal(false);
-    } catch (err) {
-      setActionError(
-          err.message || 'Failed to cancel prescription.'
-      );
-    } finally {
-      setActionLoading(false);
-    }
-  };
+            setPrescription(updated);
+            setSuccessMessage(
+                'Prescription was cancelled. Historical record has been preserved.'
+            );
+            setShowCancelModal(false);
+        } catch (err) {
+            setActionError(
+                err.message || 'Failed to cancel prescription.'
+            );
+        } finally {
+            setActionLoading(false);
+        }
+    };
 
     const handlePrint = () => {
         printPrescriptionRecord(prescription);
     };
 
-  if (loading) {
-    return (
-        <div className="prescription-container">
-          <PrescriptionNav />
+    if (loading) {
+        return (
+            <div className="prescription-container">
+                <PrescriptionNav />
 
-          <div className="loading-state" role="status">
-            Loading prescription #{id}...
-          </div>
-        </div>
-    );
-  }
-
-  if (error || !prescription) {
-    return (
-        <div className="prescription-container">
-          <PrescriptionNav />
-
-          <div className="error-alert" role="alert">
-            <h2>Prescription Not Found</h2>
-
-            <p>
-              {error ||
-                  `Prescription #${id} does not exist.`}
-            </p>
-
-            <div>
-              <Link
-                  to="/prescriptions"
-                  className="btn btn-secondary btn-sm"
-              >
-                ← Return to Prescriptions List
-              </Link>
-            </div>
-          </div>
-        </div>
-    );
-  }
-
-  const isDraft = prescription.status === 'DRAFT';
-  const isFinalized = prescription.status === 'FINALIZED';
-  const isCancelled = prescription.status === 'CANCELLED';
-  const isDentist = user?.role === 'DENTIST';
-
-  const statusTheme = isDraft
-      ? {
-        border: '#f59e0b',
-        light: '#fffbeb',
-        soft: '#fef3c7',
-        text: '#b45309'
-      }
-      : isFinalized
-          ? {
-            border: '#22c55e',
-            light: '#f0fdf4',
-            soft: '#dcfce7',
-            text: '#15803d'
-          }
-          : {
-            border: '#ef4444',
-            light: '#fff7f7',
-            soft: '#fee2e2',
-            text: '#b91c1c'
-          };
-
-  return (
-      <div className="prescription-container">
-        <div className="no-print">
-          <PrescriptionNav />
-        </div>
-
-        <PrescriptionPrintView prescription={prescription} />
-
-        {/* Main Prescription Header */}
-        <div
-            className="prescription-card"
-            style={{
-              padding: 0,
-              overflow: 'hidden',
-              border: `1px solid ${statusTheme.border}35`,
-              boxShadow:
-                  '0 10px 30px rgba(15, 23, 42, 0.07)',
-              marginBottom: '1.25rem'
-            }}
-        >
-          <div
-              style={{
-                height: '5px',
-                background: statusTheme.border
-              }}
-          />
-
-          <div
-              style={{
-                padding: '1.5rem',
-                display: 'flex',
-                justifyContent: 'space-between',
-                alignItems: 'center',
-                gap: '1.25rem',
-                flexWrap: 'wrap'
-              }}
-          >
-            <div>
-              <div
-                  style={{
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: '0.75rem',
-                    flexWrap: 'wrap'
-                  }}
-              >
-                <div
-                    style={{
-                      width: '46px',
-                      height: '46px',
-                      borderRadius: '13px',
-                      background: statusTheme.soft,
-                      color: statusTheme.text,
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                      fontWeight: 800,
-                      fontSize: '0.9rem'
-                    }}
-                >
-                  Rx
+                <div className="loading-state" role="status">
+                    Loading prescription #{id}...
                 </div>
-
-                <div>
-                  <div
-                      style={{
-                        display: 'flex',
-                        alignItems: 'center',
-                        gap: '0.7rem',
-                        flexWrap: 'wrap'
-                      }}
-                  >
-                    <h1
-                        style={{
-                          margin: 0,
-                          fontSize: '1.8rem'
-                        }}
-                    >
-                      Prescription #{prescription.id}
-                    </h1>
-
-                    <PrescriptionStatusBadge
-                        status={prescription.status}
-                    />
-                  </div>
-
-                  <p
-                      style={{
-                        margin: '0.35rem 0 0',
-                        color: '#64748b',
-                        fontSize: '0.86rem'
-                      }}
-                  >
-                    Created{' '}
-                    {new Date(
-                        prescription.createdAt
-                    ).toLocaleDateString()}{' '}
-                    at{' '}
-                    {new Date(
-                        prescription.createdAt
-                    ).toLocaleTimeString()}
-                  </p>
-                </div>
-              </div>
             </div>
+        );
+    }
 
-            {/* Actions */}
-            <div
-                className="table-actions no-print"
-                style={{
-                  justifyContent: 'flex-end',
-                  flexWrap: 'wrap'
-                }}
-            >
-              {isDentist && isDraft && (
-                  <>
-                    <Link
-                        to={`/prescriptions/${prescription.id}/edit`}
-                        className="btn btn-secondary"
-                    >
-                      Edit Draft
-                    </Link>
+    if (error || !prescription) {
+        return (
+            <div className="prescription-container">
+                <PrescriptionNav />
 
-                    <button
-                        type="button"
-                        className="btn btn-success"
-                        onClick={handleOpenFinalize}
-                        disabled={
-                            actionLoading ||
-                            !prescription.items ||
-                            prescription.items.length === 0
-                        }
-                        title={
-                          !prescription.items ||
-                          prescription.items.length === 0
-                              ? 'Add at least one medicine to finalize'
-                              : ''
-                        }
-                    >
-                      Finalize Prescription
-                    </button>
+                <div className="error-alert" role="alert">
+                    <h2>Prescription Not Found</h2>
 
-                    <button
-                        type="button"
-                        className="btn btn-danger"
-                        onClick={() => {
-                          setActionError(null);
-                          setShowCancelModal(true);
-                        }}
-                        disabled={actionLoading}
-                    >
-                      Cancel
-                    </button>
-                  </>
-              )}
+                    <p>
+                        {error ||
+                            `Prescription #${id} does not exist.`}
+                    </p>
 
-              {isFinalized && (
-                  <>
-                    <button
-                        type="button"
-                        className="btn btn-primary"
-                        onClick={handlePrint}
-                    >
-                      🖨️ Print / Save PDF
-                    </button>
-
-                    {isDentist && (
-                        <button
-                            type="button"
-                            className="btn btn-danger btn-sm"
-                            onClick={() => {
-                              setActionError(null);
-                              setShowCancelModal(true);
-                            }}
-                            disabled={actionLoading}
+                    <div>
+                        <Link
+                            to="/prescriptions"
+                            className="btn btn-secondary btn-sm"
                         >
-                          Cancel Prescription
-                        </button>
-                    )}
-                  </>
-              )}
-
-              {isCancelled && (
-                  <button
-                      type="button"
-                      className="btn btn-secondary"
-                      onClick={handlePrint}
-                  >
-                    🖨️ Print Record
-                  </button>
-              )}
+                            ← Return to Prescriptions List
+                        </Link>
+                    </div>
+                </div>
             </div>
-          </div>
-        </div>
+        );
+    }
 
-        {successMessage && (
+    const isDraft = prescription.status === 'DRAFT';
+    const isFinalized = prescription.status === 'FINALIZED';
+    const isCancelled = prescription.status === 'CANCELLED';
+    const isDentist = user?.role === 'DENTIST';
+
+    const statusTheme = isDraft
+        ? {
+            border: '#f59e0b',
+            light: '#fffbeb',
+            soft: '#fef3c7',
+            text: '#b45309'
+        }
+        : isFinalized
+            ? {
+                border: '#22c55e',
+                light: '#f0fdf4',
+                soft: '#dcfce7',
+                text: '#15803d'
+            }
+            : {
+                border: '#ef4444',
+                light: '#fff7f7',
+                soft: '#fee2e2',
+                text: '#b91c1c'
+            };
+
+    return (
+        <div className="prescription-container">
+            <div className="no-print">
+                <PrescriptionNav />
+            </div>
+
+            <PrescriptionPrintView prescription={prescription} />
+
+            {/* Main Prescription Header */}
             <div
-                className="success-alert no-print"
-                role="status"
-            >
-              {successMessage}
-            </div>
-        )}
-
-        {actionError && (
-            <div
-                className="error-alert no-print"
-                role="alert"
-            >
-              {actionError}
-            </div>
-        )}
-
-        {isCancelled && (
-            <div
-                className="info-alert no-print"
-                role="status"
-            >
-              <strong>Notice:</strong> This prescription is{' '}
-              <strong>CANCELLED</strong>. Clinical history
-              remains safely preserved in accordance with
-              healthcare audit requirements.
-            </div>
-        )}
-
-        {isFinalized && (
-            <div
-                className="info-alert no-print"
-                role="status"
-            >
-              <strong>Notice:</strong> This prescription is{' '}
-              <strong>FINALIZED</strong>. As a permanent
-              clinical order, it cannot be edited.
-            </div>
-        )}
-
-        {/* Patient / Dentist / Status */}
-        <div
-            className="prescription-card"
-            style={{
-              boxShadow:
-                  '0 8px 26px rgba(15, 23, 42, 0.06)'
-            }}
-        >
-          <div className="prescription-card-header">
-            <div>
-              <h2
-                  style={{
-                    margin: 0,
-                    fontSize: '1.15rem',
-                    color: '#0f172a'
-                  }}
-              >
-                Patient & Provider Information
-              </h2>
-
-              <p
-                  style={{
-                    margin: '0.25rem 0 0',
-                    fontSize: '0.78rem',
-                    color: '#64748b'
-                  }}
-              >
-                Clinical ownership and prescription status
-              </p>
-            </div>
-
-            <span
+                className="prescription-card"
                 style={{
-                  fontSize: '0.78rem',
-                  color: '#64748b'
+                    padding: 0,
+                    overflow: 'hidden',
+                    border: `1px solid ${statusTheme.border}35`,
+                    boxShadow:
+                        '0 10px 30px rgba(15, 23, 42, 0.07)',
+                    marginBottom: '1.25rem'
                 }}
             >
-            Last Updated:{' '}
-              {new Date(
-                  prescription.updatedAt
-              ).toLocaleString()}
-          </span>
-          </div>
-
-          <div
-              style={{
-                display: 'grid',
-                gridTemplateColumns:
-                    'repeat(auto-fit, minmax(230px, 1fr))',
-                gap: '1rem'
-              }}
-          >
-            {/* Patient */}
-            <div
-                style={{
-                  padding: '1rem',
-                  background: '#f8fafc',
-                  border: '1px solid #e2e8f0',
-                  borderRadius: '10px'
-                }}
-            >
-              <div
-                  style={{
-                    fontSize: '0.7rem',
-                    fontWeight: 700,
-                    color: '#64748b',
-                    textTransform: 'uppercase',
-                    letterSpacing: '0.06em',
-                    marginBottom: '0.45rem'
-                  }}
-              >
-                Patient
-              </div>
-
-              <div
-                  style={{
-                    fontWeight: 700,
-                    color: '#0f172a',
-                    fontSize: '1rem'
-                  }}
-              >
-                {prescription.patientName ||
-                    `Patient #${prescription.patientId}`}
-              </div>
-
-              <div
-                  style={{
-                    color: '#64748b',
-                    fontSize: '0.78rem',
-                    marginTop: '0.25rem'
-                  }}
-              >
-                User ID: {prescription.patientId}
-              </div>
-            </div>
-
-            {/* Dentist */}
-            <div
-                style={{
-                  padding: '1rem',
-                  background: '#f8fafc',
-                  border: '1px solid #e2e8f0',
-                  borderRadius: '10px'
-                }}
-            >
-              <div
-                  style={{
-                    fontSize: '0.7rem',
-                    fontWeight: 700,
-                    color: '#64748b',
-                    textTransform: 'uppercase',
-                    letterSpacing: '0.06em',
-                    marginBottom: '0.45rem'
-                  }}
-              >
-                Prescribing Dentist
-              </div>
-
-              <div
-                  style={{
-                    fontWeight: 700,
-                    color: '#0f172a',
-                    fontSize: '1rem'
-                  }}
-              >
-                {prescription.dentistName ||
-                    `Dentist #${prescription.dentistId}`}
-              </div>
-
-              <div
-                  style={{
-                    color: '#64748b',
-                    fontSize: '0.78rem',
-                    marginTop: '0.25rem'
-                  }}
-              >
-                User ID: {prescription.dentistId}
-              </div>
-            </div>
-
-            {/* Status */}
-            <div
-                style={{
-                  padding: '1rem',
-                  background: statusTheme.light,
-                  border: `1px solid ${statusTheme.border}40`,
-                  borderRadius: '10px'
-                }}
-            >
-              <div
-                  style={{
-                    fontSize: '0.7rem',
-                    fontWeight: 700,
-                    color: '#64748b',
-                    textTransform: 'uppercase',
-                    letterSpacing: '0.06em',
-                    marginBottom: '0.45rem'
-                  }}
-              >
-                Finalization Status
-              </div>
-
-              <div
-                  style={{
-                    fontWeight: 700,
-                    color: statusTheme.text,
-                    fontSize: '0.95rem'
-                  }}
-              >
-                {isCancelled
-                    ? 'Cancelled'
-                    : prescription.finalizedAt
-                        ? 'Finalized'
-                        : 'Pending Finalization'}
-              </div>
-
-              <div
-                  style={{
-                    color: '#64748b',
-                    fontSize: '0.76rem',
-                    marginTop: '0.25rem'
-                  }}
-              >
-                {prescription.finalizedAt &&
-                !isCancelled
-                    ? new Date(
-                        prescription.finalizedAt
-                    ).toLocaleString()
-                    : isDraft
-                        ? 'Draft prescription'
-                        : 'Historical clinical record'}
-              </div>
-            </div>
-
-            {prescription.replacedByPrescriptionId && (
                 <div
                     style={{
-                      padding: '1rem',
-                      background: '#f8fafc',
-                      border: '1px solid #e2e8f0',
-                      borderRadius: '10px'
+                        height: '5px',
+                        background: statusTheme.border
                     }}
-                >
-                  <div
-                      style={{
-                        fontSize: '0.7rem',
-                        fontWeight: 700,
-                        color: '#64748b',
-                        textTransform: 'uppercase',
-                        marginBottom: '0.45rem'
-                      }}
-                  >
-                    Replaced By
-                  </div>
+                />
 
-                  <Link
-                      to={`/prescriptions/${prescription.replacedByPrescriptionId}`}
-                  >
-                    Prescription #
-                    {prescription.replacedByPrescriptionId}
-                  </Link>
-                </div>
-            )}
-          </div>
-
-          {prescription.notes && (
-              <div
-                  style={{
-                    marginTop: '1.25rem',
-                    padding: '1rem',
-                    background: '#f8fafc',
-                    border: '1px solid #e2e8f0',
-                    borderRadius: '10px'
-                  }}
-              >
                 <div
                     style={{
-                      fontSize: '0.7rem',
-                      fontWeight: 700,
-                      color: '#64748b',
-                      textTransform: 'uppercase',
-                      letterSpacing: '0.05em',
-                      marginBottom: '0.4rem'
+                        padding: '1.5rem',
+                        display: 'flex',
+                        justifyContent: 'space-between',
+                        alignItems: 'center',
+                        gap: '1.25rem',
+                        flexWrap: 'wrap'
                     }}
                 >
-                  Clinical Notes / Diagnosis
-                </div>
-
-                <p
-                    style={{
-                      margin: 0,
-                      whiteSpace: 'pre-wrap',
-                      color: '#334155',
-                      lineHeight: 1.6
-                    }}
-                >
-                  {prescription.notes}
-                </p>
-              </div>
-          )}
-        </div>
-
-        {/* Medication Table */}
-        <div
-            className="prescription-card"
-            style={{
-              boxShadow:
-                  '0 8px 26px rgba(15, 23, 42, 0.06)'
-            }}
-        >
-          <div
-              style={{
-                display: 'flex',
-                justifyContent: 'space-between',
-                alignItems: 'center',
-                gap: '1rem',
-                marginBottom: '1rem',
-                flexWrap: 'wrap'
-              }}
-          >
-            <div>
-              <h2
-                  style={{
-                    margin: 0,
-                    fontSize: '1.15rem',
-                    color: '#0f172a'
-                  }}
-              >
-                Prescribed Medications
-              </h2>
-
-              <p
-                  style={{
-                    margin: '0.25rem 0 0',
-                    color: '#64748b',
-                    fontSize: '0.78rem'
-                  }}
-              >
-                Medicines included in this prescription
-              </p>
-            </div>
-
-            <div
-                style={{
-                  padding: '0.4rem 0.75rem',
-                  borderRadius: '999px',
-                  background: '#eff6ff',
-                  color: '#2563eb',
-                  fontWeight: 700,
-                  fontSize: '0.78rem'
-                }}
-            >
-              {prescription.items
-                  ? prescription.items.length
-                  : 0}{' '}
-              item
-              {prescription.items?.length === 1
-                  ? ''
-                  : 's'}
-            </div>
-          </div>
-
-          {!prescription.items ||
-          prescription.items.length === 0 ? (
-              <div className="empty-state">
-                <p>
-                  No medicines added to this prescription
-                  draft yet.
-                </p>
-
-                {isDraft && (
-                    <Link
-                        to={`/prescriptions/${prescription.id}/edit`}
-                        className="btn btn-secondary btn-sm"
-                    >
-                      + Add Medicines
-                    </Link>
-                )}
-              </div>
-          ) : (
-              <div className="table-responsive">
-                <table
-                    className="prescription-table"
-                    aria-label="Prescribed medications table"
-                >
-                  <thead>
-                  <tr>
-                    <th scope="col">#</th>
-                    <th scope="col">Medicine Name</th>
-                    <th scope="col">Strength</th>
-                    <th scope="col">Dosage</th>
-                    <th scope="col">Frequency</th>
-                    <th scope="col">Duration</th>
-                    <th scope="col">Qty</th>
-                    <th scope="col">
-                      Special Instructions
-                    </th>
-                  </tr>
-                  </thead>
-
-                  <tbody>
-                  {prescription.items.map(
-                      (item, index) => (
-                          <tr key={item.id || index}>
-                            <td
+                    <div>
+                        <div
+                            style={{
+                                display: 'flex',
+                                alignItems: 'center',
+                                gap: '0.75rem',
+                                flexWrap: 'wrap'
+                            }}
+                        >
+                            <div
                                 style={{
-                                  color: '#64748b',
-                                  fontWeight: 600
+                                    width: '46px',
+                                    height: '46px',
+                                    borderRadius: '13px',
+                                    background: statusTheme.soft,
+                                    color: statusTheme.text,
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    justifyContent: 'center',
+                                    fontWeight: 800,
+                                    fontSize: '0.9rem'
                                 }}
                             >
-                              {index + 1}
-                            </td>
+                                Rx
+                            </div>
 
-                            <td>
-                              <strong
-                                  style={{
-                                    color: '#0f172a'
-                                  }}
-                              >
-                                {item.medicineName}
-                              </strong>
-                            </td>
+                            <div>
+                                <div
+                                    style={{
+                                        display: 'flex',
+                                        alignItems: 'center',
+                                        gap: '0.7rem',
+                                        flexWrap: 'wrap'
+                                    }}
+                                >
+                                    <h1
+                                        style={{
+                                            margin: 0,
+                                            fontSize: '1.8rem'
+                                        }}
+                                    >
+                                        Prescription #{prescription.id}
+                                    </h1>
 
-                            <td>
-                              {item.strength || '—'}
-                            </td>
+                                    <PrescriptionStatusBadge
+                                        status={prescription.status}
+                                    />
+                                </div>
 
-                            <td>{item.dosage}</td>
+                                <p
+                                    style={{
+                                        margin: '0.35rem 0 0',
+                                        color: '#64748b',
+                                        fontSize: '0.86rem'
+                                    }}
+                                >
+                                    Created{' '}
+                                    {new Date(
+                                        prescription.createdAt
+                                    ).toLocaleDateString()}{' '}
+                                    at{' '}
+                                    {new Date(
+                                        prescription.createdAt
+                                    ).toLocaleTimeString()}
+                                </p>
+                            </div>
+                        </div>
+                    </div>
 
-                            <td>{item.frequency}</td>
-
-                            <td>{item.duration}</td>
-
-                            <td>
-                              <strong>
-                                {item.quantity}
-                              </strong>
-                            </td>
-
-                            <td>
-                              {item.instructions || '—'}
-                            </td>
-                          </tr>
-                      )
-                  )}
-                  </tbody>
-                </table>
-              </div>
-          )}
-        </div>
-
-        {/* Print-only footer */}
-        <div
-            className="print-only-header"
-            style={{
-              marginTop: '3rem',
-              paddingTop: '1rem'
-            }}
-        >
-          <div
-              style={{
-                display: 'flex',
-                justifyContent: 'space-between',
-                alignItems: 'flex-end'
-              }}
-          >
-            <div>
-              <p
-                  style={{
-                    margin: 0,
-                    fontSize: '0.8rem',
-                    color: '#64748b'
-                  }}
-              >
-                DentCare Practice Clinic &bull; System
-                Verified Electronic Record
-              </p>
-            </div>
-
-            <div
-                style={{
-                  textAlign: 'center',
-                  width: '220px'
-                }}
-            >
-              <div
-                  style={{
-                    borderBottom:
-                        '1px solid #000000',
-                    marginBottom: '0.5rem',
-                    height: '40px'
-                  }}
-              />
-
-              <p
-                  style={{
-                    margin: 0,
-                    fontSize: '0.85rem',
-                    fontWeight: 600
-                  }}
-              >
-                {prescription.dentistName ||
-                    'Dentist Signature'}
-              </p>
-
-              <p
-                  style={{
-                    margin: 0,
-                    fontSize: '0.75rem',
-                    color: '#475569'
-                  }}
-              >
-                Registered Dental Practitioner
-              </p>
-            </div>
-          </div>
-        </div>
-
-        {/* Finalize Modal */}
-        {showFinalizeModal && (
-            <div
-                role="dialog"
-                aria-modal="true"
-                aria-labelledby="finalize-dialog-title"
-                style={{
-                  position: 'fixed',
-                  inset: 0,
-                  backgroundColor:
-                      'rgba(15, 23, 42, 0.55)',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  zIndex: 1000,
-                  padding: '1rem'
-                }}
-            >
-              <div
-                  style={{
-                    backgroundColor: '#ffffff',
-                    borderRadius: '14px',
-                    padding: '1.5rem',
-                    maxWidth: '480px',
-                    width: '100%',
-                    boxShadow:
-                        '0 24px 55px rgba(15, 23, 42, 0.2)'
-                  }}
-              >
-                <div
-                    style={{
-                      width: '46px',
-                      height: '46px',
-                      borderRadius: '12px',
-                      background: '#dcfce7',
-                      color: '#15803d',
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                      fontSize: '1.3rem',
-                      fontWeight: 800,
-                      marginBottom: '1rem'
-                    }}
-                >
-                  ✓
-                </div>
-
-                <h2
-                    id="finalize-dialog-title"
-                    style={{
-                      marginTop: 0,
-                      color: '#0f172a',
-                      fontSize: '1.25rem'
-                    }}
-                >
-                  Finalize Prescription #
-                  {prescription.id}?
-                </h2>
-
-                <p
-                    style={{
-                      color: '#475569',
-                      fontSize: '0.875rem',
-                      lineHeight: 1.6
-                    }}
-                >
-                  Finalizing locks the prescription
-                  permanently into the clinical record.
-                  Once finalized, items and notes cannot
-                  be edited.
-                </p>
-
-                {actionError && (
+                    {/* Actions */}
                     <div
-                        className="error-alert"
+                        className="table-actions no-print"
                         style={{
-                          marginBottom: '1rem'
+                            justifyContent: 'flex-end',
+                            flexWrap: 'wrap'
                         }}
                     >
-                      {actionError}
+                        {isDentist && isDraft && (
+                            <>
+                                <Link
+                                    to={`/prescriptions/${prescription.id}/edit`}
+                                    className="btn btn-secondary"
+                                >
+                                    Edit Draft
+                                </Link>
+
+                                <button
+                                    type="button"
+                                    className="btn btn-success"
+                                    onClick={handleOpenFinalize}
+                                    disabled={
+                                        actionLoading ||
+                                        !prescription.items ||
+                                        prescription.items.length === 0
+                                    }
+                                    title={
+                                        !prescription.items ||
+                                        prescription.items.length === 0
+                                            ? 'Add at least one medicine to finalize'
+                                            : ''
+                                    }
+                                >
+                                    Finalize Prescription
+                                </button>
+
+                                <button
+                                    type="button"
+                                    className="btn btn-danger"
+                                    onClick={() => {
+                                        setActionError(null);
+                                        setShowCancelModal(true);
+                                    }}
+                                    disabled={actionLoading}
+                                >
+                                    Cancel
+                                </button>
+                            </>
+                        )}
+
+                        {isFinalized && (
+                            <>
+                                <button
+                                    type="button"
+                                    className="btn btn-primary"
+                                    onClick={handlePrint}
+                                >
+                                    🖨️ Print / Save PDF
+                                </button>
+
+                                {isDentist && (
+                                    <button
+                                        type="button"
+                                        className="btn btn-danger btn-sm"
+                                        onClick={() => {
+                                            setActionError(null);
+                                            setShowCancelModal(true);
+                                        }}
+                                        disabled={actionLoading}
+                                    >
+                                        Cancel Prescription
+                                    </button>
+                                )}
+                            </>
+                        )}
+
+                        {isCancelled && (
+                            <button
+                                type="button"
+                                className="btn btn-secondary"
+                                onClick={handlePrint}
+                            >
+                                🖨️ Print Record
+                            </button>
+                        )}
+                    </div>
+                </div>
+            </div>
+
+            {successMessage && (
+                <div
+                    className="success-alert no-print"
+                    role="status"
+                >
+                    {successMessage}
+                </div>
+            )}
+
+            {actionError && (
+                <div
+                    className="error-alert no-print"
+                    role="alert"
+                >
+                    {actionError}
+                </div>
+            )}
+
+            {isCancelled && (
+                <div
+                    className="info-alert no-print"
+                    role="status"
+                >
+                    <strong>Notice:</strong> This prescription is{' '}
+                    <strong>CANCELLED</strong>. Clinical history
+                    remains safely preserved in accordance with
+                    healthcare audit requirements.
+                </div>
+            )}
+
+            {isFinalized && (
+                <div
+                    className="info-alert no-print"
+                    role="status"
+                >
+                    <strong>Notice:</strong> This prescription is{' '}
+                    <strong>FINALIZED</strong>. As a permanent
+                    clinical order, it cannot be edited.
+                </div>
+            )}
+
+            {/* Patient / Dentist / Status */}
+            <div
+                className="prescription-card"
+                style={{
+                    boxShadow:
+                        '0 8px 26px rgba(15, 23, 42, 0.06)'
+                }}
+            >
+                <div className="prescription-card-header">
+                    <div>
+                        <h2
+                            style={{
+                                margin: 0,
+                                fontSize: '1.15rem',
+                                color: '#0f172a'
+                            }}
+                        >
+                            Patient & Provider Information
+                        </h2>
+
+                        <p
+                            style={{
+                                margin: '0.25rem 0 0',
+                                fontSize: '0.78rem',
+                                color: '#64748b'
+                            }}
+                        >
+                            Clinical ownership and prescription status
+                        </p>
+                    </div>
+
+                    <span
+                        style={{
+                            fontSize: '0.78rem',
+                            color: '#64748b'
+                        }}
+                    >
+            Last Updated:{' '}
+                        {new Date(
+                            prescription.updatedAt
+                        ).toLocaleString()}
+          </span>
+                </div>
+
+                <div
+                    style={{
+                        display: 'grid',
+                        gridTemplateColumns:
+                            'repeat(auto-fit, minmax(230px, 1fr))',
+                        gap: '1rem'
+                    }}
+                >
+                    {/* Patient */}
+                    <div
+                        style={{
+                            padding: '1rem',
+                            background: '#f8fafc',
+                            border: '1px solid #e2e8f0',
+                            borderRadius: '10px'
+                        }}
+                    >
+                        <div
+                            style={{
+                                fontSize: '0.7rem',
+                                fontWeight: 700,
+                                color: '#64748b',
+                                textTransform: 'uppercase',
+                                letterSpacing: '0.06em',
+                                marginBottom: '0.45rem'
+                            }}
+                        >
+                            Patient
+                        </div>
+
+                        <div
+                            style={{
+                                fontWeight: 700,
+                                color: '#0f172a',
+                                fontSize: '1rem'
+                            }}
+                        >
+                            {prescription.patientName ||
+                                `Patient #${prescription.patientId}`}
+                        </div>
+
+                        <div
+                            style={{
+                                color: '#64748b',
+                                fontSize: '0.78rem',
+                                marginTop: '0.25rem'
+                            }}
+                        >
+                            User ID: {prescription.patientId}
+                        </div>
+                    </div>
+
+                    {/* Dentist */}
+                    <div
+                        style={{
+                            padding: '1rem',
+                            background: '#f8fafc',
+                            border: '1px solid #e2e8f0',
+                            borderRadius: '10px'
+                        }}
+                    >
+                        <div
+                            style={{
+                                fontSize: '0.7rem',
+                                fontWeight: 700,
+                                color: '#64748b',
+                                textTransform: 'uppercase',
+                                letterSpacing: '0.06em',
+                                marginBottom: '0.45rem'
+                            }}
+                        >
+                            Prescribing Dentist
+                        </div>
+
+                        <div
+                            style={{
+                                fontWeight: 700,
+                                color: '#0f172a',
+                                fontSize: '1rem'
+                            }}
+                        >
+                            {prescription.dentistName ||
+                                `Dentist #${prescription.dentistId}`}
+                        </div>
+
+                        <div
+                            style={{
+                                color: '#64748b',
+                                fontSize: '0.78rem',
+                                marginTop: '0.25rem'
+                            }}
+                        >
+                            User ID: {prescription.dentistId}
+                        </div>
+                    </div>
+
+                    {/* Linked Clinical Examination */}
+                    {prescription.examinationId && (
+                        <div
+                            data-testid="linked-clinical-examination"
+                            style={{
+                                padding: '1rem',
+                                background: '#eff6ff',
+                                border: '1px solid #bfdbfe',
+                                borderRadius: '10px'
+                            }}
+                        >
+                            <div
+                                style={{
+                                    fontSize: '0.7rem',
+                                    fontWeight: 700,
+                                    color: '#64748b',
+                                    textTransform: 'uppercase',
+                                    letterSpacing: '0.06em',
+                                    marginBottom: '0.45rem'
+                                }}
+                            >
+                                Linked Clinical Examination
+                            </div>
+
+                            <div
+                                style={{
+                                    fontWeight: 700,
+                                    color: '#1d4ed8',
+                                    fontSize: '1rem'
+                                }}
+                            >
+                                Examination #{prescription.examinationId}
+                            </div>
+
+                            <div
+                                style={{
+                                    color: '#64748b',
+                                    fontSize: '0.78rem',
+                                    marginTop: '0.25rem',
+                                    marginBottom: '0.75rem',
+                                    lineHeight: 1.5
+                                }}
+                            >
+                                This prescription is linked to an existing
+                                Clinical Examination record.
+                            </div>
+
+                            <Link
+                                to={`/clinical/examinations/${prescription.examinationId}`}
+                                className="btn btn-secondary btn-sm no-print"
+                            >
+                                View Clinical Examination →
+                            </Link>
+                        </div>
+                    )}
+
+                    {/* Status */}
+                    <div
+                        style={{
+                            padding: '1rem',
+                            background: statusTheme.light,
+                            border: `1px solid ${statusTheme.border}40`,
+                            borderRadius: '10px'
+                        }}
+                    >
+                        <div
+                            style={{
+                                fontSize: '0.7rem',
+                                fontWeight: 700,
+                                color: '#64748b',
+                                textTransform: 'uppercase',
+                                letterSpacing: '0.06em',
+                                marginBottom: '0.45rem'
+                            }}
+                        >
+                            Finalization Status
+                        </div>
+
+                        <div
+                            style={{
+                                fontWeight: 700,
+                                color: statusTheme.text,
+                                fontSize: '0.95rem'
+                            }}
+                        >
+                            {isCancelled
+                                ? 'Cancelled'
+                                : prescription.finalizedAt
+                                    ? 'Finalized'
+                                    : 'Pending Finalization'}
+                        </div>
+
+                        <div
+                            style={{
+                                color: '#64748b',
+                                fontSize: '0.76rem',
+                                marginTop: '0.25rem'
+                            }}
+                        >
+                            {prescription.finalizedAt &&
+                            !isCancelled
+                                ? new Date(
+                                    prescription.finalizedAt
+                                ).toLocaleString()
+                                : isDraft
+                                    ? 'Draft prescription'
+                                    : 'Historical clinical record'}
+                        </div>
+                    </div>
+
+                    {prescription.replacedByPrescriptionId && (
+                        <div
+                            style={{
+                                padding: '1rem',
+                                background: '#f8fafc',
+                                border: '1px solid #e2e8f0',
+                                borderRadius: '10px'
+                            }}
+                        >
+                            <div
+                                style={{
+                                    fontSize: '0.7rem',
+                                    fontWeight: 700,
+                                    color: '#64748b',
+                                    textTransform: 'uppercase',
+                                    marginBottom: '0.45rem'
+                                }}
+                            >
+                                Replaced By
+                            </div>
+
+                            <Link
+                                to={`/prescriptions/${prescription.replacedByPrescriptionId}`}
+                            >
+                                Prescription #
+                                {prescription.replacedByPrescriptionId}
+                            </Link>
+                        </div>
+                    )}
+                </div>
+
+                {prescription.notes && (
+                    <div
+                        style={{
+                            marginTop: '1.25rem',
+                            padding: '1rem',
+                            background: '#f8fafc',
+                            border: '1px solid #e2e8f0',
+                            borderRadius: '10px'
+                        }}
+                    >
+                        <div
+                            style={{
+                                fontSize: '0.7rem',
+                                fontWeight: 700,
+                                color: '#64748b',
+                                textTransform: 'uppercase',
+                                letterSpacing: '0.05em',
+                                marginBottom: '0.4rem'
+                            }}
+                        >
+                            Clinical Notes / Diagnosis
+                        </div>
+
+                        <p
+                            style={{
+                                margin: 0,
+                                whiteSpace: 'pre-wrap',
+                                color: '#334155',
+                                lineHeight: 1.6
+                            }}
+                        >
+                            {prescription.notes}
+                        </p>
                     </div>
                 )}
+            </div>
 
-                <form onSubmit={handleConfirmFinalize}>
-                  <div className="form-group">
-                    <label htmlFor="finalizingDentistId">
-                      Confirm Dentist ID{' '}
-                      <span
-                          style={{
-                            color: '#dc2626'
-                          }}
-                      >
+            {/* Medication Table */}
+            <div
+                className="prescription-card"
+                style={{
+                    boxShadow:
+                        '0 8px 26px rgba(15, 23, 42, 0.06)'
+                }}
+            >
+                <div
+                    style={{
+                        display: 'flex',
+                        justifyContent: 'space-between',
+                        alignItems: 'center',
+                        gap: '1rem',
+                        marginBottom: '1rem',
+                        flexWrap: 'wrap'
+                    }}
+                >
+                    <div>
+                        <h2
+                            style={{
+                                margin: 0,
+                                fontSize: '1.15rem',
+                                color: '#0f172a'
+                            }}
+                        >
+                            Prescribed Medications
+                        </h2>
+
+                        <p
+                            style={{
+                                margin: '0.25rem 0 0',
+                                color: '#64748b',
+                                fontSize: '0.78rem'
+                            }}
+                        >
+                            Medicines included in this prescription
+                        </p>
+                    </div>
+
+                    <div
+                        style={{
+                            padding: '0.4rem 0.75rem',
+                            borderRadius: '999px',
+                            background: '#eff6ff',
+                            color: '#2563eb',
+                            fontWeight: 700,
+                            fontSize: '0.78rem'
+                        }}
+                    >
+                        {prescription.items
+                            ? prescription.items.length
+                            : 0}{' '}
+                        item
+                        {prescription.items?.length === 1
+                            ? ''
+                            : 's'}
+                    </div>
+                </div>
+
+                {!prescription.items ||
+                prescription.items.length === 0 ? (
+                    <div className="empty-state">
+                        <p>
+                            No medicines added to this prescription
+                            draft yet.
+                        </p>
+
+                        {isDraft && (
+                            <Link
+                                to={`/prescriptions/${prescription.id}/edit`}
+                                className="btn btn-secondary btn-sm"
+                            >
+                                + Add Medicines
+                            </Link>
+                        )}
+                    </div>
+                ) : (
+                    <div className="table-responsive">
+                        <table
+                            className="prescription-table"
+                            aria-label="Prescribed medications table"
+                        >
+                            <thead>
+                            <tr>
+                                <th scope="col">#</th>
+                                <th scope="col">Medicine Name</th>
+                                <th scope="col">Strength</th>
+                                <th scope="col">Dosage</th>
+                                <th scope="col">Frequency</th>
+                                <th scope="col">Duration</th>
+                                <th scope="col">Qty</th>
+                                <th scope="col">
+                                    Special Instructions
+                                </th>
+                            </tr>
+                            </thead>
+
+                            <tbody>
+                            {prescription.items.map(
+                                (item, index) => (
+                                    <tr key={item.id || index}>
+                                        <td
+                                            style={{
+                                                color: '#64748b',
+                                                fontWeight: 600
+                                            }}
+                                        >
+                                            {index + 1}
+                                        </td>
+
+                                        <td>
+                                            <strong
+                                                style={{
+                                                    color: '#0f172a'
+                                                }}
+                                            >
+                                                {item.medicineName}
+                                            </strong>
+                                        </td>
+
+                                        <td>
+                                            {item.strength || '—'}
+                                        </td>
+
+                                        <td>{item.dosage}</td>
+
+                                        <td>{item.frequency}</td>
+
+                                        <td>{item.duration}</td>
+
+                                        <td>
+                                            <strong>
+                                                {item.quantity}
+                                            </strong>
+                                        </td>
+
+                                        <td>
+                                            {item.instructions || '—'}
+                                        </td>
+                                    </tr>
+                                )
+                            )}
+                            </tbody>
+                        </table>
+                    </div>
+                )}
+            </div>
+
+            {/* Print-only footer */}
+            <div
+                className="print-only-header"
+                style={{
+                    marginTop: '3rem',
+                    paddingTop: '1rem'
+                }}
+            >
+                <div
+                    style={{
+                        display: 'flex',
+                        justifyContent: 'space-between',
+                        alignItems: 'flex-end'
+                    }}
+                >
+                    <div>
+                        <p
+                            style={{
+                                margin: 0,
+                                fontSize: '0.8rem',
+                                color: '#64748b'
+                            }}
+                        >
+                            DentCare Practice Clinic &bull; System
+                            Verified Electronic Record
+                        </p>
+                    </div>
+
+                    <div
+                        style={{
+                            textAlign: 'center',
+                            width: '220px'
+                        }}
+                    >
+                        <div
+                            style={{
+                                borderBottom:
+                                    '1px solid #000000',
+                                marginBottom: '0.5rem',
+                                height: '40px'
+                            }}
+                        />
+
+                        <p
+                            style={{
+                                margin: 0,
+                                fontSize: '0.85rem',
+                                fontWeight: 600
+                            }}
+                        >
+                            {prescription.dentistName ||
+                                'Dentist Signature'}
+                        </p>
+
+                        <p
+                            style={{
+                                margin: 0,
+                                fontSize: '0.75rem',
+                                color: '#475569'
+                            }}
+                        >
+                            Registered Dental Practitioner
+                        </p>
+                    </div>
+                </div>
+            </div>
+
+            {/* Finalize Modal */}
+            {showFinalizeModal && (
+                <div
+                    role="dialog"
+                    aria-modal="true"
+                    aria-labelledby="finalize-dialog-title"
+                    style={{
+                        position: 'fixed',
+                        inset: 0,
+                        backgroundColor:
+                            'rgba(15, 23, 42, 0.55)',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        zIndex: 1000,
+                        padding: '1rem'
+                    }}
+                >
+                    <div
+                        style={{
+                            backgroundColor: '#ffffff',
+                            borderRadius: '14px',
+                            padding: '1.5rem',
+                            maxWidth: '480px',
+                            width: '100%',
+                            boxShadow:
+                                '0 24px 55px rgba(15, 23, 42, 0.2)'
+                        }}
+                    >
+                        <div
+                            style={{
+                                width: '46px',
+                                height: '46px',
+                                borderRadius: '12px',
+                                background: '#dcfce7',
+                                color: '#15803d',
+                                display: 'flex',
+                                alignItems: 'center',
+                                justifyContent: 'center',
+                                fontSize: '1.3rem',
+                                fontWeight: 800,
+                                marginBottom: '1rem'
+                            }}
+                        >
+                            ✓
+                        </div>
+
+                        <h2
+                            id="finalize-dialog-title"
+                            style={{
+                                marginTop: 0,
+                                color: '#0f172a',
+                                fontSize: '1.25rem'
+                            }}
+                        >
+                            Finalize Prescription #
+                            {prescription.id}?
+                        </h2>
+
+                        <p
+                            style={{
+                                color: '#475569',
+                                fontSize: '0.875rem',
+                                lineHeight: 1.6
+                            }}
+                        >
+                            Finalizing locks the prescription
+                            permanently into the clinical record.
+                            Once finalized, items and notes cannot
+                            be edited.
+                        </p>
+
+                        {actionError && (
+                            <div
+                                className="error-alert"
+                                style={{
+                                    marginBottom: '1rem'
+                                }}
+                            >
+                                {actionError}
+                            </div>
+                        )}
+
+                        <form onSubmit={handleConfirmFinalize}>
+                            <div className="form-group">
+                                <label htmlFor="finalizingDentistId">
+                                    Confirm Dentist ID{' '}
+                                    <span
+                                        style={{
+                                            color: '#dc2626'
+                                        }}
+                                    >
                     *
                   </span>
-                    </label>
+                                </label>
 
-                    <input
-                        id="finalizingDentistId"
-                        type="number"
-                        min="1"
-                        value={finalizingDentistId}
-                        onChange={(e) =>
-                            setFinalizingDentistId(
-                                e.target.value
-                            )
-                        }
-                        placeholder="Enter authorized Dentist User ID"
-                        required
-                    />
+                                <input
+                                    id="finalizingDentistId"
+                                    type="number"
+                                    min="1"
+                                    value={finalizingDentistId}
+                                    onChange={(e) =>
+                                        setFinalizingDentistId(
+                                            e.target.value
+                                        )
+                                    }
+                                    placeholder="Enter authorized Dentist User ID"
+                                    required
+                                />
 
-                    <span className="form-help">
+                                <span className="form-help">
                   Only a user with the DENTIST role
                   may finalize prescriptions.
                 </span>
-                  </div>
+                            </div>
 
-                  <div
-                      style={{
-                        display: 'flex',
-                        justifyContent: 'flex-end',
-                        gap: '0.75rem',
-                        marginTop: '1.5rem'
-                      }}
-                  >
-                    <button
-                        type="button"
-                        className="btn btn-secondary"
-                        onClick={() =>
-                            setShowFinalizeModal(false)
-                        }
-                        disabled={actionLoading}
-                    >
-                      Cancel
-                    </button>
+                            <div
+                                style={{
+                                    display: 'flex',
+                                    justifyContent: 'flex-end',
+                                    gap: '0.75rem',
+                                    marginTop: '1.5rem'
+                                }}
+                            >
+                                <button
+                                    type="button"
+                                    className="btn btn-secondary"
+                                    onClick={() =>
+                                        setShowFinalizeModal(false)
+                                    }
+                                    disabled={actionLoading}
+                                >
+                                    Cancel
+                                </button>
 
-                    <button
-                        type="submit"
-                        className="btn btn-success"
-                        id="btn-confirm-finalize"
-                        disabled={actionLoading}
-                    >
-                      {actionLoading
-                          ? 'Finalizing...'
-                          : 'Yes, Finalize Prescription'}
-                    </button>
-                  </div>
-                </form>
-              </div>
-            </div>
-        )}
-
-        {/* Cancel Modal */}
-        {showCancelModal && (
-            <div
-                role="dialog"
-                aria-modal="true"
-                aria-labelledby="cancel-dialog-title"
-                style={{
-                  position: 'fixed',
-                  inset: 0,
-                  backgroundColor:
-                      'rgba(15, 23, 42, 0.55)',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  zIndex: 1000,
-                  padding: '1rem'
-                }}
-            >
-              <div
-                  style={{
-                    backgroundColor: '#ffffff',
-                    borderRadius: '14px',
-                    padding: '1.5rem',
-                    maxWidth: '480px',
-                    width: '100%',
-                    boxShadow:
-                        '0 24px 55px rgba(15, 23, 42, 0.2)'
-                  }}
-              >
-                <div
-                    style={{
-                      width: '46px',
-                      height: '46px',
-                      borderRadius: '12px',
-                      background: '#fee2e2',
-                      color: '#b91c1c',
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                      fontSize: '1.2rem',
-                      fontWeight: 800,
-                      marginBottom: '1rem'
-                    }}
-                >
-                  ×
+                                <button
+                                    type="submit"
+                                    className="btn btn-success"
+                                    id="btn-confirm-finalize"
+                                    disabled={actionLoading}
+                                >
+                                    {actionLoading
+                                        ? 'Finalizing...'
+                                        : 'Yes, Finalize Prescription'}
+                                </button>
+                            </div>
+                        </form>
+                    </div>
                 </div>
+            )}
 
-                <h2
-                    id="cancel-dialog-title"
+            {/* Cancel Modal */}
+            {showCancelModal && (
+                <div
+                    role="dialog"
+                    aria-modal="true"
+                    aria-labelledby="cancel-dialog-title"
                     style={{
-                      marginTop: 0,
-                      color: '#991b1b',
-                      fontSize: '1.25rem'
+                        position: 'fixed',
+                        inset: 0,
+                        backgroundColor:
+                            'rgba(15, 23, 42, 0.55)',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        zIndex: 1000,
+                        padding: '1rem'
                     }}
                 >
-                  Cancel Prescription #
-                  {prescription.id}?
-                </h2>
-
-                <p
-                    style={{
-                      color: '#475569',
-                      fontSize: '0.875rem',
-                      lineHeight: 1.6
-                    }}
-                >
-                  This will mark the prescription as{' '}
-                  <strong>CANCELLED</strong>. The clinical
-                  record and prescription history will be
-                  permanently retained for audit purposes.
-                </p>
-
-                {actionError && (
                     <div
-                        className="error-alert"
                         style={{
-                          marginBottom: '1rem'
+                            backgroundColor: '#ffffff',
+                            borderRadius: '14px',
+                            padding: '1.5rem',
+                            maxWidth: '480px',
+                            width: '100%',
+                            boxShadow:
+                                '0 24px 55px rgba(15, 23, 42, 0.2)'
                         }}
                     >
-                      {actionError}
+                        <div
+                            style={{
+                                width: '46px',
+                                height: '46px',
+                                borderRadius: '12px',
+                                background: '#fee2e2',
+                                color: '#b91c1c',
+                                display: 'flex',
+                                alignItems: 'center',
+                                justifyContent: 'center',
+                                fontSize: '1.2rem',
+                                fontWeight: 800,
+                                marginBottom: '1rem'
+                            }}
+                        >
+                            ×
+                        </div>
+
+                        <h2
+                            id="cancel-dialog-title"
+                            style={{
+                                marginTop: 0,
+                                color: '#991b1b',
+                                fontSize: '1.25rem'
+                            }}
+                        >
+                            Cancel Prescription #
+                            {prescription.id}?
+                        </h2>
+
+                        <p
+                            style={{
+                                color: '#475569',
+                                fontSize: '0.875rem',
+                                lineHeight: 1.6
+                            }}
+                        >
+                            This will mark the prescription as{' '}
+                            <strong>CANCELLED</strong>. The clinical
+                            record and prescription history will be
+                            permanently retained for audit purposes.
+                        </p>
+
+                        {actionError && (
+                            <div
+                                className="error-alert"
+                                style={{
+                                    marginBottom: '1rem'
+                                }}
+                            >
+                                {actionError}
+                            </div>
+                        )}
+
+                        <div
+                            style={{
+                                display: 'flex',
+                                justifyContent: 'flex-end',
+                                gap: '0.75rem',
+                                marginTop: '1.5rem'
+                            }}
+                        >
+                            <button
+                                type="button"
+                                className="btn btn-secondary"
+                                onClick={() =>
+                                    setShowCancelModal(false)
+                                }
+                                disabled={actionLoading}
+                            >
+                                No, Keep Active
+                            </button>
+
+                            <button
+                                type="button"
+                                className="btn btn-danger"
+                                id="btn-confirm-cancel"
+                                onClick={handleConfirmCancel}
+                                disabled={actionLoading}
+                            >
+                                {actionLoading
+                                    ? 'Cancelling...'
+                                    : 'Confirm Cancellation'}
+                            </button>
+                        </div>
                     </div>
-                )}
-
-                <div
-                    style={{
-                      display: 'flex',
-                      justifyContent: 'flex-end',
-                      gap: '0.75rem',
-                      marginTop: '1.5rem'
-                    }}
-                >
-                  <button
-                      type="button"
-                      className="btn btn-secondary"
-                      onClick={() =>
-                          setShowCancelModal(false)
-                      }
-                      disabled={actionLoading}
-                  >
-                    No, Keep Active
-                  </button>
-
-                  <button
-                      type="button"
-                      className="btn btn-danger"
-                      id="btn-confirm-cancel"
-                      onClick={handleConfirmCancel}
-                      disabled={actionLoading}
-                  >
-                    {actionLoading
-                        ? 'Cancelling...'
-                        : 'Confirm Cancellation'}
-                  </button>
                 </div>
-              </div>
-            </div>
-        )}
-      </div>
-  );
+            )}
+        </div>
+    );
 }
