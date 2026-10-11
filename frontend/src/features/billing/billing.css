@@ -688,47 +688,227 @@ body:has(.billing-container),
   margin-bottom: 1rem;
 }
 
-/* Print Styles for Receipt & Invoices (UI-BIL-04) */
+/* Print Styles for Receipt & Invoices (UI-BIL-04) - Strict 1-Page Optimization */
+@page {
+  margin: 6mm 8mm;
+  size: auto;
+}
+
 @media print {
+  html,
+  body {
+    height: auto !important;
+    min-height: 0 !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    background: #ffffff !important;
+    color: #0f172a !important;
+    font-size: 8pt !important;
+    line-height: 1.2 !important;
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+  }
+
   .no-print,
   .billing-nav,
   .billing-actions,
   .table-actions,
   .invoice-bottom-actions,
+  .btn,
   button,
   nav,
   header {
     display: none !important;
   }
 
-  body {
-    background: #ffffff !important;
-    color: #000000 !important;
-    margin: 0 !important;
-    padding: 0 !important;
-    font-size: 11pt !important;
-  }
-
   .billing-container {
     max-width: 100% !important;
+    width: 100% !important;
     margin: 0 !important;
     padding: 0 !important;
-    color: #000000 !important;
+  }
+
+  .billing-header {
+    display: flex !important;
+    justify-content: space-between !important;
+    align-items: center !important;
+    margin: 0 0 0.25rem 0 !important;
+    padding: 0 0 0.2rem 0 !important;
+    border-bottom: 1.5px solid #0284c7 !important;
+  }
+
+  .billing-header h1 {
+    font-size: 1.05rem !important;
+    margin: 0 !important;
+    color: #0369a1 !important;
+    line-height: 1.2 !important;
+  }
+
+  .billing-header p {
+    margin: 0 !important;
+    font-size: 0.7rem !important;
   }
 
   .receipt-card,
   .detail-card {
-    border: 1px solid #94a3b8 !important;
+    border: 1px solid #cbd5e1 !important;
+    border-radius: 4px !important;
     box-shadow: none !important;
-    padding: 1.5rem !important;
+    padding: 0.35rem 0.6rem !important;
+    margin: 0 0 0.3rem 0 !important;
+    page-break-inside: avoid !important;
+    break-inside: avoid !important;
+  }
+
+  .detail-card h2 {
+    font-size: 0.78rem !important;
+    font-weight: 700 !important;
+    text-transform: uppercase !important;
+    letter-spacing: 0.03em !important;
+    margin: 0 0 0.2rem 0 !important;
+    padding-bottom: 0.12rem !important;
+    border-bottom: 1px solid #e2e8f0 !important;
+    color: #0369a1 !important;
+  }
+
+  .financial-summary-grid {
+    display: grid !important;
+    grid-template-columns: repeat(5, 1fr) !important;
+    gap: 0.25rem !important;
     margin: 0 !important;
-    page-break-inside: avoid;
   }
 
   .financial-stat-card {
     background-color: #f8fafc !important;
     border: 1px solid #cbd5e1 !important;
-    -webkit-print-color-adjust: exact;
-    print-color-adjust: exact;
+    border-radius: 3px !important;
+    padding: 0.2rem 0.4rem !important;
+    box-shadow: none !important;
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+  }
+
+  .financial-stat-card .stat-label {
+    font-size: 0.58rem !important;
+    text-transform: uppercase !important;
+    color: #64748b !important;
+    margin-bottom: 0.03rem !important;
+  }
+
+  .financial-stat-card .stat-value {
+    font-size: 0.88rem !important;
+    font-weight: 700 !important;
+    line-height: 1.1 !important;
+  }
+
+  .detail-grid {
+    display: grid !important;
+    grid-template-columns: repeat(3, 1fr) !important;
+    gap: 0.15rem 0.6rem !important;
+  }
+
+  .detail-item {
+    margin: 0 !important;
+    padding: 0 !important;
+  }
+
+  .detail-item .detail-label {
+    font-size: 0.58rem !important;
+    color: #64748b !important;
+    margin-bottom: 0.02rem !important;
+    text-transform: uppercase !important;
+  }
+
+  .detail-item .detail-value {
+    font-size: 0.78rem !important;
+    font-weight: 600 !important;
+    color: #0f172a !important;
+  }
+
+  .table-responsive {
+    overflow: visible !important;
+    margin: 0 !important;
+  }
+
+  .billing-table {
+    width: 100% !important;
+    border-collapse: collapse !important;
+    margin: 0 !important;
+    font-size: 0.72rem !important;
+  }
+
+  .billing-table th {
+    background: #f1f5f9 !important;
+    color: #0f172a !important;
+    padding: 0.18rem 0.35rem !important;
+    font-size: 0.62rem !important;
+    font-weight: 700 !important;
+    border-bottom: 1.5px solid #cbd5e1 !important;
+    text-transform: uppercase !important;
+    letter-spacing: 0.02em !important;
+  }
+
+  .billing-table td {
+    padding: 0.18rem 0.35rem !important;
+    font-size: 0.72rem !important;
+    border-bottom: 1px solid #e2e8f0 !important;
+    line-height: 1.15 !important;
+    background: #ffffff !important;
+  }
+
+  .badge {
+    padding: 0.06rem 0.28rem !important;
+    font-size: 0.6rem !important;
+    border-radius: 3px !important;
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+  }
+
+  /* Receipt Page One-Page Print Optimization */
+  .receipt-page {
+    margin: 0 !important;
+    padding: 0 !important;
+  }
+
+  .receipt-card {
+    max-width: 100% !important;
+    margin: 0 !important;
+    padding: 0.45rem 0.75rem !important;
+    border: 1.5px solid #0284c7 !important;
+  }
+
+  .receipt-banner {
+    padding-bottom: 0.3rem !important;
+    margin-bottom: 0.35rem !important;
+    border-bottom: 1.5px solid #0284c7 !important;
+  }
+
+  .receipt-title {
+    font-size: 1.05rem !important;
+    margin: 0 !important;
+    color: #0369a1 !important;
+  }
+
+  .receipt-subtitle {
+    font-size: 0.65rem !important;
+    color: #64748b !important;
+  }
+
+  .receipt-number-value {
+    font-size: 0.82rem !important;
+    font-weight: 700 !important;
+    color: #0f172a !important;
+  }
+
+  .receipt-section {
+    margin-bottom: 0.35rem !important;
+  }
+
+  .receipt-section-heading {
+    font-size: 0.72rem !important;
+    margin: 0 0 0.18rem 0 !important;
+    padding-bottom: 0.08rem !important;
+    color: #0369a1 !important;
+    border-bottom: 1px solid #e2e8f0 !important;
   }
 }

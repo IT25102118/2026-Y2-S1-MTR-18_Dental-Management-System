@@ -311,17 +311,6 @@ export default function InvoiceDetailPage() {
                 {actionSubmitting && isCancelling ? 'Cancelling...' : 'Cancel Invoice'}
               </button>
             )}
-            {canPrint && (
-              <button
-                type="button"
-                className={invoice.status === 'PAID' ? 'btn btn-primary' : 'btn btn-secondary'}
-                onClick={handlePrint}
-                aria-label="Print Invoice"
-                data-testid="print-invoice-btn"
-              >
-                <span aria-hidden="true">🖨️</span> Print Invoice
-              </button>
-            )}
           </div>
         )}
       </div>
@@ -497,7 +486,7 @@ export default function InvoiceDetailPage() {
                   <th scope="col" style={{ width: '14%' }}>Paid At</th>
                   <th scope="col" style={{ width: '12%' }}>Status</th>
                   <th scope="col" style={{ width: '14%' }}>Reversal Info</th>
-                  <th scope="col" style={{ width: '10%' }}>Action</th>
+                  <th scope="col" className="no-print" style={{ width: '10%' }}>Action</th>
                 </tr>
               </thead>
               <tbody>
@@ -532,7 +521,7 @@ export default function InvoiceDetailPage() {
                         '—'
                       )}
                     </td>
-                    <td>
+                    <td className="no-print">
                       <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center', flexWrap: 'wrap' }}>
                         <Link
                           to={`/billing/payments/${p.id}/receipt`}
