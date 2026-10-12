@@ -94,9 +94,9 @@ async function request(endpoint, options = {}) {
     config.headers['Content-Type'] = 'application/json';
   }
 
-  /*
+  /**
    * Spring Security requires a CSRF token for requests
-   * that change data, such as POST and PUT.
+   * that change data, such as POST, PUT and DELETE.
    */
   const method = (config.method || 'GET').toUpperCase();
 
@@ -268,19 +268,25 @@ export async function getPrescriptionById(id) {
 
 /**
  * Create a new DRAFT prescription.
- * Payload:
- * {
- *   patientId,
- *   dentistId,
- *   notes,
- *   items: [...]
- * }
+ *
+ * examinationId is optional.
+ * When supplied, the backend validates that the examination
+ * belongs to the same patient before saving the prescription.
  */
 export async function createPrescription(payload) {
+  const hasExaminationId =
+      payload.examinationId !== undefined &&
+      payload.examinationId !== null &&
+      String(payload.examinationId).trim() !== '';
+
   const body = {
     patientId: Number(payload.patientId),
 
     dentistId: Number(payload.dentistId),
+
+    examinationId: hasExaminationId
+        ? Number(payload.examinationId)
+        : null,
 
     notes:
         payload.notes?.trim() || null,
@@ -319,11 +325,6 @@ export async function createPrescription(payload) {
 
 /**
  * Update an existing DRAFT prescription.
- * Payload:
- * {
- *   notes,
- *   items: [...]
- * }
  */
 export async function updatePrescription(id, payload) {
   const body = {
@@ -363,6 +364,20 @@ export async function updatePrescription(id, payload) {
 }
 
 /**
+ * Permanently delete a DRAFT prescription.
+ *
+ * FINALIZED and CANCELLED prescriptions are protected by the backend.
+ */
+export async function deleteDraftPrescription(id) {
+  return request(
+      `/api/prescriptions/${Number(id)}`,
+      {
+        method: 'DELETE'
+      }
+  );
+}
+
+/**
  * Finalize a DRAFT prescription.
  * DENTIST role required.
  */
@@ -386,6 +401,32 @@ export async function cancelPrescription(id) {
       `/api/prescriptions/${id}/cancel`,
       {
         method: 'POST'
+      }
+  );
+}
+
+/**
+ * Fetch recorded patient safety/allergy information
+ * using the PATIENT user ID used by Prescription Management.
+ */
+export async function getPatientSafety(patientUserId) {
+  return request(
+      `/api/prescriptions/patient-safety/${Number(patientUserId)}`,
+      {
+        method: 'GET'
+      }
+  );
+}
+
+/**
+ * Fetch read-only Clinical Examination context
+ * for Prescription Management.
+ */
+export async function getExaminationContext(examinationId) {
+  return request(
+      `/api/prescriptions/examination-context/${Number(examinationId)}`,
+      {
+        method: 'GET'
       }
   );
 }

@@ -910,6 +910,80 @@ describe('InvoiceDetailPage (UI-BIL-03)', () => {
   });
 
   // ==========================================
+  // PRINT INVOICE ACTION
+  // ==========================================
+  describe('PRINT INVOICE ACTION', () => {
+    it('33a. PAID invoice displays Print Invoice button in bottom actions and keeps header clean', async () => {
+      billingApi.getInvoice.mockResolvedValueOnce(samplePaidInvoice);
+
+      render(
+        <MemoryRouter initialEntries={['/billing/invoices/10']}>
+          <Routes>
+            <Route path="/billing/invoices/:id" element={<InvoiceDetailPage />} />
+          </Routes>
+        </MemoryRouter>
+      );
+
+      await waitFor(() => {
+        expect(screen.getByTestId('print-invoice-bottom-btn')).toBeInTheDocument();
+      });
+      expect(screen.queryByTestId('print-invoice-btn')).not.toBeInTheDocument();
+    });
+
+    it('33b. clicking bottom Print Invoice triggers window.print()', async () => {
+      billingApi.getInvoice.mockResolvedValueOnce(samplePaidInvoice);
+      const printSpy = vi.spyOn(window, 'print').mockImplementation(() => {});
+
+      render(
+        <MemoryRouter initialEntries={['/billing/invoices/10']}>
+          <Routes>
+            <Route path="/billing/invoices/:id" element={<InvoiceDetailPage />} />
+          </Routes>
+        </MemoryRouter>
+      );
+
+      await waitFor(() => {
+        expect(screen.getByTestId('print-invoice-bottom-btn')).toBeInTheDocument();
+      });
+
+      fireEvent.click(screen.getByTestId('print-invoice-bottom-btn'));
+      expect(printSpy).toHaveBeenCalledTimes(1);
+
+      printSpy.mockRestore();
+    });
+
+    it('33c. displays Print Receipt link at bottom if invoice has payment records', async () => {
+      billingApi.getInvoice.mockResolvedValueOnce(samplePaidInvoice);
+      billingApi.getInvoicePayments.mockResolvedValueOnce([
+        {
+          id: 55,
+          invoiceId: 10,
+          paymentNumber: 'REC-2026-0055',
+          amount: 150.00,
+          paymentMethod: 'CASH',
+          status: 'RECORDED'
+        }
+      ]);
+
+      render(
+        <MemoryRouter initialEntries={['/billing/invoices/10']}>
+          <Routes>
+            <Route path="/billing/invoices/:id" element={<InvoiceDetailPage />} />
+          </Routes>
+        </MemoryRouter>
+      );
+
+      await waitFor(() => {
+        expect(screen.getByTestId('print-latest-receipt-btn')).toBeInTheDocument();
+      });
+      expect(screen.getByTestId('print-latest-receipt-btn')).toHaveAttribute(
+        'href',
+        '/billing/payments/55/receipt?autoprint=true'
+      );
+    });
+  });
+
+  // ==========================================
   // BOUNDARY TESTS (34-38)
   // ==========================================
   describe('BOUNDARIES', () => {

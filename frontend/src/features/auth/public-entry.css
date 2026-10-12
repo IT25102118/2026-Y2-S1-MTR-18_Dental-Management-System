@@ -267,8 +267,8 @@
 }
 
 .hero-animate-card {
-  opacity: 0;
-  animation: heroImageReveal 650ms cubic-bezier(0.16, 1, 0.3, 1) 260ms forwards;
+  opacity: 1;
+  animation: heroImageReveal 650ms cubic-bezier(0.16, 1, 0.3, 1) 260ms both;
 }
 
 /* Eyebrow Badge */
@@ -505,7 +505,7 @@
 .hero-visual-wrapper {
   position: relative;
   width: 100%;
-  animation: heroCardHoverFloat 7s ease-in-out infinite;
+  opacity: 1;
 }
 
 .hero-visual-card {
@@ -519,6 +519,7 @@
   background: #f8fafc;
   z-index: 1;
   transition: transform 400ms cubic-bezier(0.16, 1, 0.3, 1), box-shadow 400ms ease;
+  animation: heroCardHoverFloat 7s ease-in-out 1s infinite;
 }
 
 .hero-visual-wrapper:hover .hero-visual-card {

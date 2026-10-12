@@ -11,8 +11,10 @@ import {
   getPrescriptions,
   getPrescriptionsByPatient,
   getPrescriptionById,
+  getPatientSafety,
   createPrescription,
   updatePrescription,
+  deleteDraftPrescription,
   finalizePrescription,
   cancelPrescription,
   PrescriptionApiError,
@@ -21,8 +23,6 @@ import {
 
 import { getCsrfToken } from '../../../shared/security/csrfClient';
 
-// Mock CSRF client.
-// POST / PUT prescription requests need a CSRF token.
 vi.mock('../../../shared/security/csrfClient', () => ({
   getCsrfToken: vi.fn()
 }));
@@ -33,7 +33,6 @@ describe('prescriptionApi client', () => {
   beforeEach(() => {
     global.fetch = vi.fn();
 
-    // Give every protected request a valid fake CSRF token.
     getCsrfToken.mockResolvedValue({
       token: 'test-csrf-token',
       headerName: 'X-XSRF-TOKEN',
@@ -162,11 +161,46 @@ describe('prescriptionApi client', () => {
     });
   });
 
+  describe('getPatientSafety', () => {
+    it('fetches recorded allergy information using patient user ID', async () => {
+      global.fetch.mockResolvedValueOnce({
+        ok: true,
+        status: 200,
+        headers: new Headers({
+          'content-type': 'application/json'
+        }),
+        json: async () => ({
+          userId: 3,
+          patientName: 'Gayan Bandara',
+          allergies: 'Penicillin',
+          medicalProfileAvailable: true,
+          hasRecordedAllergies: true
+        })
+      });
+
+      const res = await getPatientSafety(3);
+
+      expect(global.fetch).toHaveBeenCalledWith(
+          '/api/prescriptions/patient-safety/3',
+          expect.objectContaining({
+            method: 'GET',
+            credentials: 'same-origin'
+          })
+      );
+
+      expect(getCsrfToken).not.toHaveBeenCalled();
+      expect(res.userId).toBe(3);
+      expect(res.allergies).toBe('Penicillin');
+      expect(res.hasRecordedAllergies).toBe(true);
+    });
+  });
+
   describe('createPrescription', () => {
     it('sends POST request with trimmed payload and returns created response', async () => {
       const payload = {
         patientId: 1,
         dentistId: 2,
+        examinationId: 1,
         notes: '  Post-op pain  ',
         items: [
           {
@@ -212,6 +246,7 @@ describe('prescriptionApi client', () => {
             body: JSON.stringify({
               patientId: 1,
               dentistId: 2,
+              examinationId: 1,
               notes: 'Post-op pain',
               items: [
                 {
@@ -295,6 +330,35 @@ describe('prescriptionApi client', () => {
       );
 
       expect(res.notes).toBe('Updated note');
+    });
+  });
+
+  describe('deleteDraftPrescription', () => {
+    it('sends DELETE request with CSRF token', async () => {
+      global.fetch.mockResolvedValueOnce({
+        ok: true,
+        status: 204,
+        headers: new Headers()
+      });
+
+      const res = await deleteDraftPrescription(5);
+
+      expect(getCsrfToken).toHaveBeenCalled();
+
+      expect(global.fetch).toHaveBeenCalledWith(
+          '/api/prescriptions/5',
+          expect.objectContaining({
+            method: 'DELETE',
+            credentials: 'same-origin',
+
+            headers: expect.objectContaining({
+              Accept: 'application/json',
+              'X-XSRF-TOKEN': 'test-csrf-token'
+            })
+          })
+      );
+
+      expect(res).toBeNull();
     });
   });
 

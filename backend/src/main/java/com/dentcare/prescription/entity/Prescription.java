@@ -41,6 +41,15 @@ public class Prescription {
     @JoinColumn(name = "dentist_id", nullable = false)
     private User dentist;
 
+    /**
+     * Optional reference to a Clinical Examination.
+     *
+     * We store only the examination ID so MF-04 Prescription Management
+     * does not modify or own the Clinical module entity.
+     */
+    @Column(name = "examination_id")
+    private Long examinationId;
+
     @NotNull(message = "Status is required")
     @Enumerated(EnumType.STRING)
     @Column(nullable = false, length = 20)
@@ -62,7 +71,11 @@ public class Prescription {
     @Column(name = "updated_at", nullable = false)
     private LocalDateTime updatedAt;
 
-    @OneToMany(mappedBy = "prescription", cascade = CascadeType.ALL, orphanRemoval = true)
+    @OneToMany(
+            mappedBy = "prescription",
+            cascade = CascadeType.ALL,
+            orphanRemoval = true
+    )
     private List<PrescriptionItem> items = new ArrayList<>();
 
     public Prescription() {
@@ -77,12 +90,15 @@ public class Prescription {
     @PrePersist
     protected void onCreate() {
         LocalDateTime now = LocalDateTime.now();
+
         if (this.createdAt == null) {
             this.createdAt = now;
         }
+
         if (this.updatedAt == null) {
             this.updatedAt = now;
         }
+
         if (this.status == null) {
             this.status = PrescriptionStatus.DRAFT;
         }
@@ -103,31 +119,85 @@ public class Prescription {
         item.setPrescription(null);
     }
 
-    // Getters and setters
-    public Long getId() { return id; }
-    public void setId(Long id) { this.id = id; }
+    public Long getId() {
+        return id;
+    }
 
-    public User getPatient() { return patient; }
-    public void setPatient(User patient) { this.patient = patient; }
+    public void setId(Long id) {
+        this.id = id;
+    }
 
-    public User getDentist() { return dentist; }
-    public void setDentist(User dentist) { this.dentist = dentist; }
+    public User getPatient() {
+        return patient;
+    }
 
-    public PrescriptionStatus getStatus() { return status; }
-    public void setStatus(PrescriptionStatus status) { this.status = status; }
+    public void setPatient(User patient) {
+        this.patient = patient;
+    }
 
-    public String getNotes() { return notes; }
-    public void setNotes(String notes) { this.notes = notes; }
+    public User getDentist() {
+        return dentist;
+    }
 
-    public Prescription getReplacedByPrescription() { return replacedByPrescription; }
-    public void setReplacedByPrescription(Prescription replacedByPrescription) { this.replacedByPrescription = replacedByPrescription; }
+    public void setDentist(User dentist) {
+        this.dentist = dentist;
+    }
 
-    public LocalDateTime getFinalizedAt() { return finalizedAt; }
-    public void setFinalizedAt(LocalDateTime finalizedAt) { this.finalizedAt = finalizedAt; }
+    public Long getExaminationId() {
+        return examinationId;
+    }
 
-    public LocalDateTime getCreatedAt() { return createdAt; }
-    public LocalDateTime getUpdatedAt() { return updatedAt; }
+    public void setExaminationId(Long examinationId) {
+        this.examinationId = examinationId;
+    }
 
-    public List<PrescriptionItem> getItems() { return items; }
-    public void setItems(List<PrescriptionItem> items) { this.items = items; }
+    public PrescriptionStatus getStatus() {
+        return status;
+    }
+
+    public void setStatus(PrescriptionStatus status) {
+        this.status = status;
+    }
+
+    public String getNotes() {
+        return notes;
+    }
+
+    public void setNotes(String notes) {
+        this.notes = notes;
+    }
+
+    public Prescription getReplacedByPrescription() {
+        return replacedByPrescription;
+    }
+
+    public void setReplacedByPrescription(
+            Prescription replacedByPrescription
+    ) {
+        this.replacedByPrescription = replacedByPrescription;
+    }
+
+    public LocalDateTime getFinalizedAt() {
+        return finalizedAt;
+    }
+
+    public void setFinalizedAt(LocalDateTime finalizedAt) {
+        this.finalizedAt = finalizedAt;
+    }
+
+    public LocalDateTime getCreatedAt() {
+        return createdAt;
+    }
+
+    public LocalDateTime getUpdatedAt() {
+        return updatedAt;
+    }
+
+    public List<PrescriptionItem> getItems() {
+        return items;
+    }
+
+    public void setItems(List<PrescriptionItem> items) {
+        this.items = items;
+    }
 }
