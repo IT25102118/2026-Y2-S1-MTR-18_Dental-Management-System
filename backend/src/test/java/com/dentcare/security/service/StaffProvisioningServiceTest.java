@@ -437,4 +437,23 @@ class StaffProvisioningServiceTest {
 
         assertFalse(response.active());
     }
+
+    @Test
+    @DisplayName("updateStaff changing phone number invalidates verification state and clears timestamp")
+    void updateStaff_phoneChange_invalidatesVerification() {
+        User user = new User("staff.verified@dentcare.com", "hash", "Verified", "Staff", "+1 555-1111", Role.DENTIST);
+        user.setId(9L);
+        user.setPhoneVerified(true);
+        user.setPhoneVerifiedAt(java.time.LocalDateTime.now());
+
+        when(userRepository.findById(9L)).thenReturn(java.util.Optional.of(user));
+        when(userRepository.save(any(User.class))).thenAnswer(i -> i.getArgument(0));
+
+        var request = new com.dentcare.security.dto.UpdateStaffRequest("Verified", "Staff", "+1 555-2222", Role.DENTIST);
+        staffProvisioningService.updateStaff(9L, request);
+
+        assertEquals("+1 555-2222", user.getPhone());
+        assertFalse(user.isPhoneVerified());
+        assertNull(user.getPhoneVerifiedAt());
+    }
 }

@@ -244,13 +244,15 @@ describe('PatientAppointmentsPage', () => {
     expect(screen.getByTestId('input-appointment-date')).toHaveValue('');
     expect(screen.getByTestId('input-appointment-reason')).toHaveValue('');
 
-    // Verify API called with trimmed payload
+    // Verify API called with trimmed payload without smsConsent
     expect(patientPortalApi.createAppointmentRequest).toHaveBeenCalledWith({
       appointmentDate: futureDateStr,
       preferredTime: '11:00',
       reason: 'Cavity check and filling consultation',
       notes: 'Morning preferred'
     });
+
+    expect(screen.queryByTestId('checkbox-appointment-sms-consent')).not.toBeInTheDocument();
   });
 
   it('prevents duplicate submissions while request is in flight', async () => {
@@ -319,6 +321,82 @@ describe('PatientAppointmentsPage', () => {
     expect(screen.queryByText(/billing administration/i)).not.toBeInTheDocument();
     expect(screen.queryByText(/staff management/i)).not.toBeInTheDocument();
     expect(screen.queryByText(/operational telemetry/i)).not.toBeInTheDocument();
+  });
+
+  describe('Email Notification Information and Removal of SMS Consent', () => {
+    it('renders email notification information notice without SMS consent checkbox', async () => {
+      render(
+        <MemoryRouter initialEntries={['/patient/appointments']}>
+          <PatientAppointmentsPage />
+        </MemoryRouter>
+      );
+
+      await waitFor(() => {
+        expect(screen.getByTestId('notice-appointment-email-notification')).toBeInTheDocument();
+      });
+
+      const notice = screen.getByTestId('notice-appointment-email-notification');
+      expect(notice).toHaveTextContent(/your appointment request details will be emailed to your registered email address once email notifications are enabled/i);
+
+      // Must NOT render old SMS consent controls
+      expect(screen.queryByTestId('checkbox-appointment-sms-consent')).not.toBeInTheDocument();
+      expect(screen.queryByText(/i agree to receive sms updates about this appointment request/i)).not.toBeInTheDocument();
+      expect(screen.queryByTestId('notice-appointment-sms-consent')).not.toBeInTheDocument();
+    });
+
+    it('submits booking request without smsConsent payload and displays pending confirmation without claiming email was sent', async () => {
+      const createdAppointment = {
+        id: 805,
+        appointmentDate: futureDateStr,
+        preferredTime: '14:00',
+        reason: 'Tooth sensitivity consultation',
+        notes: null,
+        status: 'PENDING',
+        statusDescription: 'Pending confirmation',
+        dentistName: null,
+        createdAt: '2026-10-04T09:00:00'
+      };
+
+      patientPortalApi.createAppointmentRequest.mockResolvedValueOnce(createdAppointment);
+
+      render(
+        <MemoryRouter initialEntries={['/patient/appointments']}>
+          <PatientAppointmentsPage />
+        </MemoryRouter>
+      );
+
+      await waitFor(() => {
+        expect(screen.getByTestId('input-appointment-date')).toBeInTheDocument();
+      });
+
+      fireEvent.change(screen.getByTestId('input-appointment-date'), { target: { value: futureDateStr } });
+      fireEvent.change(screen.getByTestId('input-preferred-time'), { target: { value: '14:00' } });
+      fireEvent.change(screen.getByTestId('input-appointment-reason'), { target: { value: 'Tooth sensitivity consultation' } });
+
+      patientPortalApi.getPatientAppointments.mockResolvedValueOnce([createdAppointment]);
+
+      fireEvent.click(screen.getByTestId('submit-appointment-request-btn'));
+
+      await waitFor(() => {
+        expect(screen.getByTestId('appointment-success-banner')).toBeInTheDocument();
+      });
+
+      // Verify payload does NOT contain smsConsent
+      expect(patientPortalApi.createAppointmentRequest).toHaveBeenCalledWith({
+        appointmentDate: futureDateStr,
+        preferredTime: '14:00',
+        reason: 'Tooth sensitivity consultation',
+        notes: null
+      });
+
+      // Verify Honest Success State: status remains Pending confirmation, never claiming email or SMS sent
+      expect(screen.getByText(/appointment request submitted/i)).toBeInTheDocument();
+      expect(screen.getByText(/pending clinic confirmation/i)).toBeInTheDocument();
+      expect(screen.queryByText(/email sent/i)).not.toBeInTheDocument();
+      expect(screen.queryByText(/sms sent/i)).not.toBeInTheDocument();
+      expect(screen.queryByText(/receipt sent/i)).not.toBeInTheDocument();
+      expect(screen.queryByText(/appointment confirmed/i)).not.toBeInTheDocument();
+    });
   });
 
   describe('Appointment Cancellation Flow', () => {

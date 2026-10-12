@@ -1,16 +1,18 @@
+
+// Uesd recive and valid information from the frontend
+//  when creating a new item 
 package com.dentcare.inventory.dto;
 
+// check whether the submitted item information is valid.
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 
-/**
- * Request payload for creating a new inventory catalog item.
- * Initial currentQuantity is always zero and active is true.
- */
+// creating a new inventory item
 public class CreateInventoryItemRequest {
 
+    // validation
     @NotBlank(message = "Item code is required")
     @Size(max = 50, message = "Item code must not exceed 50 characters")
     private String itemCode;
@@ -27,6 +29,7 @@ public class CreateInventoryItemRequest {
     @Size(max = 50, message = "Unit must not exceed 50 characters")
     private String unit;
 
+    // validation
     @NotNull(message = "Reorder level is required")
     @Min(value = 0, message = "Reorder level must be greater than or equal to zero")
     private Integer reorderLevel;
@@ -34,11 +37,13 @@ public class CreateInventoryItemRequest {
     @Size(max = 150, message = "Default supplier reference must not exceed 150 characters")
     private String defaultSupplierReference;
 
+    // This constructor creates an empty CreateInventoryItemRequest object
     public CreateInventoryItemRequest() {
     }
 
+    // Parameterized Constructor
     public CreateInventoryItemRequest(String itemCode, String name, String category, String unit,
-                                      Integer reorderLevel, String defaultSupplierReference) {
+            Integer reorderLevel, String defaultSupplierReference) {
         this.itemCode = itemCode;
         this.name = name;
         this.category = category;
@@ -47,6 +52,8 @@ public class CreateInventoryItemRequest {
         this.defaultSupplierReference = defaultSupplierReference;
     }
 
+    // Getters and setters
+    // (get (read) and set (update) the values of private variables.)
     public String getItemCode() {
         return itemCode;
     }

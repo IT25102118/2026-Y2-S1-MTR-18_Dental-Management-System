@@ -8,7 +8,8 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 /**
- * Response DTO exposing full prescription details including all medicine items.
+ * Response DTO exposing full prescription details
+ * including all medicine items.
  */
 public record PrescriptionResponse(
         Long id,
@@ -16,6 +17,7 @@ public record PrescriptionResponse(
         String patientName,
         Long dentistId,
         String dentistName,
+        Long examinationId,
         PrescriptionStatus status,
         String notes,
         Long replacedByPrescriptionId,
@@ -24,36 +26,75 @@ public record PrescriptionResponse(
         LocalDateTime updatedAt,
         List<PrescriptionItemResponse> items
 ) {
-    public static PrescriptionResponse fromEntity(Prescription prescription) {
-        if (prescription == null) return null;
 
-        String patientName = prescription.getPatient() != null
-                ? prescription.getPatient().getFirstName() + " " + prescription.getPatient().getLastName()
-                : null;
-        String dentistName = prescription.getDentist() != null
-                ? prescription.getDentist().getFirstName() + " " + prescription.getDentist().getLastName()
-                : null;
-        Long replacedById = prescription.getReplacedByPrescription() != null
-                ? prescription.getReplacedByPrescription().getId()
-                : null;
-        List<PrescriptionItemResponse> itemResponses = prescription.getItems() != null
-                ? prescription.getItems().stream()
-                        .map(PrescriptionItemResponse::fromEntity)
+    public static PrescriptionResponse fromEntity(
+            Prescription prescription
+    ) {
+
+        if (prescription == null) {
+            return null;
+        }
+
+        String patientName =
+                prescription.getPatient() != null
+                        ? prescription.getPatient().getFirstName()
+                        + " "
+                        + prescription.getPatient().getLastName()
+                        : null;
+
+        String dentistName =
+                prescription.getDentist() != null
+                        ? prescription.getDentist().getFirstName()
+                        + " "
+                        + prescription.getDentist().getLastName()
+                        : null;
+
+        Long replacedById =
+                prescription.getReplacedByPrescription() != null
+                        ? prescription
+                        .getReplacedByPrescription()
+                        .getId()
+                        : null;
+
+        List<PrescriptionItemResponse> itemResponses =
+                prescription.getItems() != null
+                        ? prescription.getItems()
+                        .stream()
+                        .map(
+                                PrescriptionItemResponse::fromEntity
+                        )
                         .collect(Collectors.toList())
-                : List.of();
+                        : List.of();
 
         return new PrescriptionResponse(
                 prescription.getId(),
-                prescription.getPatient() != null ? prescription.getPatient().getId() : null,
+
+                prescription.getPatient() != null
+                        ? prescription.getPatient().getId()
+                        : null,
+
                 patientName,
-                prescription.getDentist() != null ? prescription.getDentist().getId() : null,
+
+                prescription.getDentist() != null
+                        ? prescription.getDentist().getId()
+                        : null,
+
                 dentistName,
+
+                prescription.getExaminationId(),
+
                 prescription.getStatus(),
+
                 prescription.getNotes(),
+
                 replacedById,
+
                 prescription.getFinalizedAt(),
+
                 prescription.getCreatedAt(),
+
                 prescription.getUpdatedAt(),
+
                 itemResponses
         );
     }

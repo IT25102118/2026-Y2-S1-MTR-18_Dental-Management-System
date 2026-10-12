@@ -27,8 +27,7 @@ public record StockMovementResponse(
         Long treatmentProcedureId,
         String batchNumber,
         LocalDate expiryDate,
-        Long inventoryBatchId
-) {
+        Long inventoryBatchId) {
     public StockMovementResponse(
             Long id,
             Long inventoryItemId,
@@ -45,13 +44,13 @@ public record StockMovementResponse(
             Long reversalOfMovementId,
             Long treatmentProcedureId,
             String batchNumber,
-            LocalDate expiryDate
-    ) {
+            LocalDate expiryDate) {
         this(id, inventoryItemId, itemCode, itemName, movementType, adjustmentDirection, quantity, quantityDelta,
                 resultingQuantity, occurredAt, reason, responsibleUserId, reversalOfMovementId, treatmentProcedureId,
                 batchNumber, expiryDate, null);
     }
 
+    // Factory Design pattern to convert entity to DTO
     public static StockMovementResponse fromEntity(StockMovement movement, Integer resultingQuantity) {
         if (movement == null) {
             return null;
@@ -82,7 +81,6 @@ public record StockMovementResponse(
                 movement.getTreatmentProcedureId(),
                 movement.getBatchNumber(),
                 movement.getExpiryDate(),
-                batchId
-        );
+                batchId);
     }
 }

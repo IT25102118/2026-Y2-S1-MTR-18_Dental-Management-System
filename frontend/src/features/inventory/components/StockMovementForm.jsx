@@ -1,3 +1,4 @@
+// stock movement frontend,
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { recordStockMovement, getItemBatches } from '../api/movementApi';
 import { getItems, InventoryApiError } from '../api/inventoryApi';
@@ -667,7 +668,7 @@ export default function StockMovementForm({ item: propItem, onSuccess, onCancel 
                       if (b.expiryDate) {
                         const parts = b.expiryDate.split('-');
                         if (parts.length === 3) {
-                           const expDate = new Date(parseInt(parts[0], 10), parseInt(parts[1], 10) - 1, parseInt(parts[2], 10));
+                          const expDate = new Date(parseInt(parts[0], 10), parseInt(parts[1], 10) - 1, parseInt(parts[2], 10));
                           const todayMidnight = new Date();
                           todayMidnight.setHours(0, 0, 0, 0);
                           isExpired = expDate < todayMidnight;

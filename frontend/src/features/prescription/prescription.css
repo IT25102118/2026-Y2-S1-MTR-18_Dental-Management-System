@@ -1,387 +1,669 @@
-/* Feature-scoped styles for Prescription Management */
+/* =========================================================
+   MF-04 Prescription Management
+   Feature-scoped styles only.
+   All styles are limited to .prescription-container
+   ========================================================= */
 
 .prescription-container {
-  max-width: 1100px;
+  --rx-primary: #0f766e;
+  --rx-primary-dark: #115e59;
+  --rx-primary-light: #ccfbf1;
+  --rx-blue: #2563eb;
+  --rx-blue-dark: #1d4ed8;
+
+  --rx-text: #0f172a;
+  --rx-text-soft: #475569;
+  --rx-muted: #64748b;
+
+  --rx-border: #e2e8f0;
+  --rx-border-strong: #cbd5e1;
+
+  --rx-surface: #ffffff;
+  --rx-surface-soft: #f8fafc;
+
+  max-width: 1180px;
   margin: 0 auto;
-  padding: 1.5rem;
-  color: #1e293b;
+  padding: 1.75rem 1.5rem 3rem;
+  color: var(--rx-text);
 }
 
-.prescription-header {
+
+/* =========================
+   Header
+   ========================= */
+
+.prescription-container .prescription-header {
   display: flex;
   justify-content: space-between;
-  align-items: center;
+  align-items: flex-start;
   flex-wrap: wrap;
   gap: 1rem;
   margin-bottom: 1.5rem;
 }
 
-.prescription-header h1 {
+.prescription-container .prescription-header h1 {
   margin: 0;
-  font-size: 1.75rem;
-  color: #0f172a;
+  font-size: 2rem;
+  font-weight: 750;
+  line-height: 1.2;
+  color: var(--rx-text);
+  letter-spacing: -0.025em;
 }
 
-.prescription-nav {
-  margin-bottom: 1rem;
+.prescription-container .prescription-header p {
+  margin: 0.45rem 0 0;
+  color: var(--rx-muted);
+  line-height: 1.6;
 }
 
-.prescription-nav a {
-  color: #2563eb;
+
+/* =========================
+   Navigation
+   ========================= */
+
+.prescription-container .prescription-nav {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  margin-bottom: 2rem;
+}
+
+.prescription-container .prescription-nav a {
+  color: var(--rx-primary);
   text-decoration: none;
   font-size: 0.9rem;
-}
-
-.prescription-nav a:hover {
-  text-decoration: underline;
-}
-
-/* Status Badges */
-.badge {
-  display: inline-block;
-  padding: 0.25rem 0.75rem;
-  border-radius: 9999px;
-  font-size: 0.75rem;
   font-weight: 600;
+}
+
+.prescription-container .prescription-nav a:hover {
+  color: var(--rx-primary-dark);
+}
+
+
+/* =========================
+   Buttons
+   ========================= */
+
+.prescription-container .btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.45rem;
+
+  min-height: 40px;
+  padding: 0.55rem 1rem;
+
+  border: 1px solid transparent;
+  border-radius: 9px;
+
+  font-family: inherit;
+  font-size: 0.875rem;
+  font-weight: 650;
+  line-height: 1;
+
+  cursor: pointer;
+  text-decoration: none;
+
+  transition:
+          transform 0.15s ease,
+          box-shadow 0.15s ease,
+          background-color 0.15s ease,
+          border-color 0.15s ease;
+}
+
+.prescription-container .btn:hover:not(:disabled) {
+  transform: translateY(-1px);
+}
+
+.prescription-container .btn:focus-visible {
+  outline: 3px solid rgba(37, 99, 235, 0.2);
+  outline-offset: 2px;
+}
+
+.prescription-container .btn:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+  transform: none;
+}
+
+.prescription-container .btn-primary {
+  background: linear-gradient(135deg, #2563eb, #1d4ed8);
+  color: #ffffff;
+  box-shadow: 0 4px 12px rgba(37, 99, 235, 0.18);
+}
+
+.prescription-container .btn-primary:hover:not(:disabled) {
+  background: linear-gradient(135deg, #1d4ed8, #1e40af);
+  box-shadow: 0 6px 16px rgba(37, 99, 235, 0.24);
+}
+
+.prescription-container .btn-secondary {
+  background-color: #ffffff;
+  color: #334155;
+  border-color: var(--rx-border-strong);
+}
+
+.prescription-container .btn-secondary:hover:not(:disabled) {
+  background-color: #f8fafc;
+  border-color: #94a3b8;
+}
+
+.prescription-container .btn-success {
+  background: linear-gradient(135deg, #16a34a, #15803d);
+  color: #ffffff;
+  box-shadow: 0 4px 12px rgba(22, 163, 74, 0.16);
+}
+
+.prescription-container .btn-success:hover:not(:disabled) {
+  background: linear-gradient(135deg, #15803d, #166534);
+}
+
+.prescription-container .btn-danger {
+  background-color: #dc2626;
+  color: #ffffff;
+}
+
+.prescription-container .btn-danger:hover:not(:disabled) {
+  background-color: #b91c1c;
+}
+
+.prescription-container .btn-sm {
+  min-height: 34px;
+  padding: 0.4rem 0.7rem;
+  font-size: 0.8rem;
+}
+
+
+/* =========================
+   Status badges
+   ========================= */
+
+.prescription-container .badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+
+  padding: 0.3rem 0.75rem;
+  border-radius: 999px;
+
+  font-size: 0.75rem;
+  font-weight: 700;
   line-height: 1.2;
 }
 
-.badge-draft {
-  background-color: #fef3c7;
-  color: #b45309;
+.prescription-container .badge-draft {
+  background-color: #fff7d6;
+  color: #a16207;
   border: 1px solid #fde68a;
 }
 
-.badge-finalized {
+.prescription-container .badge-finalized {
   background-color: #dcfce7;
   color: #15803d;
   border: 1px solid #bbf7d0;
 }
 
-.badge-cancelled {
+.prescription-container .badge-cancelled {
   background-color: #fee2e2;
   color: #b91c1c;
   border: 1px solid #fecaca;
 }
 
-/* Action Buttons */
-.btn {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  padding: 0.5rem 1rem;
-  border-radius: 6px;
-  font-size: 0.875rem;
-  font-weight: 500;
-  cursor: pointer;
-  border: 1px solid transparent;
-  text-decoration: none;
-  transition: background-color 0.15s ease-in-out, border-color 0.15s ease-in-out;
-  gap: 0.5rem;
-}
 
-.btn:focus-visible {
-  outline: 2px solid #2563eb;
-  outline-offset: 2px;
-}
+/* =========================
+   Cards
+   ========================= */
 
-.btn:disabled {
-  opacity: 0.6;
-  cursor: not-allowed;
-}
+.prescription-container .prescription-card {
+  background:
+          linear-gradient(180deg, #ffffff 0%, #ffffff 100%);
 
-.btn-primary {
-  background-color: #2563eb;
-  color: #ffffff;
-}
+  border: 1px solid var(--rx-border);
+  border-radius: 14px;
 
-.btn-primary:hover:not(:disabled) {
-  background-color: #1d4ed8;
-}
-
-.btn-secondary {
-  background-color: #ffffff;
-  color: #334155;
-  border-color: #cbd5e1;
-}
-
-.btn-secondary:hover:not(:disabled) {
-  background-color: #f8fafc;
-  border-color: #94a3b8;
-}
-
-.btn-success {
-  background-color: #16a34a;
-  color: #ffffff;
-}
-
-.btn-success:hover:not(:disabled) {
-  background-color: #15803d;
-}
-
-.btn-danger {
-  background-color: #dc2626;
-  color: #ffffff;
-}
-
-.btn-danger:hover:not(:disabled) {
-  background-color: #b91c1c;
-}
-
-.btn-sm {
-  padding: 0.25rem 0.5rem;
-  font-size: 0.75rem;
-}
-
-/* Alert States */
-.error-alert {
-  background-color: #fef2f2;
-  border: 1px solid #f87171;
-  color: #991b1b;
-  padding: 1rem;
-  border-radius: 6px;
-  margin-bottom: 1.5rem;
-  display: flex;
-  flex-direction: column;
-  gap: 0.5rem;
-}
-
-.success-alert {
-  background-color: #f0fdf4;
-  border: 1px solid #4ade80;
-  color: #166534;
-  padding: 1rem;
-  border-radius: 6px;
-  margin-bottom: 1.5rem;
-}
-
-.info-alert {
-  background-color: #eff6ff;
-  border: 1px solid #60a5fa;
-  color: #1e40af;
-  padding: 1rem;
-  border-radius: 6px;
-  margin-bottom: 1.5rem;
-}
-
-.loading-state,
-.empty-state {
-  text-align: center;
-  padding: 3rem 1.5rem;
-  background-color: #f8fafc;
-  border-radius: 8px;
-  border: 1px dashed #cbd5e1;
-  color: #64748b;
-  margin: 1.5rem 0;
-}
-
-/* Tables */
-.table-responsive {
-  width: 100%;
-  overflow-x: auto;
-  border: 1px solid #e2e8f0;
-  border-radius: 8px;
-  background-color: #ffffff;
-  margin-bottom: 1.5rem;
-}
-
-.prescription-table {
-  width: 100%;
-  border-collapse: collapse;
-  text-align: left;
-  font-size: 0.875rem;
-}
-
-.prescription-table th,
-.prescription-table td {
-  padding: 0.75rem 1rem;
-  border-bottom: 1px solid #e2e8f0;
-}
-
-.prescription-table th {
-  background-color: #f8fafc;
-  font-weight: 600;
-  color: #475569;
-}
-
-.prescription-table tr:last-child td {
-  border-bottom: none;
-}
-
-.prescription-table tr:hover td {
-  background-color: #f1f5f9;
-}
-
-.table-actions {
-  display: flex;
-  gap: 0.5rem;
-  align-items: center;
-}
-
-/* Cards & Detail View */
-.prescription-card {
-  background-color: #ffffff;
-  border: 1px solid #e2e8f0;
-  border-radius: 8px;
   padding: 1.5rem;
   margin-bottom: 1.5rem;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+
+  box-shadow:
+          0 1px 2px rgba(15, 23, 42, 0.03),
+          0 8px 24px rgba(15, 23, 42, 0.04);
 }
 
-.prescription-card-header {
+.prescription-container .prescription-card-header {
   display: flex;
   justify-content: space-between;
   align-items: flex-start;
+  flex-wrap: wrap;
+  gap: 1rem;
+
   margin-bottom: 1.25rem;
-  padding-bottom: 0.75rem;
+  padding-bottom: 1rem;
+
   border-bottom: 1px solid #f1f5f9;
 }
 
-.grid-2 {
+.prescription-container .prescription-card-header h2,
+.prescription-container .prescription-card-header h3 {
+  margin: 0;
+  color: var(--rx-text);
+}
+
+
+/* =========================
+   Grid
+   ========================= */
+
+.prescription-container .grid-2 {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-  gap: 1rem;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 1.25rem;
   margin-bottom: 1rem;
 }
 
-.meta-field {
-  display: flex;
-  flex-direction: column;
-  gap: 0.25rem;
-}
 
-.meta-field label {
-  font-size: 0.75rem;
-  font-weight: 600;
-  color: #64748b;
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
-}
+/* =========================
+   Meta information
+   ========================= */
 
-.meta-field span {
-  font-size: 0.95rem;
-  color: #0f172a;
-  font-weight: 500;
-}
-
-/* Forms */
-.form-group {
-  margin-bottom: 1.25rem;
+.prescription-container .meta-field {
   display: flex;
   flex-direction: column;
   gap: 0.35rem;
+
+  padding: 0.25rem 0;
 }
 
-.form-group label {
-  font-size: 0.875rem;
+.prescription-container .meta-field label {
+  font-size: 0.72rem;
+  font-weight: 700;
+  color: var(--rx-muted);
+
+  text-transform: uppercase;
+  letter-spacing: 0.055em;
+}
+
+.prescription-container .meta-field span {
+  font-size: 0.95rem;
+  color: var(--rx-text);
   font-weight: 600;
+}
+
+
+/* =========================
+   Alerts
+   ========================= */
+
+.prescription-container .error-alert,
+.prescription-container .success-alert,
+.prescription-container .info-alert {
+  padding: 1rem 1.1rem;
+  margin-bottom: 1.5rem;
+
+  border-radius: 10px;
+
+  font-size: 0.9rem;
+  line-height: 1.55;
+}
+
+.prescription-container .error-alert {
+  background-color: #fff1f2;
+  border: 1px solid #fda4af;
+  color: #9f1239;
+}
+
+.prescription-container .success-alert {
+  background-color: #f0fdf4;
+  border: 1px solid #86efac;
+  color: #166534;
+}
+
+.prescription-container .info-alert {
+  background-color: #eff6ff;
+  border: 1px solid #93c5fd;
+  color: #1e40af;
+}
+
+
+/* =========================
+   Loading / Empty states
+   ========================= */
+
+.prescription-container .loading-state,
+.prescription-container .empty-state {
+  text-align: center;
+
+  padding: 3.5rem 1.5rem;
+  margin: 1.5rem 0;
+
+  background:
+          linear-gradient(145deg, #f8fafc, #ffffff);
+
+  border: 1px dashed var(--rx-border-strong);
+  border-radius: 12px;
+
+  color: var(--rx-muted);
+}
+
+
+/* =========================
+   Tables
+   ========================= */
+
+.prescription-container .table-responsive {
+  width: 100%;
+  overflow-x: auto;
+
+  background-color: #ffffff;
+
+  border: 1px solid var(--rx-border);
+  border-radius: 12px;
+
+  margin-bottom: 1.5rem;
+
+  box-shadow:
+          0 1px 2px rgba(15, 23, 42, 0.03),
+          0 6px 20px rgba(15, 23, 42, 0.035);
+}
+
+.prescription-container .prescription-table {
+  width: 100%;
+  border-collapse: collapse;
+  text-align: left;
+
+  font-size: 0.875rem;
+}
+
+.prescription-container .prescription-table th,
+.prescription-container .prescription-table td {
+  padding: 0.9rem 1rem;
+  border-bottom: 1px solid #eef2f7;
+  vertical-align: middle;
+}
+
+.prescription-container .prescription-table th {
+  background-color: #f8fafc;
+
+  color: #475569;
+
+  font-size: 0.78rem;
+  font-weight: 750;
+
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+}
+
+.prescription-container .prescription-table tbody tr {
+  transition: background-color 0.15s ease;
+}
+
+.prescription-container .prescription-table tbody tr:hover {
+  background-color: #f8fafc;
+}
+
+.prescription-container .prescription-table tr:last-child td {
+  border-bottom: none;
+}
+
+.prescription-container .prescription-table a {
+  color: var(--rx-blue);
+  font-weight: 700;
+  text-decoration: none;
+}
+
+.prescription-container .prescription-table a:hover {
+  color: var(--rx-blue-dark);
+  text-decoration: underline;
+}
+
+.prescription-container .table-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  align-items: center;
+}
+
+
+/* =========================
+   Forms
+   ========================= */
+
+.prescription-container .form-group {
+  margin-bottom: 1.25rem;
+
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+}
+
+.prescription-container .form-group label {
+  font-size: 0.875rem;
+  font-weight: 650;
   color: #334155;
 }
 
-.form-group input,
-.form-group textarea,
-.form-group select {
-  padding: 0.6rem 0.75rem;
-  border: 1px solid #cbd5e1;
-  border-radius: 6px;
-  font-size: 0.875rem;
-  font-family: inherit;
-  color: #0f172a;
+.prescription-container .form-group input,
+.prescription-container .form-group textarea,
+.prescription-container .form-group select {
+  width: 100%;
+
+  padding: 0.72rem 0.8rem;
+
+  border: 1px solid var(--rx-border-strong);
+  border-radius: 9px;
+
   background-color: #ffffff;
-  transition: border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
+
+  color: var(--rx-text);
+
+  font-family: inherit;
+  font-size: 0.9rem;
+
+  transition:
+          border-color 0.15s ease,
+          box-shadow 0.15s ease,
+          background-color 0.15s ease;
 }
 
-.form-group input:focus,
-.form-group textarea:focus,
-.form-group select:focus {
-  border-color: #2563eb;
+.prescription-container .form-group input:hover,
+.prescription-container .form-group textarea:hover,
+.prescription-container .form-group select:hover {
+  border-color: #94a3b8;
+}
+
+.prescription-container .form-group input:focus,
+.prescription-container .form-group textarea:focus,
+.prescription-container .form-group select:focus {
   outline: none;
-  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.15);
+
+  border-color: var(--rx-blue);
+
+  box-shadow:
+          0 0 0 3px rgba(37, 99, 235, 0.12);
 }
 
-.form-group input.has-error,
-.form-group textarea.has-error,
-.form-group select.has-error {
-  border-color: #dc2626;
+.prescription-container .form-group textarea {
+  resize: vertical;
+  min-height: 90px;
 }
 
-.field-error {
-  font-size: 0.75rem;
-  color: #dc2626;
-  margin-top: 0.2rem;
-}
-
-.form-help {
-  font-size: 0.75rem;
-  color: #64748b;
-}
-
-/* Medicine Items Section */
-.medicine-items-section {
-  margin-top: 1.5rem;
-  margin-bottom: 1.5rem;
-}
-
-.item-card {
+.prescription-container .form-group input:read-only {
   background-color: #f8fafc;
-  border: 1px solid #e2e8f0;
-  border-radius: 8px;
-  padding: 1rem;
-  margin-bottom: 1rem;
-  position: relative;
+  color: #475569;
 }
 
-.item-card-header {
+.prescription-container .form-group input.has-error,
+.prescription-container .form-group textarea.has-error,
+.prescription-container .form-group select.has-error {
+  border-color: #dc2626;
+  box-shadow: 0 0 0 3px rgba(220, 38, 38, 0.08);
+}
+
+.prescription-container .field-error {
+  margin-top: 0.15rem;
+
+  font-size: 0.75rem;
+  font-weight: 500;
+
+  color: #dc2626;
+}
+
+.prescription-container .form-help {
+  font-size: 0.75rem;
+  color: var(--rx-muted);
+  line-height: 1.45;
+}
+
+
+/* =========================
+   Medicine items
+   ========================= */
+
+.prescription-container .medicine-items-section {
+  margin-top: 1.75rem;
+  margin-bottom: 1.75rem;
+}
+
+.prescription-container .item-card {
+  position: relative;
+
+  margin-bottom: 1rem;
+  padding: 1.25rem;
+
+  background:
+          linear-gradient(145deg, #f8fafc 0%, #ffffff 100%);
+
+  border: 1px solid var(--rx-border);
+  border-radius: 12px;
+}
+
+.prescription-container .item-card:hover {
+  border-color: #cbd5e1;
+
+  box-shadow:
+          0 5px 18px rgba(15, 23, 42, 0.045);
+}
+
+.prescription-container .item-card-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 0.75rem;
-  font-weight: 600;
-  color: #334155;
-  font-size: 0.9rem;
+
+  gap: 1rem;
+
+  margin-bottom: 1rem;
+
+  color: #1e293b;
+
+  font-size: 0.95rem;
+  font-weight: 700;
 }
 
-.item-grid {
+.prescription-container .item-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-  gap: 0.75rem;
+
+  grid-template-columns:
+    minmax(220px, 2fr)
+    minmax(140px, 1fr)
+    minmax(160px, 1fr);
+
+  gap: 0.9rem;
 }
 
-/* Print view optimization */
-@media print {
-  body {
-    background: #ffffff !important;
-    color: #000000 !important;
+
+/* =========================
+   Responsive
+   ========================= */
+
+@media (max-width: 900px) {
+
+  .prescription-container {
+    padding: 1.25rem 1rem 2.5rem;
   }
 
-  .prescription-nav,
-  .prescription-header .btn,
-  .table-actions,
-  .no-print,
-  button {
+  .prescription-container .grid-2 {
+    grid-template-columns: 1fr;
+  }
+
+  .prescription-container .item-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+
+@media (max-width: 640px) {
+
+  .prescription-container .prescription-header {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .prescription-container .prescription-header h1 {
+    font-size: 1.65rem;
+  }
+
+  .prescription-container .prescription-nav {
+    align-items: stretch;
+  }
+
+  .prescription-container .prescription-nav .btn {
+    width: 100%;
+  }
+
+  .prescription-container .item-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .prescription-container .table-actions {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .prescription-container .table-actions .btn {
+    width: 100%;
+  }
+
+  .prescription-container .prescription-card {
+    padding: 1rem;
+  }
+}
+
+
+/* =========================
+   Print
+   ========================= */
+
+.prescription-container .print-only-header {
+  display: none;
+}
+
+@media print {
+
+  .prescription-container {
+    max-width: 100%;
+    margin: 0;
+    padding: 0;
+    color: #000000;
+  }
+
+  .prescription-container .prescription-nav,
+  .prescription-container .prescription-header .btn,
+  .prescription-container .table-actions,
+  .prescription-container .no-print,
+  .prescription-container button {
     display: none !important;
   }
 
-  .prescription-container {
-    max-width: 100% !important;
-    padding: 0 !important;
-    margin: 0 !important;
+  .prescription-container .prescription-card {
+    border: none;
+    box-shadow: none;
+    padding: 0;
   }
 
-  .prescription-card {
-    border: none !important;
-    box-shadow: none !important;
-    padding: 0 !important;
-  }
-
-  .print-only-header {
-    display: block !important;
+  .prescription-container .print-only-header {
+    display: block;
     margin-bottom: 1.5rem;
-    border-bottom: 2px solid #000000;
     padding-bottom: 0.5rem;
+    border-bottom: 2px solid #000000;
   }
-}
-
-.print-only-header {
-  display: none;
 }

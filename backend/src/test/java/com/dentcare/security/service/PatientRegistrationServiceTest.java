@@ -178,5 +178,32 @@ class PatientRegistrationServiceTest {
         ArgumentCaptor<User> captor = ArgumentCaptor.forClass(User.class);
         verify(userRepository).saveAndFlush(captor.capture());
         assertNull(captor.getValue().getPhone());
+        assertFalse(captor.getValue().isPhoneVerified());
+        assertNull(captor.getValue().getPhoneVerifiedAt());
+    }
+
+    @Test
+    @DisplayName("Newly registered patient accounts default to phoneVerified false and null timestamp even with phone supplied")
+    void register_phoneVerification_defaultsToFalseAndNullTimestamp() {
+        PatientRegistrationRequest request = new PatientRegistrationRequest(
+                "Diana",
+                "Prince",
+                "diana@example.com",
+                "+1 555-4321",
+                "Password123"
+        );
+
+        when(userRepository.existsByEmailIgnoreCase("diana@example.com")).thenReturn(false);
+        when(passwordEncoder.encode(anyString())).thenReturn("$2a$12$hashed");
+        when(userRepository.saveAndFlush(any(User.class))).thenAnswer(invocation -> invocation.getArgument(0));
+
+        registrationService.registerPatient(request);
+
+        ArgumentCaptor<User> captor = ArgumentCaptor.forClass(User.class);
+        verify(userRepository).saveAndFlush(captor.capture());
+        User savedUser = captor.getValue();
+        assertEquals("+1 555-4321", savedUser.getPhone());
+        assertFalse(savedUser.isPhoneVerified());
+        assertNull(savedUser.getPhoneVerifiedAt());
     }
 }

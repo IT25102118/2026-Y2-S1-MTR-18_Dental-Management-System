@@ -17,6 +17,11 @@ public class CreatePrescriptionRequest {
     @NotNull(message = "Dentist ID is required")
     private Long dentistId;
 
+    /**
+     * Optional Clinical Examination reference.
+     */
+    private Long examinationId;
+
     @Size(max = 2000, message = "Notes must not exceed 2000 characters")
     private String notes;
 
@@ -26,15 +31,43 @@ public class CreatePrescriptionRequest {
     public CreatePrescriptionRequest() {
     }
 
-    public Long getPatientId() { return patientId; }
-    public void setPatientId(Long patientId) { this.patientId = patientId; }
+    public Long getPatientId() {
+        return patientId;
+    }
 
-    public Long getDentistId() { return dentistId; }
-    public void setDentistId(Long dentistId) { this.dentistId = dentistId; }
+    public void setPatientId(Long patientId) {
+        this.patientId = patientId;
+    }
 
-    public String getNotes() { return notes; }
-    public void setNotes(String notes) { this.notes = notes; }
+    public Long getDentistId() {
+        return dentistId;
+    }
 
-    public List<PrescriptionItemRequest> getItems() { return items; }
-    public void setItems(List<PrescriptionItemRequest> items) { this.items = items; }
+    public void setDentistId(Long dentistId) {
+        this.dentistId = dentistId;
+    }
+
+    public Long getExaminationId() {
+        return examinationId;
+    }
+
+    public void setExaminationId(Long examinationId) {
+        this.examinationId = examinationId;
+    }
+
+    public String getNotes() {
+        return notes;
+    }
+
+    public void setNotes(String notes) {
+        this.notes = notes;
+    }
+
+    public List<PrescriptionItemRequest> getItems() {
+        return items;
+    }
+
+    public void setItems(List<PrescriptionItemRequest> items) {
+        this.items = items;
+    }
 }

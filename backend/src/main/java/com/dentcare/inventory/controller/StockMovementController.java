@@ -27,10 +27,7 @@ import org.springframework.web.bind.annotation.RestController;
 import java.net.URI;
 import java.util.function.Consumer;
 
-/**
- * REST controller for recording stock movements and viewing movement history for inventory items.
- * Movements and reversals are authoritatively associated with the authenticated acting user.
- */
+// Handle inventory stock movement
 @RestController
 @RequestMapping("/api/inventory/items/{itemId}/movements")
 public class StockMovementController {
@@ -41,12 +38,12 @@ public class StockMovementController {
         this.stockMovementService = stockMovementService;
     }
 
+    // stock movement record
     @PostMapping
     public ResponseEntity<?> recordMovement(
             @PathVariable Long itemId,
             @Valid @RequestBody RecordStockMovementRequest request,
-            @AuthenticationPrincipal DentCareUserDetails userDetails
-    ) {
+            @AuthenticationPrincipal DentCareUserDetails userDetails) {
         ResponseEntity<?> authError = authorizeAndBindUser(userDetails, request::setResponsibleUserId);
         if (authError != null) {
             return authError;
@@ -56,13 +53,13 @@ public class StockMovementController {
         return ResponseEntity.created(location).body(response);
     }
 
+    // previous movement reverse
     @PostMapping("/{movementId}/reverse")
     public ResponseEntity<?> reverseMovement(
             @PathVariable Long itemId,
             @PathVariable Long movementId,
             @Valid @RequestBody ReverseStockMovementRequest request,
-            @AuthenticationPrincipal DentCareUserDetails userDetails
-    ) {
+            @AuthenticationPrincipal DentCareUserDetails userDetails) {
         ResponseEntity<?> authError = authorizeAndBindUser(userDetails, request::setResponsibleUserId);
         if (authError != null) {
             return authError;
@@ -72,27 +69,29 @@ public class StockMovementController {
         return ResponseEntity.created(location).body(response);
     }
 
+    // view movement history
     @GetMapping
     public ResponseEntity<Page<StockMovementResponse>> getMovementHistory(
             @PathVariable Long itemId,
             @RequestParam(required = false) StockMovementType movementType,
-            @PageableDefault(size = 20, sort = "occurredAt", direction = Sort.Direction.DESC) Pageable pageable
-    ) {
+            @PageableDefault(size = 20, sort = "occurredAt", direction = Sort.Direction.DESC) Pageable pageable) {
         return ResponseEntity.ok(stockMovementService.getItemMovementHistory(itemId, movementType, pageable));
     }
 
+    // gets the responsible user from the authenticated login
     private ResponseEntity<?> authorizeAndBindUser(
             DentCareUserDetails userDetails,
-            Consumer<Long> userIdConsumer
-    ) {
+            Consumer<Long> userIdConsumer) {
         if (userDetails == null) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
-                    .body(InventoryErrorResponse.of(HttpStatus.UNAUTHORIZED.value(), "Unauthorized", "Authentication required to perform stock movements"));
+                    .body(InventoryErrorResponse.of(HttpStatus.UNAUTHORIZED.value(), "Unauthorized",
+                            "Authentication required to perform stock movements"));
         }
 
         if (userDetails.getRole() == Role.PATIENT) {
             return ResponseEntity.status(HttpStatus.FORBIDDEN)
-                    .body(InventoryErrorResponse.of(HttpStatus.FORBIDDEN.value(), "Forbidden", "Patients are not authorized to perform stock movements"));
+                    .body(InventoryErrorResponse.of(HttpStatus.FORBIDDEN.value(), "Forbidden",
+                            "Patients are not authorized to perform stock movements"));
         }
 
         userIdConsumer.accept(userDetails.getId());

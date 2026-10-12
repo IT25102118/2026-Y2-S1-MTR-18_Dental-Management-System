@@ -62,6 +62,12 @@ public class User {
     @Column(name = "active", nullable = false)
     private boolean active = true;
 
+    @Column(name = "phone_verified", nullable = false)
+    private boolean phoneVerified = false;
+
+    @Column(name = "phone_verified_at")
+    private LocalDateTime phoneVerifiedAt;
+
     @Column(name = "created_at", nullable = false, updatable = false)
     private LocalDateTime createdAt;
 
@@ -79,6 +85,8 @@ public class User {
         this.phone = phone;
         this.role = role;
         this.active = true;
+        this.phoneVerified = false;
+        this.phoneVerifiedAt = null;
     }
 
     @PrePersist
@@ -92,6 +100,9 @@ public class User {
         if (this.updatedAt == null) {
             this.updatedAt = LocalDateTime.now();
         }
+        if (!this.phoneVerified) {
+            this.phoneVerifiedAt = null;
+        }
     }
 
     @PreUpdate
@@ -100,6 +111,9 @@ public class User {
             this.email = this.email.trim().toLowerCase();
         }
         this.updatedAt = LocalDateTime.now();
+        if (!this.phoneVerified) {
+            this.phoneVerifiedAt = null;
+        }
     }
 
     public Long getId() {
@@ -147,7 +161,30 @@ public class User {
     }
 
     public void setPhone(String phone) {
-        this.phone = phone;
+        if (!java.util.Objects.equals(this.phone, phone)) {
+            this.phone = phone;
+            this.phoneVerified = false;
+            this.phoneVerifiedAt = null;
+        }
+    }
+
+    public boolean isPhoneVerified() {
+        return phoneVerified;
+    }
+
+    public void setPhoneVerified(boolean phoneVerified) {
+        this.phoneVerified = phoneVerified;
+        if (!phoneVerified) {
+            this.phoneVerifiedAt = null;
+        }
+    }
+
+    public LocalDateTime getPhoneVerifiedAt() {
+        return phoneVerifiedAt;
+    }
+
+    public void setPhoneVerifiedAt(LocalDateTime phoneVerifiedAt) {
+        this.phoneVerifiedAt = this.phoneVerified ? phoneVerifiedAt : null;
     }
 
     public Role getRole() {

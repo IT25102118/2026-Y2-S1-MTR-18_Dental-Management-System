@@ -3,6 +3,7 @@ package com.dentcare.clinical.controller;
 import com.dentcare.clinical.dto.ClinicalExaminationResponse;
 import com.dentcare.clinical.dto.ConfirmDiagnosisRequest;
 import com.dentcare.clinical.dto.CreateClinicalExaminationRequest;
+import com.dentcare.clinical.dto.PatientMedicalSummaryDto;
 import com.dentcare.clinical.dto.UpdateClinicalExaminationRequest;
 import com.dentcare.clinical.entity.ExaminationStatus;
 import com.dentcare.clinical.exception.ClinicalExaminationNotFoundException;
@@ -27,6 +28,7 @@ import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Optional;
 
 import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.hasKey;
@@ -404,5 +406,46 @@ class ClinicalExaminationControllerTest {
                 .andExpect(jsonPath("$.status", is(409)))
                 .andExpect(jsonPath("$.error", is("Conflict")))
                 .andExpect(jsonPath("$.message", containsString("already been confirmed")));
+    }
+
+    @Test
+    @DisplayName("GET /api/clinical/examinations/patients/{patientId}/medical-summary returns 200 and patient medical history without auth/internal fields")
+    void getPatientMedicalSummary_existingPatient_returns200WithSummary() throws Exception {
+        PatientMedicalSummaryDto summary = new PatientMedicalSummaryDto(
+                10L,
+                "Penicillin, Latex",
+                "Hypertension",
+                "Amlodipine 5mg",
+                "Root canal on tooth 21 in 2022",
+                "Patient experiences dental anxiety"
+        );
+
+        when(examinationService.getPatientMedicalSummary(10L)).thenReturn(Optional.of(summary));
+
+        mockMvc.perform(get("/api/clinical/examinations/patients/10/medical-summary")
+                        .accept(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.patientId", is(10)))
+                .andExpect(jsonPath("$.allergies", is("Penicillin, Latex")))
+                .andExpect(jsonPath("$.medicalConditions", is("Hypertension")))
+                .andExpect(jsonPath("$.currentMedications", is("Amlodipine 5mg")))
+                .andExpect(jsonPath("$.dentalHistory", is("Root canal on tooth 21 in 2022")))
+                .andExpect(jsonPath("$.notes", is("Patient experiences dental anxiety")))
+                .andExpect(jsonPath("$.password").doesNotExist())
+                .andExpect(jsonPath("$.userId").doesNotExist())
+                .andExpect(jsonPath("$.version").doesNotExist());
+    }
+
+    @Test
+    @DisplayName("GET /api/clinical/examinations/patients/{patientId}/medical-summary for unknown patient returns 404 Not Found")
+    void getPatientMedicalSummary_unknownPatient_returns404() throws Exception {
+        when(examinationService.getPatientMedicalSummary(999L)).thenReturn(Optional.empty());
+
+        mockMvc.perform(get("/api/clinical/examinations/patients/999/medical-summary")
+                        .accept(MediaType.APPLICATION_JSON))
+                .andExpect(status().isNotFound())
+                .andExpect(jsonPath("$.status", is(404)))
+                .andExpect(jsonPath("$.error", is("Not Found")))
+                .andExpect(jsonPath("$.message", containsString("Active patient not found with id: 999")));
     }
 }

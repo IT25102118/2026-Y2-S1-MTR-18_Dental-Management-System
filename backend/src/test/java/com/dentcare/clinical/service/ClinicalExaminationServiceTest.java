@@ -3,6 +3,7 @@ package com.dentcare.clinical.service;
 import com.dentcare.clinical.dto.ClinicalExaminationResponse;
 import com.dentcare.clinical.dto.ConfirmDiagnosisRequest;
 import com.dentcare.clinical.dto.CreateClinicalExaminationRequest;
+import com.dentcare.clinical.dto.PatientMedicalSummaryDto;
 import com.dentcare.clinical.dto.UpdateClinicalExaminationRequest;
 import com.dentcare.clinical.entity.ClinicalExamination;
 import com.dentcare.clinical.entity.ExaminationStatus;
@@ -462,6 +463,52 @@ class ClinicalExaminationServiceTest {
 
             assertThat(responses).hasSize(1);
             assertThat(responses.get(0).dentistId()).isEqualTo(DENTIST_ID);
+        }
+    }
+
+    @Nested
+    @DisplayName("11. Patient Medical Summary Tests")
+    class PatientMedicalSummaryTests {
+
+        @Test
+        @DisplayName("Returns patient medical summary when patient exists")
+        void getPatientMedicalSummary_existingPatient_returnsSummary() {
+            PatientMedicalSummaryDto summary = new PatientMedicalSummaryDto(
+                    PATIENT_ID,
+                    "Latex",
+                    "Asthma",
+                    "Inhaler",
+                    "Extraction 2024",
+                    "Dental anxiety"
+            );
+            when(patientLookupPort.getPatientMedicalSummary(PATIENT_ID)).thenReturn(Optional.of(summary));
+
+            Optional<PatientMedicalSummaryDto> result = examinationService.getPatientMedicalSummary(PATIENT_ID);
+
+            assertThat(result).isPresent();
+            assertThat(result.get().allergies()).isEqualTo("Latex");
+            assertThat(result.get().medicalConditions()).isEqualTo("Asthma");
+            verify(patientLookupPort).getPatientMedicalSummary(PATIENT_ID);
+        }
+
+        @Test
+        @DisplayName("Returns empty optional when patient does not exist")
+        void getPatientMedicalSummary_nonexistentPatient_returnsEmpty() {
+            when(patientLookupPort.getPatientMedicalSummary(999L)).thenReturn(Optional.empty());
+
+            Optional<PatientMedicalSummaryDto> result = examinationService.getPatientMedicalSummary(999L);
+
+            assertThat(result).isEmpty();
+            verify(patientLookupPort).getPatientMedicalSummary(999L);
+        }
+
+        @Test
+        @DisplayName("Returns empty optional when patient ID is null without calling port")
+        void getPatientMedicalSummary_nullId_returnsEmpty() {
+            Optional<PatientMedicalSummaryDto> result = examinationService.getPatientMedicalSummary(null);
+
+            assertThat(result).isEmpty();
+            verify(patientLookupPort, never()).getPatientMedicalSummary(any());
         }
     }
 }

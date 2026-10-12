@@ -522,6 +522,26 @@ describe('Receipt View & Browser Print (UI-BIL-04)', () => {
       expect(window.print).toHaveBeenCalledTimes(1);
     });
 
+    it('23b. triggers window.print() automatically when autoprint query param is true', async () => {
+      billingApi.getPaymentReceipt.mockResolvedValueOnce(sampleReceipt);
+
+      render(
+        <MemoryRouter initialEntries={['/billing/payments/101/receipt?autoprint=true']}>
+          <Routes>
+            <Route path="/billing/payments/:paymentId/receipt" element={<ReceiptPage />} />
+          </Routes>
+        </MemoryRouter>
+      );
+
+      await waitFor(() => {
+        expect(screen.getByTestId('receipt-content')).toBeInTheDocument();
+      });
+
+      await waitFor(() => {
+        expect(window.print).toHaveBeenCalled();
+      });
+    });
+
     it('24. print action does not trigger any financial mutation API call', async () => {
       billingApi.getPaymentReceipt.mockResolvedValueOnce(sampleReceipt);
 

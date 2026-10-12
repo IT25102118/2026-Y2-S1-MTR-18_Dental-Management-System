@@ -12,12 +12,14 @@ import '../prescription.css';
  */
 export default function PrescriptionListPage() {
   let authUser = null;
+
   try {
     const auth = useAuth();
     authUser = auth?.user || null;
   } catch {
     authUser = null;
   }
+
   const isDentist = authUser?.role === 'DENTIST';
 
   const [prescriptions, setPrescriptions] = useState([]);
@@ -183,131 +185,379 @@ export default function PrescriptionListPage() {
               </p>
 
               {isDentist && (
-                <Link
-                    to="/prescriptions/new"
-                    className="btn btn-primary"
-                >
-                  + Create First Prescription
-                </Link>
+                  <Link
+                      to="/prescriptions/new"
+                      className="btn btn-primary"
+                  >
+                    + Create First Prescription
+                  </Link>
               )}
             </div>
         ) : (
             <>
-              {/* Summary Cards */}
+              {/* Beautiful Summary Cards */}
               <div
                   style={{
                     display: 'grid',
-                    gridTemplateColumns: 'repeat(auto-fit, minmax(150px, 1fr))',
+                    gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
                     gap: '1rem',
-                    marginBottom: '1.25rem'
+                    marginBottom: '1.5rem'
                   }}
               >
+                {/* TOTAL */}
                 <div
                     className="prescription-card"
                     style={{
                       margin: 0,
-                      padding: '1rem 1.25rem'
+                      padding: '1.25rem 1.35rem',
+                      minHeight: '125px',
+                      position: 'relative',
+                      overflow: 'hidden',
+                      background:
+                          'linear-gradient(135deg, #ffffff 55%, #eff6ff 100%)',
+                      border: '1px solid #dbeafe',
+                      boxShadow: '0 8px 24px rgba(37, 99, 235, 0.08)'
                     }}
                 >
                   <div
                       style={{
-                        color: '#64748b',
-                        fontSize: '0.8rem',
-                        marginBottom: '0.35rem'
+                        position: 'absolute',
+                        top: 0,
+                        left: 0,
+                        right: 0,
+                        height: '4px',
+                        background: '#2563eb'
                       }}
-                  >
-                    TOTAL
-                  </div>
+                  />
 
-                  <strong
+                  <div
                       style={{
-                        fontSize: '1.5rem',
-                        color: '#0f172a'
+                        display: 'flex',
+                        alignItems: 'flex-start',
+                        justifyContent: 'space-between',
+                        gap: '1rem'
                       }}
                   >
-                    {summary.total}
-                  </strong>
+                    <div>
+                      <div
+                          style={{
+                            color: '#64748b',
+                            fontSize: '0.75rem',
+                            fontWeight: 700,
+                            letterSpacing: '0.06em',
+                            marginBottom: '0.45rem'
+                          }}
+                      >
+                        TOTAL
+                      </div>
+
+                      <strong
+                          style={{
+                            display: 'block',
+                            fontSize: '1.8rem',
+                            lineHeight: 1,
+                            color: '#0f172a',
+                            marginBottom: '0.45rem'
+                          }}
+                      >
+                        {summary.total}
+                      </strong>
+
+                      <span
+                          style={{
+                            color: '#64748b',
+                            fontSize: '0.78rem'
+                          }}
+                      >
+                    All prescriptions
+                  </span>
+                    </div>
+
+                    <div
+                        aria-hidden="true"
+                        style={{
+                          width: '42px',
+                          height: '42px',
+                          borderRadius: '12px',
+                          background: '#dbeafe',
+                          color: '#1d4ed8',
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          fontWeight: 800,
+                          fontSize: '0.9rem'
+                        }}
+                    >
+                      Rx
+                    </div>
+                  </div>
                 </div>
 
+                {/* DRAFT */}
                 <div
                     className="prescription-card"
                     style={{
                       margin: 0,
-                      padding: '1rem 1.25rem'
+                      padding: '1.25rem 1.35rem',
+                      minHeight: '125px',
+                      position: 'relative',
+                      overflow: 'hidden',
+                      background:
+                          'linear-gradient(135deg, #ffffff 55%, #fffbeb 100%)',
+                      border: '1px solid #fde68a',
+                      boxShadow: '0 8px 24px rgba(217, 119, 6, 0.07)'
                     }}
                 >
                   <div
                       style={{
-                        color: '#64748b',
-                        fontSize: '0.8rem',
-                        marginBottom: '0.35rem'
+                        position: 'absolute',
+                        top: 0,
+                        left: 0,
+                        right: 0,
+                        height: '4px',
+                        background: '#d97706'
                       }}
-                  >
-                    DRAFT
-                  </div>
+                  />
 
-                  <strong
+                  <div
                       style={{
-                        fontSize: '1.5rem',
-                        color: '#b45309'
+                        display: 'flex',
+                        alignItems: 'flex-start',
+                        justifyContent: 'space-between',
+                        gap: '1rem'
                       }}
                   >
-                    {summary.draft}
-                  </strong>
+                    <div>
+                      <div
+                          style={{
+                            color: '#64748b',
+                            fontSize: '0.75rem',
+                            fontWeight: 700,
+                            letterSpacing: '0.06em',
+                            marginBottom: '0.45rem'
+                          }}
+                      >
+                        DRAFT
+                      </div>
+
+                      <strong
+                          style={{
+                            display: 'block',
+                            fontSize: '1.8rem',
+                            lineHeight: 1,
+                            color: '#b45309',
+                            marginBottom: '0.45rem'
+                          }}
+                      >
+                        {summary.draft}
+                      </strong>
+
+                      <span
+                          style={{
+                            color: '#64748b',
+                            fontSize: '0.78rem'
+                          }}
+                      >
+                    Waiting to finalize
+                  </span>
+                    </div>
+
+                    <div
+                        aria-hidden="true"
+                        style={{
+                          width: '42px',
+                          height: '42px',
+                          borderRadius: '12px',
+                          background: '#fef3c7',
+                          color: '#b45309',
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          fontWeight: 800,
+                          fontSize: '1rem'
+                        }}
+                    >
+                      D
+                    </div>
+                  </div>
                 </div>
 
+                {/* FINALIZED */}
                 <div
                     className="prescription-card"
                     style={{
                       margin: 0,
-                      padding: '1rem 1.25rem'
+                      padding: '1.25rem 1.35rem',
+                      minHeight: '125px',
+                      position: 'relative',
+                      overflow: 'hidden',
+                      background:
+                          'linear-gradient(135deg, #ffffff 55%, #f0fdf4 100%)',
+                      border: '1px solid #bbf7d0',
+                      boxShadow: '0 8px 24px rgba(22, 163, 74, 0.07)'
                     }}
                 >
                   <div
                       style={{
-                        color: '#64748b',
-                        fontSize: '0.8rem',
-                        marginBottom: '0.35rem'
+                        position: 'absolute',
+                        top: 0,
+                        left: 0,
+                        right: 0,
+                        height: '4px',
+                        background: '#16a34a'
                       }}
-                  >
-                    FINALIZED
-                  </div>
+                  />
 
-                  <strong
+                  <div
                       style={{
-                        fontSize: '1.5rem',
-                        color: '#15803d'
+                        display: 'flex',
+                        alignItems: 'flex-start',
+                        justifyContent: 'space-between',
+                        gap: '1rem'
                       }}
                   >
-                    {summary.finalized}
-                  </strong>
+                    <div>
+                      <div
+                          style={{
+                            color: '#64748b',
+                            fontSize: '0.75rem',
+                            fontWeight: 700,
+                            letterSpacing: '0.06em',
+                            marginBottom: '0.45rem'
+                          }}
+                      >
+                        FINALIZED
+                      </div>
+
+                      <strong
+                          style={{
+                            display: 'block',
+                            fontSize: '1.8rem',
+                            lineHeight: 1,
+                            color: '#15803d',
+                            marginBottom: '0.45rem'
+                          }}
+                      >
+                        {summary.finalized}
+                      </strong>
+
+                      <span
+                          style={{
+                            color: '#64748b',
+                            fontSize: '0.78rem'
+                          }}
+                      >
+                    Permanent orders
+                  </span>
+                    </div>
+
+                    <div
+                        aria-hidden="true"
+                        style={{
+                          width: '42px',
+                          height: '42px',
+                          borderRadius: '12px',
+                          background: '#dcfce7',
+                          color: '#15803d',
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          fontWeight: 800,
+                          fontSize: '1.15rem'
+                        }}
+                    >
+                      ✓
+                    </div>
+                  </div>
                 </div>
 
+                {/* CANCELLED */}
                 <div
                     className="prescription-card"
                     style={{
                       margin: 0,
-                      padding: '1rem 1.25rem'
+                      padding: '1.25rem 1.35rem',
+                      minHeight: '125px',
+                      position: 'relative',
+                      overflow: 'hidden',
+                      background:
+                          'linear-gradient(135deg, #ffffff 55%, #fff1f2 100%)',
+                      border: '1px solid #fecaca',
+                      boxShadow: '0 8px 24px rgba(220, 38, 38, 0.07)'
                     }}
                 >
                   <div
                       style={{
-                        color: '#64748b',
-                        fontSize: '0.8rem',
-                        marginBottom: '0.35rem'
+                        position: 'absolute',
+                        top: 0,
+                        left: 0,
+                        right: 0,
+                        height: '4px',
+                        background: '#dc2626'
                       }}
-                  >
-                    CANCELLED
-                  </div>
+                  />
 
-                  <strong
+                  <div
                       style={{
-                        fontSize: '1.5rem',
-                        color: '#b91c1c'
+                        display: 'flex',
+                        alignItems: 'flex-start',
+                        justifyContent: 'space-between',
+                        gap: '1rem'
                       }}
                   >
-                    {summary.cancelled}
-                  </strong>
+                    <div>
+                      <div
+                          style={{
+                            color: '#64748b',
+                            fontSize: '0.75rem',
+                            fontWeight: 700,
+                            letterSpacing: '0.06em',
+                            marginBottom: '0.45rem'
+                          }}
+                      >
+                        CANCELLED
+                      </div>
+
+                      <strong
+                          style={{
+                            display: 'block',
+                            fontSize: '1.8rem',
+                            lineHeight: 1,
+                            color: '#b91c1c',
+                            marginBottom: '0.45rem'
+                          }}
+                      >
+                        {summary.cancelled}
+                      </strong>
+
+                      <span
+                          style={{
+                            color: '#64748b',
+                            fontSize: '0.78rem'
+                          }}
+                      >
+                    Historical records
+                  </span>
+                    </div>
+
+                    <div
+                        aria-hidden="true"
+                        style={{
+                          width: '42px',
+                          height: '42px',
+                          borderRadius: '12px',
+                          background: '#fee2e2',
+                          color: '#b91c1c',
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          fontWeight: 800,
+                          fontSize: '1.1rem'
+                        }}
+                    >
+                      ×
+                    </div>
+                  </div>
                 </div>
               </div>
 

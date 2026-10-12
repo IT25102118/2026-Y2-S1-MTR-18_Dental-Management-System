@@ -1,4 +1,10 @@
--- Flyway migration V4: Create patients table as authoritative clinical record
+-- =============================================================================
+-- DentCare Dental Management System
+-- MF-01: Patient Records Management
+-- Migration: V4__create_patients_table.sql
+-- Description: Creates the patients table as authoritative patient record source.
+-- =============================================================================
+
 CREATE TABLE IF NOT EXISTS patients (
     id BIGINT AUTO_INCREMENT PRIMARY KEY,
     patient_code VARCHAR(30) NOT NULL,

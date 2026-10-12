@@ -20,17 +20,25 @@ import com.dentcare.patient.dto.PatientReceiptResponse;
 import com.dentcare.patient.entity.Gender;
 import com.dentcare.patient.entity.Patient;
 import com.dentcare.patient.repository.PatientRepository;
+import com.dentcare.notification.entity.AppointmentEmailNotification;
+import com.dentcare.notification.entity.EmailNotificationStatus;
+import com.dentcare.notification.repository.AppointmentEmailNotificationRepository;
 import com.dentcare.prescription.entity.Prescription;
 import com.dentcare.prescription.entity.PrescriptionItem;
 import com.dentcare.prescription.entity.PrescriptionStatus;
 import com.dentcare.prescription.repository.PrescriptionRepository;
+import com.dentcare.security.entity.PhoneVerificationChallenge;
+import com.dentcare.security.entity.PhoneVerificationChallengeStatus;
+import com.dentcare.security.entity.PhoneVerificationDeliveryMode;
 import com.dentcare.security.entity.Role;
 import com.dentcare.security.entity.User;
+import com.dentcare.security.repository.PhoneVerificationChallengeRepository;
 import com.dentcare.security.repository.UserRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.data.domain.PageImpl;
@@ -48,6 +56,8 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
@@ -74,6 +84,12 @@ class PatientPortalServiceTest {
     @Mock
     private org.springframework.security.crypto.password.PasswordEncoder passwordEncoder;
 
+    @Mock
+    private PhoneVerificationChallengeRepository challengeRepository;
+
+    @Mock
+    private AppointmentEmailNotificationRepository emailNotificationRepository;
+
     private PatientPortalService patientPortalService;
 
     private User patientUser1;
@@ -89,7 +105,9 @@ class PatientPortalServiceTest {
                 appointmentRepository,
                 invoiceRepository,
                 paymentRepository,
-                passwordEncoder
+                passwordEncoder,
+                challengeRepository,
+                emailNotificationRepository
         );
 
         patientUser1 = new User("patient1@dentcare.test", "hash1", "Alice", "Smith", "+1 555-0101", Role.PATIENT);
@@ -247,7 +265,8 @@ class PatientPortalServiceTest {
                 futureDate,
                 "10:30",
                 "Routine checkup and dental cleaning",
-                "Prefer morning slot if possible"
+                "Prefer morning slot if possible",
+                false
         );
 
         when(appointmentRepository.save(any(Appointment.class))).thenAnswer(invocation -> {
@@ -281,7 +300,8 @@ class PatientPortalServiceTest {
                 today,
                 "23:59",
                 "Urgent tooth pain evaluation",
-                null
+                null,
+                false
         );
 
         when(appointmentRepository.save(any(Appointment.class))).thenAnswer(invocation -> {
@@ -306,7 +326,8 @@ class PatientPortalServiceTest {
                 pastDate,
                 "10:00",
                 "Checkup",
-                null
+                null,
+                false
         );
 
         assertThatThrownBy(() -> patientPortalService.createAppointmentRequest("patient1@dentcare.test", request))
@@ -328,7 +349,8 @@ class PatientPortalServiceTest {
                     today,
                     "00:01",
                     "Checkup",
-                    null
+                    null,
+                    false
             );
 
             assertThatThrownBy(() -> patientPortalService.createAppointmentRequest("patient1@dentcare.test", request))
@@ -348,7 +370,8 @@ class PatientPortalServiceTest {
                 LocalDate.now().plusDays(1),
                 "10:00",
                 "   ",
-                null
+                null,
+                false
         );
 
         assertThatThrownBy(() -> patientPortalService.createAppointmentRequest("patient1@dentcare.test", request))
@@ -371,7 +394,8 @@ class PatientPortalServiceTest {
                 futureDate,
                 null,
                 "Consultation",
-                null
+                null,
+                false
         );
 
         when(appointmentRepository.save(any(Appointment.class))).thenAnswer(invocation -> {
@@ -398,7 +422,8 @@ class PatientPortalServiceTest {
                 futureDate,
                 "   ",
                 "Consultation",
-                null
+                null,
+                false
         );
 
         when(appointmentRepository.save(any(Appointment.class))).thenAnswer(invocation -> {
@@ -425,7 +450,8 @@ class PatientPortalServiceTest {
                 futureDate,
                 "09:30",
                 "Morning cleaning",
-                null
+                null,
+                false
         );
 
         when(appointmentRepository.save(any(Appointment.class))).thenAnswer(invocation -> {
@@ -452,7 +478,8 @@ class PatientPortalServiceTest {
                 futureDate,
                 "23:59",
                 "Late slot request",
-                null
+                null,
+                false
         );
 
         when(appointmentRepository.save(any(Appointment.class))).thenAnswer(invocation -> {
@@ -475,7 +502,8 @@ class PatientPortalServiceTest {
                 LocalDate.now().plusDays(3),
                 "morning",
                 "Checkup",
-                null
+                null,
+                false
         );
 
         assertThatThrownBy(() -> patientPortalService.createAppointmentRequest("patient1@dentcare.test", request))
@@ -494,7 +522,8 @@ class PatientPortalServiceTest {
                 LocalDate.now().plusDays(3),
                 "9am",
                 "Checkup",
-                null
+                null,
+                false
         );
 
         assertThatThrownBy(() -> patientPortalService.createAppointmentRequest("patient1@dentcare.test", request))
@@ -513,7 +542,8 @@ class PatientPortalServiceTest {
                 LocalDate.now().plusDays(3),
                 "25:00",
                 "Checkup",
-                null
+                null,
+                false
         );
 
         assertThatThrownBy(() -> patientPortalService.createAppointmentRequest("patient1@dentcare.test", request))
@@ -532,7 +562,8 @@ class PatientPortalServiceTest {
                 LocalDate.now().plusDays(3),
                 "09:75",
                 "Checkup",
-                null
+                null,
+                false
         );
 
         assertThatThrownBy(() -> patientPortalService.createAppointmentRequest("patient1@dentcare.test", request))
@@ -555,7 +586,8 @@ class PatientPortalServiceTest {
                 LocalDate.now().plusDays(2),
                 "14:00",
                 "Initial consultation and exam",
-                "New patient"
+                "New patient",
+                false
         );
 
         when(appointmentRepository.save(any(Appointment.class))).thenAnswer(invocation -> {
@@ -1000,6 +1032,8 @@ class PatientPortalServiceTest {
     void testUpdatePatientProfileSuccess() {
         when(userRepository.findByEmailIgnoreCase("patient1@dentcare.test"))
                 .thenReturn(Optional.of(patientUser1));
+        when(userRepository.findByIdForUpdate(101L))
+                .thenReturn(Optional.of(patientUser1));
         when(userRepository.save(any(User.class))).thenAnswer(invocation -> invocation.getArgument(0));
 
         com.dentcare.patient.dto.UpdatePatientProfileRequest request =
@@ -1023,6 +1057,8 @@ class PatientPortalServiceTest {
     void testUpdatePatientProfileBlankPhoneNormalizedToNull() {
         when(userRepository.findByEmailIgnoreCase("patient1@dentcare.test"))
                 .thenReturn(Optional.of(patientUser1));
+        when(userRepository.findByIdForUpdate(101L))
+                .thenReturn(Optional.of(patientUser1));
         when(userRepository.save(any(User.class))).thenAnswer(invocation -> invocation.getArgument(0));
 
         com.dentcare.patient.dto.UpdatePatientProfileRequest request =
@@ -1041,6 +1077,8 @@ class PatientPortalServiceTest {
         // patientUser1 has no clinical record in patientRepository
         when(userRepository.findByEmailIgnoreCase("patient1@dentcare.test"))
                 .thenReturn(Optional.of(patientUser1));
+        when(userRepository.findByIdForUpdate(101L))
+                .thenReturn(Optional.of(patientUser1));
         when(userRepository.save(any(User.class))).thenAnswer(invocation -> invocation.getArgument(0));
 
         com.dentcare.patient.dto.UpdatePatientProfileRequest request =
@@ -1056,6 +1094,8 @@ class PatientPortalServiceTest {
     @DisplayName("Phone exceeding 25 characters is rejected with 400 Bad Request")
     void testUpdatePatientProfilePhoneExceedingMaxCharsThrows400() {
         when(userRepository.findByEmailIgnoreCase("patient1@dentcare.test"))
+                .thenReturn(Optional.of(patientUser1));
+        when(userRepository.findByIdForUpdate(101L))
                 .thenReturn(Optional.of(patientUser1));
 
         com.dentcare.patient.dto.UpdatePatientProfileRequest request =
@@ -1086,6 +1126,505 @@ class PatientPortalServiceTest {
                     assertThat(rse.getStatusCode()).isEqualTo(HttpStatus.FORBIDDEN);
                     assertThat(rse.getReason()).contains("Access denied: patient self-service only");
                 });
+    }
+
+    @Test
+    @DisplayName("Changing phone number invalidates patient phone verification state and timestamp")
+    void testUpdatePatientProfilePhoneChangeInvalidatesVerification() {
+        when(userRepository.findByEmailIgnoreCase("patient1@dentcare.test"))
+                .thenReturn(Optional.of(patientUser1));
+        when(userRepository.findByIdForUpdate(101L))
+                .thenReturn(Optional.of(patientUser1));
+        when(userRepository.save(any(User.class))).thenAnswer(invocation -> invocation.getArgument(0));
+
+        patientUser1.setPhone("+1 555-0101");
+        patientUser1.setPhoneVerified(true);
+        patientUser1.setPhoneVerifiedAt(java.time.LocalDateTime.now());
+
+        com.dentcare.patient.dto.UpdatePatientProfileRequest request =
+                new com.dentcare.patient.dto.UpdatePatientProfileRequest("+1 555-9999");
+
+        patientPortalService.updatePatientProfile("patient1@dentcare.test", request);
+
+        assertThat(patientUser1.getPhone()).isEqualTo("+1 555-9999");
+        assertThat(patientUser1.isPhoneVerified()).isFalse();
+        assertThat(patientUser1.getPhoneVerifiedAt()).isNull();
+    }
+
+    @Test
+    @DisplayName("Clearing phone number invalidates patient phone verification state and timestamp")
+    void testUpdatePatientProfileClearingPhoneInvalidatesVerification() {
+        when(userRepository.findByEmailIgnoreCase("patient1@dentcare.test"))
+                .thenReturn(Optional.of(patientUser1));
+        when(userRepository.findByIdForUpdate(101L))
+                .thenReturn(Optional.of(patientUser1));
+        when(userRepository.save(any(User.class))).thenAnswer(invocation -> invocation.getArgument(0));
+
+        patientUser1.setPhone("+1 555-0101");
+        patientUser1.setPhoneVerified(true);
+        patientUser1.setPhoneVerifiedAt(java.time.LocalDateTime.now());
+
+        com.dentcare.patient.dto.UpdatePatientProfileRequest request =
+                new com.dentcare.patient.dto.UpdatePatientProfileRequest("   ");
+
+        patientPortalService.updatePatientProfile("patient1@dentcare.test", request);
+
+        assertThat(patientUser1.getPhone()).isNull();
+        assertThat(patientUser1.isPhoneVerified()).isFalse();
+        assertThat(patientUser1.getPhoneVerifiedAt()).isNull();
+    }
+
+    @Test
+    @DisplayName("Submitting identical phone preserves existing phone verification state and timestamp")
+    void testUpdatePatientProfileSamePhonePreservesVerification() {
+        when(userRepository.findByEmailIgnoreCase("patient1@dentcare.test"))
+                .thenReturn(Optional.of(patientUser1));
+        when(userRepository.findByIdForUpdate(101L))
+                .thenReturn(Optional.of(patientUser1));
+        when(userRepository.save(any(User.class))).thenAnswer(invocation -> invocation.getArgument(0));
+
+        java.time.LocalDateTime verifiedAt = java.time.LocalDateTime.now().minusHours(2);
+        patientUser1.setPhone("+1 555-0101");
+        patientUser1.setPhoneVerified(true);
+        patientUser1.setPhoneVerifiedAt(verifiedAt);
+
+        com.dentcare.patient.dto.UpdatePatientProfileRequest request =
+                new com.dentcare.patient.dto.UpdatePatientProfileRequest("+1 555-0101");
+
+        patientPortalService.updatePatientProfile("patient1@dentcare.test", request);
+
+        assertThat(patientUser1.getPhone()).isEqualTo("+1 555-0101");
+        assertThat(patientUser1.isPhoneVerified()).isTrue();
+        assertThat(patientUser1.getPhoneVerifiedAt()).isEqualTo(verifiedAt);
+
+        // Challenge supersession query should NEVER be called when phone is identical
+        verify(challengeRepository, never()).findByUserIdAndStatusInForUpdate(any(), any());
+    }
+
+    // =========================================================================
+    // Prompt 109 Focused Tests: Outstanding Challenge Invalidation
+    // =========================================================================
+
+    @Test
+    @DisplayName("1. Changing phone supersedes CREATED challenges")
+    void testChangingPhoneSupersedesCreatedChallenge() {
+        when(userRepository.findByEmailIgnoreCase("patient1@dentcare.test"))
+                .thenReturn(Optional.of(patientUser1));
+        when(userRepository.findByIdForUpdate(101L))
+                .thenReturn(Optional.of(patientUser1));
+        when(userRepository.save(any(User.class))).thenAnswer(invocation -> invocation.getArgument(0));
+
+        patientUser1.setPhone("+94770000001");
+        PhoneVerificationChallenge challenge = new PhoneVerificationChallenge(
+                patientUser1,
+                "+94770000001",
+                "a1b2c3d4e5f67890123456789abcdef0123456789abcdef0123456789abcdef0",
+                PhoneVerificationDeliveryMode.TEST,
+                LocalDateTime.now().plusMinutes(10)
+        );
+        assertThat(challenge.getStatus()).isEqualTo(PhoneVerificationChallengeStatus.CREATED);
+
+        when(challengeRepository.findByUserIdAndStatusInForUpdate(eq(101L), eq(PhoneVerificationChallengeRepository.OUTSTANDING_STATUSES)))
+                .thenReturn(List.of(challenge));
+
+        com.dentcare.patient.dto.UpdatePatientProfileRequest request =
+                new com.dentcare.patient.dto.UpdatePatientProfileRequest("+94770000002");
+
+        patientPortalService.updatePatientProfile("patient1@dentcare.test", request);
+
+        assertThat(challenge.getStatus()).isEqualTo(PhoneVerificationChallengeStatus.SUPERSEDED);
+        verify(challengeRepository).saveAll(List.of(challenge));
+    }
+
+    @Test
+    @DisplayName("2. Changing phone supersedes SUBMITTED challenges")
+    void testChangingPhoneSupersedesSubmittedChallenge() {
+        when(userRepository.findByEmailIgnoreCase("patient1@dentcare.test"))
+                .thenReturn(Optional.of(patientUser1));
+        when(userRepository.findByIdForUpdate(101L))
+                .thenReturn(Optional.of(patientUser1));
+        when(userRepository.save(any(User.class))).thenAnswer(invocation -> invocation.getArgument(0));
+
+        patientUser1.setPhone("+94770000001");
+        PhoneVerificationChallenge challenge = new PhoneVerificationChallenge(
+                patientUser1,
+                "+94770000001",
+                "a1b2c3d4e5f67890123456789abcdef0123456789abcdef0123456789abcdef0",
+                PhoneVerificationDeliveryMode.TEST,
+                LocalDateTime.now().plusMinutes(10)
+        );
+        challenge.setStatus(PhoneVerificationChallengeStatus.SUBMITTED);
+
+        when(challengeRepository.findByUserIdAndStatusInForUpdate(eq(101L), eq(PhoneVerificationChallengeRepository.OUTSTANDING_STATUSES)))
+                .thenReturn(List.of(challenge));
+
+        com.dentcare.patient.dto.UpdatePatientProfileRequest request =
+                new com.dentcare.patient.dto.UpdatePatientProfileRequest("+94770000002");
+
+        patientPortalService.updatePatientProfile("patient1@dentcare.test", request);
+
+        assertThat(challenge.getStatus()).isEqualTo(PhoneVerificationChallengeStatus.SUPERSEDED);
+        verify(challengeRepository).saveAll(List.of(challenge));
+    }
+
+    @Test
+    @DisplayName("3. Changing phone supersedes DELIVERY_UNCERTAIN challenges")
+    void testChangingPhoneSupersedesDeliveryUncertainChallenge() {
+        when(userRepository.findByEmailIgnoreCase("patient1@dentcare.test"))
+                .thenReturn(Optional.of(patientUser1));
+        when(userRepository.findByIdForUpdate(101L))
+                .thenReturn(Optional.of(patientUser1));
+        when(userRepository.save(any(User.class))).thenAnswer(invocation -> invocation.getArgument(0));
+
+        patientUser1.setPhone("+94770000001");
+        PhoneVerificationChallenge challenge = new PhoneVerificationChallenge(
+                patientUser1,
+                "+94770000001",
+                "a1b2c3d4e5f67890123456789abcdef0123456789abcdef0123456789abcdef0",
+                PhoneVerificationDeliveryMode.TEST,
+                LocalDateTime.now().plusMinutes(10)
+        );
+        challenge.setStatus(PhoneVerificationChallengeStatus.DELIVERY_UNCERTAIN);
+
+        when(challengeRepository.findByUserIdAndStatusInForUpdate(eq(101L), eq(PhoneVerificationChallengeRepository.OUTSTANDING_STATUSES)))
+                .thenReturn(List.of(challenge));
+
+        com.dentcare.patient.dto.UpdatePatientProfileRequest request =
+                new com.dentcare.patient.dto.UpdatePatientProfileRequest("+94770000002");
+
+        patientPortalService.updatePatientProfile("patient1@dentcare.test", request);
+
+        assertThat(challenge.getStatus()).isEqualTo(PhoneVerificationChallengeStatus.SUPERSEDED);
+        verify(challengeRepository).saveAll(List.of(challenge));
+    }
+
+    @Test
+    @DisplayName("4. Terminal challenges remain unchanged and are not queried for supersession")
+    void testTerminalChallengesRemainUnchanged() {
+        when(userRepository.findByEmailIgnoreCase("patient1@dentcare.test"))
+                .thenReturn(Optional.of(patientUser1));
+        when(userRepository.findByIdForUpdate(101L))
+                .thenReturn(Optional.of(patientUser1));
+        when(userRepository.save(any(User.class))).thenAnswer(invocation -> invocation.getArgument(0));
+
+        patientUser1.setPhone("+94770000001");
+
+        // The query repository specifies OUTSTANDING_STATUSES only
+        assertThat(PhoneVerificationChallengeRepository.OUTSTANDING_STATUSES)
+                .containsExactlyInAnyOrder(
+                        PhoneVerificationChallengeStatus.CREATED,
+                        PhoneVerificationChallengeStatus.SUBMITTED,
+                        PhoneVerificationChallengeStatus.DELIVERY_UNCERTAIN
+                );
+        assertThat(PhoneVerificationChallengeRepository.OUTSTANDING_STATUSES)
+                .doesNotContain(
+                        PhoneVerificationChallengeStatus.SEND_FAILED,
+                        PhoneVerificationChallengeStatus.VERIFIED,
+                        PhoneVerificationChallengeStatus.EXPIRED,
+                        PhoneVerificationChallengeStatus.EXHAUSTED,
+                        PhoneVerificationChallengeStatus.SUPERSEDED
+                );
+
+        when(challengeRepository.findByUserIdAndStatusInForUpdate(eq(101L), eq(PhoneVerificationChallengeRepository.OUTSTANDING_STATUSES)))
+                .thenReturn(List.of()); // No outstanding challenges found
+
+        com.dentcare.patient.dto.UpdatePatientProfileRequest request =
+                new com.dentcare.patient.dto.UpdatePatientProfileRequest("+94770000002");
+
+        patientPortalService.updatePatientProfile("patient1@dentcare.test", request);
+
+        verify(challengeRepository, never()).saveAll(any());
+    }
+
+    @Test
+    @DisplayName("5. Multiple outstanding challenges are all superseded for the authenticated patient")
+    void testMultipleOutstandingChallengesAllSuperseded() {
+        when(userRepository.findByEmailIgnoreCase("patient1@dentcare.test"))
+                .thenReturn(Optional.of(patientUser1));
+        when(userRepository.findByIdForUpdate(101L))
+                .thenReturn(Optional.of(patientUser1));
+        when(userRepository.save(any(User.class))).thenAnswer(invocation -> invocation.getArgument(0));
+
+        patientUser1.setPhone("+94770000001");
+        PhoneVerificationChallenge c1 = new PhoneVerificationChallenge(
+                patientUser1, "+94770000001", "mac1...", PhoneVerificationDeliveryMode.TEST, LocalDateTime.now().plusMinutes(10)
+        );
+        c1.setStatus(PhoneVerificationChallengeStatus.CREATED);
+
+        PhoneVerificationChallenge c2 = new PhoneVerificationChallenge(
+                patientUser1, "+94770000001", "mac2...", PhoneVerificationDeliveryMode.TEST, LocalDateTime.now().plusMinutes(10)
+        );
+        c2.setStatus(PhoneVerificationChallengeStatus.SUBMITTED);
+
+        PhoneVerificationChallenge c3 = new PhoneVerificationChallenge(
+                patientUser1, "+94770000001", "mac3...", PhoneVerificationDeliveryMode.TEST, LocalDateTime.now().plusMinutes(10)
+        );
+        c3.setStatus(PhoneVerificationChallengeStatus.DELIVERY_UNCERTAIN);
+
+        when(challengeRepository.findByUserIdAndStatusInForUpdate(eq(101L), eq(PhoneVerificationChallengeRepository.OUTSTANDING_STATUSES)))
+                .thenReturn(List.of(c1, c2, c3));
+
+        com.dentcare.patient.dto.UpdatePatientProfileRequest request =
+                new com.dentcare.patient.dto.UpdatePatientProfileRequest("+94770000002");
+
+        patientPortalService.updatePatientProfile("patient1@dentcare.test", request);
+
+        assertThat(c1.getStatus()).isEqualTo(PhoneVerificationChallengeStatus.SUPERSEDED);
+        assertThat(c2.getStatus()).isEqualTo(PhoneVerificationChallengeStatus.SUPERSEDED);
+        assertThat(c3.getStatus()).isEqualTo(PhoneVerificationChallengeStatus.SUPERSEDED);
+        verify(challengeRepository).saveAll(List.of(c1, c2, c3));
+    }
+
+    @Test
+    @DisplayName("6. Challenges of other users remain untouched")
+    void testChallengesOfOtherUsersRemainUntouched() {
+        when(userRepository.findByEmailIgnoreCase("patient1@dentcare.test"))
+                .thenReturn(Optional.of(patientUser1));
+        when(userRepository.findByIdForUpdate(101L))
+                .thenReturn(Optional.of(patientUser1));
+        when(userRepository.save(any(User.class))).thenAnswer(invocation -> invocation.getArgument(0));
+
+        patientUser1.setPhone("+94770000001");
+
+        // When patient 1 updates phone, only patient 1's ID (101L) is queried
+        when(challengeRepository.findByUserIdAndStatusInForUpdate(eq(101L), any()))
+                .thenReturn(List.of());
+
+        com.dentcare.patient.dto.UpdatePatientProfileRequest request =
+                new com.dentcare.patient.dto.UpdatePatientProfileRequest("+94770000002");
+
+        patientPortalService.updatePatientProfile("patient1@dentcare.test", request);
+
+        // Verify patient2's challenges (ID 102L) were never queried
+        verify(challengeRepository, never()).findByUserIdAndStatusInForUpdate(eq(102L), any());
+    }
+
+    @Test
+    @DisplayName("7. Same phone preserves challenge states and does not trigger challenge queries")
+    void testSamePhonePreservesChallengeStates() {
+        when(userRepository.findByEmailIgnoreCase("patient1@dentcare.test"))
+                .thenReturn(Optional.of(patientUser1));
+        when(userRepository.findByIdForUpdate(101L))
+                .thenReturn(Optional.of(patientUser1));
+        when(userRepository.save(any(User.class))).thenAnswer(invocation -> invocation.getArgument(0));
+
+        patientUser1.setPhone("+94771234567");
+
+        com.dentcare.patient.dto.UpdatePatientProfileRequest request =
+                new com.dentcare.patient.dto.UpdatePatientProfileRequest("+94771234567");
+
+        patientPortalService.updatePatientProfile("patient1@dentcare.test", request);
+
+        verify(challengeRepository, never()).findByUserIdAndStatusInForUpdate(any(), any());
+        verify(challengeRepository, never()).saveAll(any());
+    }
+
+    @Test
+    @DisplayName("8. Non-phone profile edit preserves challenges")
+    void testNonPhoneProfileEditPreservesChallenges() {
+        when(userRepository.findByEmailIgnoreCase("patient1@dentcare.test"))
+                .thenReturn(Optional.of(patientUser1));
+        when(userRepository.findByIdForUpdate(101L))
+                .thenReturn(Optional.of(patientUser1));
+        when(userRepository.save(any(User.class))).thenAnswer(invocation -> invocation.getArgument(0));
+
+        patientUser1.setPhone("+94771234567");
+        patientUser1.setPhoneVerified(true);
+        LocalDateTime verifiedAt = LocalDateTime.now().minusDays(1);
+        patientUser1.setPhoneVerifiedAt(verifiedAt);
+
+        // Update request with same phone (simulating non-phone or identity preservation)
+        com.dentcare.patient.dto.UpdatePatientProfileRequest request =
+                new com.dentcare.patient.dto.UpdatePatientProfileRequest("+94771234567");
+
+        patientPortalService.updatePatientProfile("patient1@dentcare.test", request);
+
+        assertThat(patientUser1.isPhoneVerified()).isTrue();
+        assertThat(patientUser1.getPhoneVerifiedAt()).isEqualTo(verifiedAt);
+        verify(challengeRepository, never()).findByUserIdAndStatusInForUpdate(any(), any());
+    }
+
+    @Test
+    @DisplayName("9. Phone clearing supersedes outstanding challenges")
+    void testPhoneClearingSupersedesOutstandingChallenges() {
+        when(userRepository.findByEmailIgnoreCase("patient1@dentcare.test"))
+                .thenReturn(Optional.of(patientUser1));
+        when(userRepository.findByIdForUpdate(101L))
+                .thenReturn(Optional.of(patientUser1));
+        when(userRepository.save(any(User.class))).thenAnswer(invocation -> invocation.getArgument(0));
+
+        patientUser1.setPhone("+94770000001");
+        PhoneVerificationChallenge challenge = new PhoneVerificationChallenge(
+                patientUser1,
+                "+94770000001",
+                "mac...",
+                PhoneVerificationDeliveryMode.TEST,
+                LocalDateTime.now().plusMinutes(10)
+        );
+        challenge.setStatus(PhoneVerificationChallengeStatus.CREATED);
+
+        when(challengeRepository.findByUserIdAndStatusInForUpdate(eq(101L), eq(PhoneVerificationChallengeRepository.OUTSTANDING_STATUSES)))
+                .thenReturn(List.of(challenge));
+
+        com.dentcare.patient.dto.UpdatePatientProfileRequest request =
+                new com.dentcare.patient.dto.UpdatePatientProfileRequest(null);
+
+        patientPortalService.updatePatientProfile("patient1@dentcare.test", request);
+
+        assertThat(patientUser1.getPhone()).isNull();
+        assertThat(challenge.getStatus()).isEqualTo(PhoneVerificationChallengeStatus.SUPERSEDED);
+        verify(challengeRepository).saveAll(List.of(challenge));
+    }
+
+    @Test
+    @DisplayName("12. Failed challenge update propagates exception to trigger transaction rollback")
+    void testFailedChallengeUpdatePropagatesException() {
+        when(userRepository.findByEmailIgnoreCase("patient1@dentcare.test"))
+                .thenReturn(Optional.of(patientUser1));
+        when(userRepository.findByIdForUpdate(101L))
+                .thenReturn(Optional.of(patientUser1));
+        when(userRepository.save(any(User.class))).thenAnswer(invocation -> invocation.getArgument(0));
+
+        patientUser1.setPhone("+94770000001");
+        PhoneVerificationChallenge challenge = new PhoneVerificationChallenge(
+                patientUser1, "+94770000001", "mac...", PhoneVerificationDeliveryMode.TEST, LocalDateTime.now().plusMinutes(10)
+        );
+
+        when(challengeRepository.findByUserIdAndStatusInForUpdate(eq(101L), any()))
+                .thenReturn(List.of(challenge));
+        when(challengeRepository.saveAll(any()))
+                .thenThrow(new org.springframework.dao.DataIntegrityViolationException("Database lock error"));
+
+        com.dentcare.patient.dto.UpdatePatientProfileRequest request =
+                new com.dentcare.patient.dto.UpdatePatientProfileRequest("+94770000002");
+
+        assertThatThrownBy(() -> patientPortalService.updatePatientProfile("patient1@dentcare.test", request))
+                .isInstanceOf(org.springframework.dao.DataIntegrityViolationException.class)
+                .hasMessageContaining("Database lock error");
+    }
+
+    @Test
+    @DisplayName("13. Failed user lookup during update throws exception")
+    void testFailedUserLockLookupThrowsException() {
+        when(userRepository.findByEmailIgnoreCase("patient1@dentcare.test"))
+                .thenReturn(Optional.of(patientUser1));
+        when(userRepository.findByIdForUpdate(101L))
+                .thenReturn(Optional.empty());
+
+        com.dentcare.patient.dto.UpdatePatientProfileRequest request =
+                new com.dentcare.patient.dto.UpdatePatientProfileRequest("+94770000002");
+
+        assertThatThrownBy(() -> patientPortalService.updatePatientProfile("patient1@dentcare.test", request))
+                .isInstanceOf(ResponseStatusException.class)
+                .satisfies(ex -> {
+                    ResponseStatusException rse = (ResponseStatusException) ex;
+                    assertThat(rse.getStatusCode()).isEqualTo(HttpStatus.UNAUTHORIZED);
+                });
+    }
+
+    @Test
+    @DisplayName("14. Unauthenticated request without email throws 401 Unauthorized")
+    void testUnauthenticatedProfileUpdateThrows401() {
+        com.dentcare.patient.dto.UpdatePatientProfileRequest request =
+                new com.dentcare.patient.dto.UpdatePatientProfileRequest("+94770000002");
+
+        assertThatThrownBy(() -> patientPortalService.updatePatientProfile(null, request))
+                .isInstanceOf(ResponseStatusException.class)
+                .satisfies(ex -> {
+                    ResponseStatusException rse = (ResponseStatusException) ex;
+                    assertThat(rse.getStatusCode()).isEqualTo(HttpStatus.UNAUTHORIZED);
+                });
+
+        assertThatThrownBy(() -> patientPortalService.updatePatientProfile("   ", request))
+                .isInstanceOf(ResponseStatusException.class)
+                .satisfies(ex -> {
+                    ResponseStatusException rse = (ResponseStatusException) ex;
+                    assertThat(rse.getStatusCode()).isEqualTo(HttpStatus.UNAUTHORIZED);
+                });
+    }
+
+    @Test
+    @DisplayName("15. Unauthorized non-patient role throws 403 Forbidden")
+    void testUnauthorizedNonPatientRoleThrows403() {
+        when(userRepository.findByEmailIgnoreCase("dentist@dentcare.test"))
+                .thenReturn(Optional.of(dentistUser));
+
+        com.dentcare.patient.dto.UpdatePatientProfileRequest request =
+                new com.dentcare.patient.dto.UpdatePatientProfileRequest("+94770000002");
+
+        assertThatThrownBy(() -> patientPortalService.updatePatientProfile("dentist@dentcare.test", request))
+                .isInstanceOf(ResponseStatusException.class)
+                .satisfies(ex -> {
+                    ResponseStatusException rse = (ResponseStatusException) ex;
+                    assertThat(rse.getStatusCode()).isEqualTo(HttpStatus.FORBIDDEN);
+                });
+    }
+
+    @Test
+    @DisplayName("17. No SMS outbox record is created during phone update")
+    void testNoSmsOutboxCreatedDuringPhoneUpdate() {
+        when(userRepository.findByEmailIgnoreCase("patient1@dentcare.test"))
+                .thenReturn(Optional.of(patientUser1));
+        when(userRepository.findByIdForUpdate(101L))
+                .thenReturn(Optional.of(patientUser1));
+        when(userRepository.save(any(User.class))).thenAnswer(invocation -> invocation.getArgument(0));
+
+        com.dentcare.patient.dto.UpdatePatientProfileRequest request =
+                new com.dentcare.patient.dto.UpdatePatientProfileRequest("+94770000002");
+
+        patientPortalService.updatePatientProfile("patient1@dentcare.test", request);
+
+        // Verification: Pure profile/challenge update; no outbox interactions
+        assertThat(patientUser1.getPhone()).isEqualTo("+94770000002");
+    }
+
+    @Test
+    @DisplayName("18. No OTP or SMS is dispatched during profile phone update")
+    void testNoOtpOrSmsDispatchedDuringPhoneUpdate() {
+        when(userRepository.findByEmailIgnoreCase("patient1@dentcare.test"))
+                .thenReturn(Optional.of(patientUser1));
+        when(userRepository.findByIdForUpdate(101L))
+                .thenReturn(Optional.of(patientUser1));
+        when(userRepository.save(any(User.class))).thenAnswer(invocation -> invocation.getArgument(0));
+
+        com.dentcare.patient.dto.UpdatePatientProfileRequest request =
+                new com.dentcare.patient.dto.UpdatePatientProfileRequest("+94770000002");
+
+        patientPortalService.updatePatientProfile("patient1@dentcare.test", request);
+
+        // State changes only; no network or messaging side effects
+        assertThat(patientUser1.getPhone()).isEqualTo("+94770000002");
+    }
+
+    @Test
+    @DisplayName("Appointment booking with smsConsent true does not imply or grant phone verification")
+    void testBookingWithSmsConsentDoesNotVerifyPhone() {
+        when(userRepository.findByEmailIgnoreCase("patient1@dentcare.test"))
+                .thenReturn(Optional.of(patientUser1));
+        when(appointmentRepository.save(any(com.dentcare.appointment.entity.Appointment.class)))
+                .thenAnswer(invocation -> {
+                    com.dentcare.appointment.entity.Appointment a = invocation.getArgument(0);
+                    a.setId(7001L);
+                    return a;
+                });
+
+        patientUser1.setPhone("+1 555-0101");
+        assertThat(patientUser1.isPhoneVerified()).isFalse();
+
+        com.dentcare.appointment.dto.CreateAppointmentRequest request =
+                new com.dentcare.appointment.dto.CreateAppointmentRequest(
+                        java.time.LocalDate.now().plusDays(3),
+                        "10:00",
+                        "Consultation",
+                        null,
+                        true // smsConsent opt-in
+                );
+
+        patientPortalService.createAppointmentRequest("patient1@dentcare.test", request);
+
+        // SMS consent must NEVER imply or derive phone verification
+        assertThat(patientUser1.isPhoneVerified()).isFalse();
+        assertThat(patientUser1.getPhoneVerifiedAt()).isNull();
     }
 
     // =========================================================================
@@ -1206,5 +1745,319 @@ class PatientPortalServiceTest {
                     assertThat(rse.getStatusCode()).isEqualTo(HttpStatus.FORBIDDEN);
                     assertThat(rse.getReason()).contains("Access denied: patient self-service only");
                 });
+    }
+
+    @Test
+    @DisplayName("createAppointmentRequest with null smsConsent defaults to false and records no timestamp")
+    void testCreateAppointmentRequestWithNullSmsConsentDefaultsToFalse() {
+        when(userRepository.findByEmailIgnoreCase("patient1@dentcare.test"))
+                .thenReturn(Optional.of(patientUser1));
+
+        CreateAppointmentRequest request = new CreateAppointmentRequest(
+                LocalDate.now().plusDays(5),
+                "10:00",
+                "Checkup",
+                null,
+                null // null consent
+        );
+
+        when(appointmentRepository.save(any(Appointment.class))).thenAnswer(invocation -> {
+            Appointment a = invocation.getArgument(0);
+            assertThat(a.isSmsConsent()).isFalse();
+            assertThat(a.getSmsConsentAt()).isNull();
+            assertThat(a.getStatus()).isEqualTo(AppointmentStatus.PENDING);
+            a.setId(6001L);
+            return a;
+        });
+
+        PatientAppointmentResponse response = patientPortalService.createAppointmentRequest("patient1@dentcare.test", request);
+
+        assertThat(response).isNotNull();
+        assertThat(response.id()).isEqualTo(6001L);
+        assertThat(response.status()).isEqualTo("PENDING");
+    }
+
+    @Test
+    @DisplayName("createAppointmentRequest with explicit false smsConsent persists false and null timestamp")
+    void testCreateAppointmentRequestWithExplicitFalseConsent() {
+        when(userRepository.findByEmailIgnoreCase("patient1@dentcare.test"))
+                .thenReturn(Optional.of(patientUser1));
+
+        CreateAppointmentRequest request = new CreateAppointmentRequest(
+                LocalDate.now().plusDays(5),
+                "10:00",
+                "Checkup",
+                null,
+                Boolean.FALSE
+        );
+
+        when(appointmentRepository.save(any(Appointment.class))).thenAnswer(invocation -> {
+            Appointment a = invocation.getArgument(0);
+            assertThat(a.isSmsConsent()).isFalse();
+            assertThat(a.getSmsConsentAt()).isNull();
+            assertThat(a.getStatus()).isEqualTo(AppointmentStatus.PENDING);
+            a.setId(6002L);
+            return a;
+        });
+
+        PatientAppointmentResponse response = patientPortalService.createAppointmentRequest("patient1@dentcare.test", request);
+
+        assertThat(response).isNotNull();
+        assertThat(response.id()).isEqualTo(6002L);
+    }
+
+    @Test
+    @DisplayName("createAppointmentRequest with explicit true smsConsent persists true and server-side timestamp")
+    void testCreateAppointmentRequestWithExplicitTrueConsent() {
+        when(userRepository.findByEmailIgnoreCase("patient1@dentcare.test"))
+                .thenReturn(Optional.of(patientUser1));
+
+        CreateAppointmentRequest request = new CreateAppointmentRequest(
+                LocalDate.now().plusDays(5),
+                "10:00",
+                "Checkup",
+                null,
+                Boolean.TRUE
+        );
+
+        when(appointmentRepository.save(any(Appointment.class))).thenAnswer(invocation -> {
+            Appointment a = invocation.getArgument(0);
+            assertThat(a.isSmsConsent()).isTrue();
+            assertThat(a.getSmsConsentAt()).isNotNull();
+            assertThat(a.getSmsConsentAt()).isBeforeOrEqualTo(java.time.LocalDateTime.now());
+            assertThat(a.getStatus()).isEqualTo(AppointmentStatus.PENDING);
+            a.setId(6003L);
+            return a;
+        });
+
+        PatientAppointmentResponse response = patientPortalService.createAppointmentRequest("patient1@dentcare.test", request);
+
+        assertThat(response).isNotNull();
+        assertThat(response.id()).isEqualTo(6003L);
+        assertThat(response.status()).isEqualTo("PENDING");
+    }
+
+    @Test
+    @DisplayName("createAppointmentRequest validation failure does not save appointment or persist consent")
+    void testCreateAppointmentRequestValidationFailureDoesNotPersistConsent() {
+        CreateAppointmentRequest invalidRequest = new CreateAppointmentRequest(
+                LocalDate.now().minusDays(1), // past date
+                "10:00",
+                "Checkup",
+                null,
+                Boolean.TRUE
+        );
+
+        assertThatThrownBy(() -> patientPortalService.createAppointmentRequest("patient1@dentcare.test", invalidRequest))
+                .isInstanceOf(ResponseStatusException.class);
+
+        verify(appointmentRepository, never()).save(any(Appointment.class));
+    }
+
+    @Test
+    @DisplayName("createAppointmentRequest persists Appointment and exactly one EmailNotification in outbox with correct template")
+    void testCreateAppointmentRequestPersistsEmailOutboxNotification() {
+        when(userRepository.findByEmailIgnoreCase("patient1@dentcare.test"))
+                .thenReturn(Optional.of(patientUser1));
+
+        LocalDate apptDate = LocalDate.now().plusDays(5);
+        CreateAppointmentRequest request = new CreateAppointmentRequest(
+                apptDate,
+                "10:00",
+                "Routine Cleaning",
+                "Sensitive gums",
+                null
+        );
+
+        when(appointmentRepository.save(any(Appointment.class))).thenAnswer(invocation -> {
+            Appointment a = invocation.getArgument(0);
+            a.setId(6001L);
+            return a;
+        });
+
+        PatientAppointmentResponse response = patientPortalService.createAppointmentRequest("patient1@dentcare.test", request);
+
+        assertThat(response).isNotNull();
+        assertThat(response.id()).isEqualTo(6001L);
+        assertThat(response.status()).isEqualTo("PENDING");
+
+        // Verify email outbox notification was saved
+        ArgumentCaptor<AppointmentEmailNotification> captor = ArgumentCaptor.forClass(AppointmentEmailNotification.class);
+        verify(emailNotificationRepository).save(captor.capture());
+        AppointmentEmailNotification savedNotif = captor.getValue();
+
+        assertThat(savedNotif).isNotNull();
+        assertThat(savedNotif.getRecipientEmail()).isEqualTo("patient1@dentcare.test");
+        assertThat(savedNotif.getIdempotencyKey()).isEqualTo("APPOINTMENT_REQUEST_RECEIVED:6001");
+        assertThat(savedNotif.getEmailSubject()).isEqualTo("DentCare - Appointment Request Received");
+        assertThat(savedNotif.getStatus()).isEqualTo(EmailNotificationStatus.PENDING);
+        assertThat(savedNotif.getAttemptCount()).isEqualTo(0);
+
+        String body = savedNotif.getEmailBody();
+        assertThat(body).contains("Dear Patient,");
+        assertThat(body).contains("Your appointment request has been successfully received by DentCare.");
+        assertThat(body).contains("Booking ID: 6001");
+        assertThat(body).contains("Appointment Date: " + apptDate);
+        assertThat(body).contains("Preferred Time: 10:00");
+        assertThat(body).contains("Appointment Status: Pending Confirmation");
+        assertThat(body).contains("Please note that your appointment request is awaiting confirmation from the clinic.");
+        assertThat(body).contains("Thank you,\nDentCare Team");
+
+        // Privacy and Security requirements: reason and notes must NEVER be included in email
+        assertThat(body).doesNotContain("Routine Cleaning");
+        assertThat(body).doesNotContain("Sensitive gums");
+        assertThat(body).doesNotContain("Dr.");
+    }
+
+    @Test
+    @DisplayName("createAppointmentRequest with absent preferred time uses 'Not specified' fallback in email body")
+    void testCreateAppointmentRequestMissingPreferredTimeFallback() {
+        when(userRepository.findByEmailIgnoreCase("patient1@dentcare.test"))
+                .thenReturn(Optional.of(patientUser1));
+
+        LocalDate apptDate = LocalDate.now().plusDays(4);
+        CreateAppointmentRequest request = new CreateAppointmentRequest(
+                apptDate,
+                null,
+                "Consultation",
+                null,
+                null
+        );
+
+        when(appointmentRepository.save(any(Appointment.class))).thenAnswer(invocation -> {
+            Appointment a = invocation.getArgument(0);
+            a.setId(6002L);
+            return a;
+        });
+
+        patientPortalService.createAppointmentRequest("patient1@dentcare.test", request);
+
+        ArgumentCaptor<AppointmentEmailNotification> captor = ArgumentCaptor.forClass(AppointmentEmailNotification.class);
+        verify(emailNotificationRepository).save(captor.capture());
+        AppointmentEmailNotification savedNotif = captor.getValue();
+
+        assertThat(savedNotif.getEmailBody()).contains("Preferred Time: Not specified");
+    }
+
+    @Test
+    @DisplayName("createAppointmentRequest rejects duplicate idempotency key and prevents duplicate outbox record")
+    void testCreateAppointmentRequestDuplicateIdempotencyKeyRejected() {
+        when(userRepository.findByEmailIgnoreCase("patient1@dentcare.test"))
+                .thenReturn(Optional.of(patientUser1));
+
+        CreateAppointmentRequest request = new CreateAppointmentRequest(
+                LocalDate.now().plusDays(3),
+                "14:00",
+                "Consultation",
+                null,
+                null
+        );
+
+        when(appointmentRepository.save(any(Appointment.class))).thenAnswer(invocation -> {
+            Appointment a = invocation.getArgument(0);
+            a.setId(6003L);
+            return a;
+        });
+
+        when(emailNotificationRepository.existsByIdempotencyKey("APPOINTMENT_REQUEST_RECEIVED:6003"))
+                .thenReturn(true);
+
+        assertThatThrownBy(() -> patientPortalService.createAppointmentRequest("patient1@dentcare.test", request))
+                .isInstanceOf(IllegalStateException.class)
+                .hasMessageContaining("Email notification already exists for appointment 6003");
+
+        verify(emailNotificationRepository, never()).save(any(AppointmentEmailNotification.class));
+    }
+
+    @Test
+    @DisplayName("createAppointmentRequest propagates exception if email notification persistence fails")
+    void testCreateAppointmentRequestEmailSaveFailurePropagatesException() {
+        when(userRepository.findByEmailIgnoreCase("patient1@dentcare.test"))
+                .thenReturn(Optional.of(patientUser1));
+
+        CreateAppointmentRequest request = new CreateAppointmentRequest(
+                LocalDate.now().plusDays(3),
+                "14:00",
+                "Consultation",
+                null,
+                null
+        );
+
+        when(appointmentRepository.save(any(Appointment.class))).thenAnswer(invocation -> {
+            Appointment a = invocation.getArgument(0);
+            a.setId(6004L);
+            return a;
+        });
+
+        when(emailNotificationRepository.save(any(AppointmentEmailNotification.class)))
+                .thenThrow(new RuntimeException("Database constraint violation in outbox"));
+
+        assertThatThrownBy(() -> patientPortalService.createAppointmentRequest("patient1@dentcare.test", request))
+                .isInstanceOf(RuntimeException.class)
+                .hasMessageContaining("Database constraint violation in outbox");
+    }
+
+    @Test
+    @DisplayName("createAppointmentRequest rejects user with empty email address")
+    void testCreateAppointmentRequestRejectsBlankEmail() {
+        User userWithoutEmail = new User("", "hash", "No", "Email", "+123456", Role.PATIENT);
+        userWithoutEmail.setId(199L);
+        when(userRepository.findByEmailIgnoreCase("noemail@dentcare.test"))
+                .thenReturn(Optional.of(userWithoutEmail));
+
+        CreateAppointmentRequest request = new CreateAppointmentRequest(
+                LocalDate.now().plusDays(2),
+                "11:00",
+                "Consultation",
+                null,
+                null
+        );
+
+        when(appointmentRepository.save(any(Appointment.class))).thenAnswer(invocation -> {
+            Appointment a = invocation.getArgument(0);
+            a.setId(6005L);
+            return a;
+        });
+
+        assertThatThrownBy(() -> patientPortalService.createAppointmentRequest("noemail@dentcare.test", request))
+                .isInstanceOf(ResponseStatusException.class)
+                .satisfies(ex -> {
+                    ResponseStatusException rse = (ResponseStatusException) ex;
+                    assertThat(rse.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST);
+                    assertThat(rse.getReason()).contains("Registered patient email is required");
+                });
+    }
+
+    @Test
+    @DisplayName("Existing appointments and queries do not retroactively queue email notifications")
+    void testExistingBookingsNotRetroactivelyQueued() {
+        when(userRepository.findByEmailIgnoreCase("patient1@dentcare.test"))
+                .thenReturn(Optional.of(patientUser1));
+
+        Appointment existingAppt = new Appointment();
+        existingAppt.setId(5001L);
+        existingAppt.setPatient(patientUser1);
+        existingAppt.setStatus(AppointmentStatus.PENDING);
+        existingAppt.setAppointmentDate(LocalDate.now().plusDays(10));
+
+        when(appointmentRepository.findByPatientIdOrderByAppointmentDateDescCreatedAtDesc(patientUser1.getId()))
+                .thenReturn(List.of(existingAppt));
+        when(appointmentRepository.findByIdWithDentist(5001L))
+                .thenReturn(Optional.of(existingAppt));
+
+        // 1. Fetching list
+        List<PatientAppointmentResponse> list = patientPortalService.getPatientAppointments("patient1@dentcare.test");
+        assertThat(list).hasSize(1);
+
+        // 2. Fetching single
+        PatientAppointmentResponse single = patientPortalService.getPatientAppointmentById("patient1@dentcare.test", 5001L);
+        assertThat(single).isNotNull();
+
+        // 3. Cancelling appointment
+        when(appointmentRepository.save(any(Appointment.class))).thenReturn(existingAppt);
+        patientPortalService.cancelAppointmentRequest("patient1@dentcare.test", 5001L);
+
+        // Verify outbox repository was NEVER called for historical appointments
+        verify(emailNotificationRepository, never()).save(any(AppointmentEmailNotification.class));
     }
 }

@@ -16,7 +16,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 /**
- * Implementation of {@link InventoryItemService} enforcing catalog lifecycle and integrity rules.
+ * Implementation of {@link InventoryItemService} enforcing catalog lifecycle
+ * and integrity rules.
  */
 @Service
 @Transactional(readOnly = true)
@@ -36,9 +37,10 @@ public class InventoryItemServiceImpl implements InventoryItemService {
             throw new DuplicateItemCodeException(code);
         }
 
-        String supplierRef = (request.getDefaultSupplierReference() != null && !request.getDefaultSupplierReference().trim().isEmpty())
-                ? request.getDefaultSupplierReference().trim()
-                : null;
+        String supplierRef = (request.getDefaultSupplierReference() != null
+                && !request.getDefaultSupplierReference().trim().isEmpty())
+                        ? request.getDefaultSupplierReference().trim()
+                        : null;
 
         InventoryItem item = new InventoryItem(
                 code,
@@ -47,8 +49,7 @@ public class InventoryItemServiceImpl implements InventoryItemService {
                 request.getUnit().trim(),
                 request.getReorderLevel(),
                 0,
-                supplierRef
-        );
+                supplierRef);
         item.setActive(true);
 
         InventoryItem saved = inventoryItemRepository.save(item);
@@ -68,11 +69,13 @@ public class InventoryItemServiceImpl implements InventoryItemService {
         InventoryItem item = inventoryItemRepository.findById(id)
                 .orElseThrow(() -> new InventoryItemNotFoundException(id));
 
-        String supplierRef = (request.getDefaultSupplierReference() != null && !request.getDefaultSupplierReference().trim().isEmpty())
-                ? request.getDefaultSupplierReference().trim()
-                : null;
+        String supplierRef = (request.getDefaultSupplierReference() != null
+                && !request.getDefaultSupplierReference().trim().isEmpty())
+                        ? request.getDefaultSupplierReference().trim()
+                        : null;
 
-        // Update catalog attributes only (itemCode and currentQuantity remain immutable)
+        // Update catalog attributes only (itemCode and currentQuantity remain
+        // immutable)
         item.setName(request.getName().trim());
         item.setCategory(request.getCategory().trim());
         item.setUnit(request.getUnit().trim());
@@ -103,14 +106,12 @@ public class InventoryItemServiceImpl implements InventoryItemService {
             String category,
             Boolean active,
             StockStatusFilter stockStatus,
-            Pageable pageable
-    ) {
+            Pageable pageable) {
         Specification<InventoryItem> spec = InventoryItemSpecifications.buildSpecification(
                 search,
                 category,
                 active,
-                stockStatus
-        );
+                stockStatus);
         Page<InventoryItem> page = inventoryItemRepository.findAll(spec, pageable);
         return page.map(InventoryItemResponse::fromEntity);
     }

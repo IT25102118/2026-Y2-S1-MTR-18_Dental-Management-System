@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Link, useParams } from 'react-router-dom';
+import { Link, useParams, useLocation } from 'react-router-dom';
 import { getInvoice, getInvoicePayments, issueInvoice, cancelInvoice, BillingApiError } from '../api/billingApi';
 import InvoiceStatusBadge from '../components/InvoiceStatusBadge';
 import PaymentDialog from '../components/PaymentDialog';
@@ -43,6 +43,7 @@ function formatDateTime(isoString) {
  */
 export default function InvoiceDetailPage() {
   const { id } = useParams();
+  const location = useLocation();
 
   const [invoice, setInvoice] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -54,6 +55,7 @@ export default function InvoiceDetailPage() {
   const [isCancelling, setIsCancelling] = useState(false);
   const [actionError, setActionError] = useState(null);
   const [successMessage, setSuccessMessage] = useState('');
+  const [lastRecordedPaymentId, setLastRecordedPaymentId] = useState(null);
   const [showPaymentDialog, setShowPaymentDialog] = useState(false);
 
   // Payment History State
@@ -68,8 +70,10 @@ export default function InvoiceDetailPage() {
     try {
       const data = await getInvoicePayments(invoiceId);
       setPayments(data || []);
+      return data || [];
     } catch (err) {
       setPaymentsError(err.message || 'Failed to load payment history.');
+      return [];
     } finally {
       setPaymentsLoading(false);
     }
@@ -86,6 +90,14 @@ export default function InvoiceDetailPage() {
         if (isMounted) {
           setInvoice(data);
           fetchPayments(data.id);
+          const searchParams = new URLSearchParams(location.search);
+          if (searchParams.get('autoprint') === 'true' && typeof window !== 'undefined' && window.print) {
+            setTimeout(() => {
+              if (window.print) {
+                window.print();
+              }
+            }, 300);
+          }
         }
       })
       .catch((err) => {
@@ -118,6 +130,7 @@ export default function InvoiceDetailPage() {
     setIsIssuing(true);
     setActionError(null);
     setSuccessMessage('');
+    setLastRecordedPaymentId(null);
 
     try {
       const updated = await issueInvoice(invoice.id);
@@ -141,6 +154,7 @@ export default function InvoiceDetailPage() {
     setIsCancelling(true);
     setActionError(null);
     setSuccessMessage('');
+    setLastRecordedPaymentId(null);
 
     try {
       const updated = await cancelInvoice(invoice.id);
@@ -154,16 +168,25 @@ export default function InvoiceDetailPage() {
     }
   };
 
-  const handlePaymentSuccess = async () => {
+  const handlePaymentSuccess = async (paymentResponse) => {
     setShowPaymentDialog(false);
     setSuccessMessage('Payment recorded successfully.');
+    if (paymentResponse?.id) {
+      setLastRecordedPaymentId(paymentResponse.id);
+    }
     setActionError(null);
     try {
-      const [refreshed] = await Promise.all([
+      const [refreshed, fetchedPayments] = await Promise.all([
         getInvoice(invoice.id),
         fetchPayments(invoice.id)
       ]);
       setInvoice(refreshed);
+      if (!paymentResponse?.id && fetchedPayments && fetchedPayments.length > 0) {
+        const latest = fetchedPayments[fetchedPayments.length - 1];
+        if (latest?.id) {
+          setLastRecordedPaymentId(latest.id);
+        }
+      }
     } catch (err) {
       setActionError(err.message || 'Payment recorded, but failed to refresh invoice details.');
     }
@@ -172,6 +195,7 @@ export default function InvoiceDetailPage() {
   const handleReversalSuccess = async () => {
     setSelectedPaymentToReverse(null);
     setSuccessMessage('Payment reversed successfully.');
+    setLastRecordedPaymentId(null);
     setActionError(null);
     try {
       const [refreshed] = await Promise.all([
@@ -182,6 +206,10 @@ export default function InvoiceDetailPage() {
     } catch (err) {
       setActionError(err.message || 'Payment reversed, but failed to refresh invoice details.');
     }
+  };
+
+  const handlePrint = () => {
+    window.print();
   };
 
   if (loading) {
@@ -230,6 +258,7 @@ export default function InvoiceDetailPage() {
   const canIssue = invoice.status === 'DRAFT';
   const canRecordPayment = invoice.status === 'UNPAID' || invoice.status === 'PARTIALLY_PAID';
   const canCancel = invoice.status !== 'PAID' && invoice.status !== 'CANCELLED';
+  const canPrint = invoice.status !== 'CANCELLED';
 
   const items = invoice.items || [];
 
@@ -272,7 +301,10 @@ export default function InvoiceDetailPage() {
               <button
                 type="button"
                 className="btn btn-primary"
-                onClick={() => setShowPaymentDialog(true)}
+                onClick={() => {
+                  setLastRecordedPaymentId(null);
+                  setShowPaymentDialog(true);
+                }}
                 disabled={actionSubmitting}
               >
                 Record Payment
@@ -294,15 +326,30 @@ export default function InvoiceDetailPage() {
 
       {/* Operation Feedback */}
       {successMessage && (
-        <div className="success-alert" role="status" data-testid="invoice-action-success">
-          <p>{successMessage}</p>
-          <button
-            type="button"
-            className="btn btn-secondary btn-sm"
-            onClick={() => setSuccessMessage('')}
-          >
-            Dismiss
-          </button>
+        <div className="success-alert no-print" role="status" data-testid="invoice-action-success">
+          <p style={{ margin: 0 }}>{successMessage}</p>
+          <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
+            {lastRecordedPaymentId && (
+              <Link
+                to={`/billing/payments/${lastRecordedPaymentId}/receipt?autoprint=true`}
+                className="btn btn-primary btn-sm"
+                data-testid="print-receipt-btn"
+                aria-label="Print receipt for recorded payment"
+              >
+                <span aria-hidden="true">🖨️</span> Print Receipt
+              </Link>
+            )}
+            <button
+              type="button"
+              className="btn btn-secondary btn-sm"
+              onClick={() => {
+                setSuccessMessage('');
+                setLastRecordedPaymentId(null);
+              }}
+            >
+              Dismiss
+            </button>
+          </div>
         </div>
       )}
 
@@ -448,7 +495,7 @@ export default function InvoiceDetailPage() {
                   <th scope="col" style={{ width: '14%' }}>Paid At</th>
                   <th scope="col" style={{ width: '12%' }}>Status</th>
                   <th scope="col" style={{ width: '14%' }}>Reversal Info</th>
-                  <th scope="col" style={{ width: '10%' }}>Action</th>
+                  <th scope="col" className="no-print" style={{ width: '10%' }}>Action</th>
                 </tr>
               </thead>
               <tbody>
@@ -483,7 +530,7 @@ export default function InvoiceDetailPage() {
                         '—'
                       )}
                     </td>
-                    <td>
+                    <td className="no-print">
                       <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center', flexWrap: 'wrap' }}>
                         <Link
                           to={`/billing/payments/${p.id}/receipt`}
@@ -520,6 +567,41 @@ export default function InvoiceDetailPage() {
           <p style={{ margin: 0, whiteSpace: 'pre-wrap', color: '#334155' }}>
             {invoice.notes}
           </p>
+        </div>
+      )}
+
+      {/* Bottom Action Bar */}
+      {canPrint && (
+        <div
+          className="invoice-bottom-actions no-print"
+          style={{
+            display: 'flex',
+            justifyContent: 'flex-end',
+            alignItems: 'center',
+            gap: '0.75rem',
+            marginTop: '1.5rem',
+            marginBottom: '2rem'
+          }}
+        >
+          {payments.length > 0 && (
+            <Link
+              to={`/billing/payments/${payments[payments.length - 1].id}/receipt?autoprint=true`}
+              className="btn btn-secondary"
+              aria-label="Print Latest Payment Receipt"
+              data-testid="print-latest-receipt-btn"
+            >
+              <span aria-hidden="true">🖨️</span> Print Receipt
+            </Link>
+          )}
+          <button
+            type="button"
+            className="btn btn-primary"
+            onClick={handlePrint}
+            aria-label="Print Invoice"
+            data-testid="print-invoice-bottom-btn"
+          >
+            <span aria-hidden="true">🖨️</span> Print Invoice
+          </button>
         </div>
       )}
 

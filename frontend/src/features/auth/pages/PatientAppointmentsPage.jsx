@@ -63,6 +63,15 @@ function UserIcon() {
   );
 }
 
+function MailIcon() {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+      <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z" />
+      <polyline points="22,6 12,13 2,6" />
+    </svg>
+  );
+}
+
 /**
  * Returns today's date formatted as YYYY-MM-DD in local time.
  */
@@ -465,6 +474,33 @@ export default function PatientAppointmentsPage() {
                     {fieldErrors.notes}
                   </span>
                 )}
+              </div>
+
+              {/* Email Notification Information Notice */}
+              <div className="appointment-form-group appointment-email-notice-group" style={{ marginBottom: '1.25rem' }}>
+                <div
+                  className="appointment-email-notice"
+                  data-testid="notice-appointment-email-notification"
+                  style={{
+                    display: 'flex',
+                    alignItems: 'flex-start',
+                    gap: '0.625rem',
+                    padding: '0.75rem 1rem',
+                    backgroundColor: '#f8fafc',
+                    borderRadius: '0.5rem',
+                    border: '1px solid #e2e8f0',
+                    color: '#334155',
+                    fontSize: '0.875rem',
+                    lineHeight: '1.4'
+                  }}
+                >
+                  <span style={{ width: '18px', height: '18px', flexShrink: 0, marginTop: '2px', color: '#0f766e' }}>
+                    <MailIcon />
+                  </span>
+                  <span>
+                    Your appointment request details will be emailed to your registered email address once email notifications are enabled.
+                  </span>
+                </div>
               </div>
 
               {/* Submit Button with Duplicate Submit Prevention */}

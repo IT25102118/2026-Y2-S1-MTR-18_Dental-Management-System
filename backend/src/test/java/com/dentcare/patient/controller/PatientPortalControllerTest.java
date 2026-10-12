@@ -195,6 +195,96 @@ class PatientPortalControllerTest {
                 .andExpect(jsonPath("$.reason", is("Routine checkup")))
                 .andExpect(jsonPath("$.status", is("PENDING")))
                 .andExpect(jsonPath("$.statusDescription", is("Pending confirmation")));
+
+        org.mockito.ArgumentCaptor<CreateAppointmentRequest> captor = org.mockito.ArgumentCaptor.forClass(CreateAppointmentRequest.class);
+        org.mockito.Mockito.verify(patientPortalService).createAppointmentRequest(eq("alice@dentcare.test"), captor.capture());
+        org.assertj.core.api.Assertions.assertThat(captor.getValue().smsConsent()).isNull();
+    }
+
+    @Test
+    @WithMockUser(roles = "PATIENT", username = "alice@dentcare.test")
+    @DisplayName("POST /api/patient/me/appointments with explicit smsConsent true binds field correctly")
+    void testCreateAppointmentWithExplicitSmsConsentTrue() throws Exception {
+        LocalDate futureDate = LocalDate.now().plusDays(3);
+        PatientAppointmentResponse apptResponse = new PatientAppointmentResponse(
+                502L,
+                futureDate,
+                "10:00",
+                "Routine checkup",
+                "Morning please",
+                "PENDING",
+                "Pending confirmation",
+                null,
+                LocalDateTime.now()
+        );
+
+        when(patientPortalService.createAppointmentRequest(eq("alice@dentcare.test"), any(CreateAppointmentRequest.class)))
+                .thenReturn(apptResponse);
+
+        String jsonPayload = """
+                {
+                    "appointmentDate": "%s",
+                    "preferredTime": "10:00",
+                    "reason": "Routine checkup",
+                    "notes": "Morning please",
+                    "smsConsent": true
+                }
+                """.formatted(futureDate);
+
+        mockMvc.perform(post("/api/patient/me/appointments")
+                        .with(csrf())
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(jsonPayload))
+                .andExpect(status().isCreated())
+                .andExpect(jsonPath("$.id", is(502)))
+                .andExpect(jsonPath("$.status", is("PENDING")));
+
+        org.mockito.ArgumentCaptor<CreateAppointmentRequest> captor = org.mockito.ArgumentCaptor.forClass(CreateAppointmentRequest.class);
+        org.mockito.Mockito.verify(patientPortalService).createAppointmentRequest(eq("alice@dentcare.test"), captor.capture());
+        org.assertj.core.api.Assertions.assertThat(captor.getValue().smsConsent()).isTrue();
+    }
+
+    @Test
+    @WithMockUser(roles = "PATIENT", username = "alice@dentcare.test")
+    @DisplayName("POST /api/patient/me/appointments with explicit smsConsent false binds field correctly")
+    void testCreateAppointmentWithExplicitSmsConsentFalse() throws Exception {
+        LocalDate futureDate = LocalDate.now().plusDays(3);
+        PatientAppointmentResponse apptResponse = new PatientAppointmentResponse(
+                503L,
+                futureDate,
+                "10:00",
+                "Routine checkup",
+                "Morning please",
+                "PENDING",
+                "Pending confirmation",
+                null,
+                LocalDateTime.now()
+        );
+
+        when(patientPortalService.createAppointmentRequest(eq("alice@dentcare.test"), any(CreateAppointmentRequest.class)))
+                .thenReturn(apptResponse);
+
+        String jsonPayload = """
+                {
+                    "appointmentDate": "%s",
+                    "preferredTime": "10:00",
+                    "reason": "Routine checkup",
+                    "notes": "Morning please",
+                    "smsConsent": false
+                }
+                """.formatted(futureDate);
+
+        mockMvc.perform(post("/api/patient/me/appointments")
+                        .with(csrf())
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(jsonPayload))
+                .andExpect(status().isCreated())
+                .andExpect(jsonPath("$.id", is(503)))
+                .andExpect(jsonPath("$.status", is("PENDING")));
+
+        org.mockito.ArgumentCaptor<CreateAppointmentRequest> captor = org.mockito.ArgumentCaptor.forClass(CreateAppointmentRequest.class);
+        org.mockito.Mockito.verify(patientPortalService).createAppointmentRequest(eq("alice@dentcare.test"), captor.capture());
+        org.assertj.core.api.Assertions.assertThat(captor.getValue().smsConsent()).isFalse();
     }
 
     @Test

@@ -26,4 +26,9 @@ public class UserPatientLookupAdapter implements PatientLookupPort {
                 .filter(user -> user.isActive() && user.getRole() == Role.PATIENT)
                 .isPresent();
     }
+
+    @Override
+    public java.util.Optional<com.dentcare.clinical.dto.PatientMedicalSummaryDto> getPatientMedicalSummary(Long patientId) {
+        return java.util.Optional.empty();
+    }
 }

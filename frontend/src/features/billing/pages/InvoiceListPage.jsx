@@ -81,9 +81,19 @@ export default function InvoiceListPage() {
 
       <div className="billing-header">
         <h1>Invoices</h1>
-        <Link to="/billing/invoices/new" className="btn btn-primary">
-          + Create Invoice
-        </Link>
+        <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
+          <button
+            type="button"
+            className="btn btn-secondary no-print"
+            onClick={() => window.print()}
+            aria-label="Print Invoices List"
+          >
+            <span aria-hidden="true">🖨️</span> Print List
+          </button>
+          <Link to="/billing/invoices/new" className="btn btn-primary no-print">
+            + Create Invoice
+          </Link>
+        </div>
       </div>
 
       <InvoiceFilters
@@ -183,7 +193,7 @@ export default function InvoiceListPage() {
                 <th scope="col" className="amount-header">Paid</th>
                 <th scope="col" className="amount-header">Balance</th>
                 <th scope="col">Status</th>
-                <th scope="col">Actions</th>
+                <th scope="col" className="no-print actions-col">Actions</th>
               </tr>
             </thead>
             <tbody>
@@ -198,7 +208,7 @@ export default function InvoiceListPage() {
                   <td>
                     <InvoiceStatusBadge status={inv.status} />
                   </td>
-                  <td>
+                  <td className="no-print actions-col">
                     <div className="table-actions">
                       <Link
                         to={`/billing/invoices/${inv.id}`}
@@ -206,6 +216,14 @@ export default function InvoiceListPage() {
                         aria-label={`View invoice ${inv.invoiceNumber}`}
                       >
                         View
+                      </Link>
+                      <Link
+                        to={`/billing/invoices/${inv.id}?autoprint=true`}
+                        className="btn btn-secondary btn-sm"
+                        aria-label={`Print invoice ${inv.invoiceNumber}`}
+                        title="Print invoice on one page"
+                      >
+                        Print
                       </Link>
                       {inv.status === 'DRAFT' && (
                         <Link
