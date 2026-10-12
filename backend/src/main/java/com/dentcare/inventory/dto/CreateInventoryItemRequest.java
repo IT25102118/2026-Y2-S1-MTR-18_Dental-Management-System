@@ -12,6 +12,7 @@ import jakarta.validation.constraints.Size;
 // creating a new inventory item
 public class CreateInventoryItemRequest {
 
+    // validation
     @NotBlank(message = "Item code is required")
     @Size(max = 50, message = "Item code must not exceed 50 characters")
     private String itemCode;
@@ -28,6 +29,7 @@ public class CreateInventoryItemRequest {
     @Size(max = 50, message = "Unit must not exceed 50 characters")
     private String unit;
 
+    // validation
     @NotNull(message = "Reorder level is required")
     @Min(value = 0, message = "Reorder level must be greater than or equal to zero")
     private Integer reorderLevel;

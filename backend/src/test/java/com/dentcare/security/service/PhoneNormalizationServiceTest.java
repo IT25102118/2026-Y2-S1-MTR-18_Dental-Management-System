@@ -227,4 +227,43 @@ class PhoneNormalizationServiceTest {
         assertThat(normalizationService.normalizeMobile("+94 77 123 4567")).isEqualTo("+94771234567");
         assertThat(normalizationService.normalizeMobile("+94-77-123-4567")).isEqualTo("+94771234567");
     }
+
+    @ParameterizedTest
+    @ValueSource(strings = {
+            "0701234567",
+            "0711234567",
+            "0721234567",
+            "0731234567", // Structurally valid; previously excluded by operator allocation allowlist
+            "0741234567",
+            "0751234567",
+            "0761234567",
+            "0771234567",
+            "0781234567",
+            "0791234567"  // Structurally valid; previously excluded by operator allocation allowlist
+    })
+    @DisplayName("18. All structurally valid 07 mobile prefixes are accepted without allocation allowlist restrictions")
+    void testAllStructurallyValidSriLankanMobilePrefixesAccepted(String mobileNumber) {
+        String normalized = normalizationService.normalizeMobile(mobileNumber);
+        String expectedCanonical = "+94" + mobileNumber.substring(1);
+
+        assertThat(normalized).isEqualTo(expectedCanonical);
+        assertThat(normalized).hasSize(12);
+        assertThat(normalized).matches("^\\+947[0-9]{8}$");
+        assertThat(normalizationService.isValidMobile(mobileNumber)).isTrue();
+    }
+
+    @Test
+    @DisplayName("19. Variations for previously unlisted prefixes (073, 079) normalize identically")
+    void testUnlistedPrefixesAllInputVariationsNormalize() {
+        assertThat(normalizationService.normalizeMobile("0731234567")).isEqualTo("+94731234567");
+        assertThat(normalizationService.normalizeMobile("731234567")).isEqualTo("+94731234567");
+        assertThat(normalizationService.normalizeMobile("+94731234567")).isEqualTo("+94731234567");
+        assertThat(normalizationService.normalizeMobile("0094731234567")).isEqualTo("+94731234567");
+
+        assertThat(normalizationService.normalizeMobile("0791234567")).isEqualTo("+94791234567");
+        assertThat(normalizationService.normalizeMobile("791234567")).isEqualTo("+94791234567");
+        assertThat(normalizationService.normalizeMobile("+94791234567")).isEqualTo("+94791234567");
+        assertThat(normalizationService.normalizeMobile("0094791234567")).isEqualTo("+94791234567");
+    }
 }
+

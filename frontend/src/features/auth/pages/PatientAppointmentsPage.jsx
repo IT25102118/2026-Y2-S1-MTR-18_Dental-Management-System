@@ -63,6 +63,15 @@ function UserIcon() {
   );
 }
 
+function MailIcon() {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+      <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z" />
+      <polyline points="22,6 12,13 2,6" />
+    </svg>
+  );
+}
+
 /**
  * Returns today's date formatted as YYYY-MM-DD in local time.
  */
@@ -86,7 +95,6 @@ export default function PatientAppointmentsPage() {
   const [preferredTime, setPreferredTime] = useState('');
   const [reason, setReason] = useState('');
   const [notes, setNotes] = useState('');
-  const [smsConsent, setSmsConsent] = useState(false);
 
   // Form Validation & Submission State
   const [fieldErrors, setFieldErrors] = useState({});
@@ -204,8 +212,7 @@ export default function PatientAppointmentsPage() {
         appointmentDate,
         preferredTime: preferredTime || null,
         reason: reason.trim(),
-        notes: notes.trim() || null,
-        smsConsent
+        notes: notes.trim() || null
       };
 
       const response = await createAppointmentRequest(payload);
@@ -223,7 +230,6 @@ export default function PatientAppointmentsPage() {
       setPreferredTime('');
       setReason('');
       setNotes('');
-      setSmsConsent(false);
       setFieldErrors({});
 
       // Refresh appointments list
@@ -470,49 +476,31 @@ export default function PatientAppointmentsPage() {
                 )}
               </div>
 
-              {/* Optional SMS Consent */}
-              <div className="appointment-form-group appointment-consent-group" style={{ marginBottom: '1.25rem' }}>
-                <label
-                  htmlFor="appointment-sms-consent"
+              {/* Email Notification Information Notice */}
+              <div className="appointment-form-group appointment-email-notice-group" style={{ marginBottom: '1.25rem' }}>
+                <div
+                  className="appointment-email-notice"
+                  data-testid="notice-appointment-email-notification"
                   style={{
                     display: 'flex',
                     alignItems: 'flex-start',
                     gap: '0.625rem',
-                    cursor: 'pointer',
-                    fontWeight: 'normal',
-                    fontSize: '0.9375rem',
-                    color: '#374151'
-                  }}
-                >
-                  <input
-                    id="appointment-sms-consent"
-                    name="smsConsent"
-                    type="checkbox"
-                    checked={smsConsent}
-                    onChange={(e) => setSmsConsent(e.target.checked)}
-                    data-testid="checkbox-appointment-sms-consent"
-                    style={{
-                      marginTop: '0.2rem',
-                      cursor: 'pointer',
-                      accentColor: 'var(--primary, #0ea5e9)',
-                      width: '16px',
-                      height: '16px'
-                    }}
-                  />
-                  <span>I agree to receive SMS updates about this appointment request.</span>
-                </label>
-                <p
-                  className="appointment-consent-notice"
-                  data-testid="notice-appointment-sms-consent"
-                  style={{
-                    margin: '0.375rem 0 0 1.625rem',
-                    fontSize: '0.8125rem',
-                    color: '#6b7280',
+                    padding: '0.75rem 1rem',
+                    backgroundColor: '#f8fafc',
+                    borderRadius: '0.5rem',
+                    border: '1px solid #e2e8f0',
+                    color: '#334155',
+                    fontSize: '0.875rem',
                     lineHeight: '1.4'
                   }}
                 >
-                  SMS delivery is not active yet. Your preference will be saved for future notification support.
-                </p>
+                  <span style={{ width: '18px', height: '18px', flexShrink: 0, marginTop: '2px', color: '#0f766e' }}>
+                    <MailIcon />
+                  </span>
+                  <span>
+                    Your appointment request details will be emailed to your registered email address once email notifications are enabled.
+                  </span>
+                </div>
               </div>
 
               {/* Submit Button with Duplicate Submit Prevention */}

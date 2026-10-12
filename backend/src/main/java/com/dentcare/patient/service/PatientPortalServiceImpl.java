@@ -5,6 +5,8 @@ import com.dentcare.appointment.dto.PatientAppointmentResponse;
 import com.dentcare.appointment.entity.Appointment;
 import com.dentcare.appointment.entity.AppointmentStatus;
 import com.dentcare.appointment.repository.AppointmentRepository;
+import com.dentcare.notification.entity.AppointmentEmailNotification;
+import com.dentcare.notification.repository.AppointmentEmailNotificationRepository;
 import com.dentcare.billing.entity.Invoice;
 import com.dentcare.billing.entity.Payment;
 import com.dentcare.billing.repository.InvoiceRepository;
@@ -22,9 +24,12 @@ import com.dentcare.patient.repository.PatientRepository;
 import com.dentcare.prescription.entity.Prescription;
 import com.dentcare.prescription.entity.PrescriptionStatus;
 import com.dentcare.prescription.repository.PrescriptionRepository;
+import com.dentcare.security.entity.PhoneVerificationChallenge;
+import com.dentcare.security.entity.PhoneVerificationChallengeStatus;
 import com.dentcare.security.entity.Role;
 import com.dentcare.security.entity.User;
 import com.dentcare.security.model.DentCareUserDetails;
+import com.dentcare.security.repository.PhoneVerificationChallengeRepository;
 import com.dentcare.security.repository.UserRepository;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -62,6 +67,8 @@ public class PatientPortalServiceImpl implements PatientPortalService {
     private final InvoiceRepository invoiceRepository;
     private final PaymentRepository paymentRepository;
     private final PasswordEncoder passwordEncoder;
+    private final PhoneVerificationChallengeRepository challengeRepository;
+    private final AppointmentEmailNotificationRepository emailNotificationRepository;
 
     public PatientPortalServiceImpl(
             UserRepository userRepository,
@@ -70,7 +77,9 @@ public class PatientPortalServiceImpl implements PatientPortalService {
             com.dentcare.appointment.repository.AppointmentRepository appointmentRepository,
             InvoiceRepository invoiceRepository,
             PaymentRepository paymentRepository,
-            PasswordEncoder passwordEncoder
+            PasswordEncoder passwordEncoder,
+            PhoneVerificationChallengeRepository challengeRepository,
+            AppointmentEmailNotificationRepository emailNotificationRepository
     ) {
         this.userRepository = userRepository;
         this.patientRepository = patientRepository;
@@ -79,6 +88,8 @@ public class PatientPortalServiceImpl implements PatientPortalService {
         this.invoiceRepository = invoiceRepository;
         this.paymentRepository = paymentRepository;
         this.passwordEncoder = passwordEncoder;
+        this.challengeRepository = challengeRepository;
+        this.emailNotificationRepository = emailNotificationRepository;
     }
 
     @Override
@@ -304,7 +315,52 @@ public class PatientPortalServiceImpl implements PatientPortalService {
         }
 
         Appointment saved = appointmentRepository.save(appointment);
+
+        // Resolve registered email server-side from authenticated User
+        String recipientEmail = patient.getEmail();
+        if (recipientEmail == null || recipientEmail.isBlank()) {
+            throw new ResponseStatusException(
+                    HttpStatus.BAD_REQUEST,
+                    "Registered patient email is required for appointment notifications"
+            );
+        }
+
+        String idempotencyKey = "APPOINTMENT_REQUEST_RECEIVED:" + saved.getId();
+        if (emailNotificationRepository.existsByIdempotencyKey(idempotencyKey)) {
+            throw new IllegalStateException("Email notification already exists for appointment " + saved.getId());
+        }
+
+        String emailSubject = "DentCare - Appointment Request Received";
+        String emailBody = formatAppointmentEmailBody(saved);
+
+        AppointmentEmailNotification emailNotification = new AppointmentEmailNotification(
+                saved,
+                idempotencyKey,
+                recipientEmail.trim(),
+                emailSubject,
+                emailBody
+        );
+
+        emailNotificationRepository.save(emailNotification);
+
         return mapToAppointmentResponse(saved);
+    }
+
+    private String formatAppointmentEmailBody(Appointment appointment) {
+        String preferredTime = (appointment.getPreferredTime() != null && !appointment.getPreferredTime().isBlank())
+                ? appointment.getPreferredTime().trim()
+                : "Not specified";
+
+        return "Dear Patient,\n\n"
+                + "Your appointment request has been successfully received by DentCare.\n\n"
+                + "Appointment Details:\n\n"
+                + "Booking ID: " + appointment.getId() + "\n"
+                + "Appointment Date: " + appointment.getAppointmentDate() + "\n"
+                + "Preferred Time: " + preferredTime + "\n"
+                + "Appointment Status: Pending Confirmation\n\n"
+                + "Please note that your appointment request is awaiting confirmation from the clinic.\n\n"
+                + "Thank you,\n"
+                + "DentCare Team";
     }
 
     @Override
@@ -454,10 +510,15 @@ public class PatientPortalServiceImpl implements PatientPortalService {
     @Override
     @Transactional
     public PatientProfileResponse updatePatientProfile(String authenticatedEmail, UpdatePatientProfileRequest request) {
-        User user = resolveAuthenticatedUser(authenticatedEmail);
-        if (user.getRole() != Role.PATIENT) {
+        // Step 1: Resolve authenticated patient identity server-side
+        User principalUser = resolveAuthenticatedUser(authenticatedEmail);
+        if (principalUser.getRole() != Role.PATIENT) {
             throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Access denied: patient self-service only");
         }
+
+        // Step 2: Acquire a database pessimistic write lock on that specific User row (USER ROW FIRST)
+        User user = userRepository.findByIdForUpdate(principalUser.getId())
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.UNAUTHORIZED, "User account not found"));
 
         String normalizedPhone = request != null && request.phone() != null ? request.phone().trim() : null;
         if (normalizedPhone != null && normalizedPhone.isBlank()) {
@@ -467,8 +528,27 @@ public class PatientPortalServiceImpl implements PatientPortalService {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Phone number cannot exceed 25 characters");
         }
 
+        // Step 3 & 4: Check currently persisted phone value and determine whether it changed
+        String currentPhone = user.getPhone();
+        boolean phoneChanged = !java.util.Objects.equals(currentPhone, normalizedPhone);
+
+        // Step 5: Apply phone update (User.setPhone invalidates phoneVerified and phoneVerifiedAt when phone changes)
         user.setPhone(normalizedPhone);
         User saved = userRepository.save(user);
+
+        // Step 6: If the phone changed, supersede outstanding OTP challenges for that user (CHALLENGE ROWS SECOND)
+        if (phoneChanged) {
+            List<PhoneVerificationChallenge> outstanding = challengeRepository.findByUserIdAndStatusInForUpdate(
+                    user.getId(),
+                    PhoneVerificationChallengeRepository.OUTSTANDING_STATUSES
+            );
+            if (!outstanding.isEmpty()) {
+                for (PhoneVerificationChallenge challenge : outstanding) {
+                    challenge.setStatus(PhoneVerificationChallengeStatus.SUPERSEDED);
+                }
+                challengeRepository.saveAll(outstanding);
+            }
+        }
 
         try {
             Authentication auth = SecurityContextHolder.getContext().getAuthentication();
@@ -485,6 +565,7 @@ public class PatientPortalServiceImpl implements PatientPortalService {
             // SecurityContext update failure shouldn't fail transaction
         }
 
+        // Step 7: Atomically committed by @Transactional
         return PatientProfileResponse.fromUser(saved);
     }
 

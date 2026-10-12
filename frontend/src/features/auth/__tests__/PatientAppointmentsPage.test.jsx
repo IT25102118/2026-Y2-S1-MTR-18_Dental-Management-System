@@ -244,16 +244,15 @@ describe('PatientAppointmentsPage', () => {
     expect(screen.getByTestId('input-appointment-date')).toHaveValue('');
     expect(screen.getByTestId('input-appointment-reason')).toHaveValue('');
 
-    // Verify API called with trimmed payload including default smsConsent false
+    // Verify API called with trimmed payload without smsConsent
     expect(patientPortalApi.createAppointmentRequest).toHaveBeenCalledWith({
       appointmentDate: futureDateStr,
       preferredTime: '11:00',
       reason: 'Cavity check and filling consultation',
-      notes: 'Morning preferred',
-      smsConsent: false
+      notes: 'Morning preferred'
     });
 
-    expect(screen.getByTestId('checkbox-appointment-sms-consent')).not.toBeChecked();
+    expect(screen.queryByTestId('checkbox-appointment-sms-consent')).not.toBeInTheDocument();
   });
 
   it('prevents duplicate submissions while request is in flight', async () => {
@@ -324,8 +323,8 @@ describe('PatientAppointmentsPage', () => {
     expect(screen.queryByText(/operational telemetry/i)).not.toBeInTheDocument();
   });
 
-  describe('SMS Consent Capture', () => {
-    it('renders consent checkbox unchecked by default with development notice', async () => {
+  describe('Email Notification Information and Removal of SMS Consent', () => {
+    it('renders email notification information notice without SMS consent checkbox', async () => {
       render(
         <MemoryRouter initialEntries={['/patient/appointments']}>
           <PatientAppointmentsPage />
@@ -333,42 +332,20 @@ describe('PatientAppointmentsPage', () => {
       );
 
       await waitFor(() => {
-        expect(screen.getByTestId('checkbox-appointment-sms-consent')).toBeInTheDocument();
+        expect(screen.getByTestId('notice-appointment-email-notification')).toBeInTheDocument();
       });
 
-      const checkbox = screen.getByTestId('checkbox-appointment-sms-consent');
-      expect(checkbox).not.toBeChecked();
-      expect(checkbox).toHaveAttribute('type', 'checkbox');
-      expect(screen.getByText(/i agree to receive sms updates about this appointment request/i)).toBeInTheDocument();
+      const notice = screen.getByTestId('notice-appointment-email-notification');
+      expect(notice).toHaveTextContent(/your appointment request details will be emailed to your registered email address once email notifications are enabled/i);
 
-      const notice = screen.getByTestId('notice-appointment-sms-consent');
-      expect(notice).toBeInTheDocument();
-      expect(notice).toHaveTextContent(/sms delivery is not active yet\. your preference will be saved for future notification support\./i);
+      // Must NOT render old SMS consent controls
+      expect(screen.queryByTestId('checkbox-appointment-sms-consent')).not.toBeInTheDocument();
+      expect(screen.queryByText(/i agree to receive sms updates about this appointment request/i)).not.toBeInTheDocument();
+      expect(screen.queryByTestId('notice-appointment-sms-consent')).not.toBeInTheDocument();
     });
 
-    it('allows patient to opt in and opt out before submitting', async () => {
-      render(
-        <MemoryRouter initialEntries={['/patient/appointments']}>
-          <PatientAppointmentsPage />
-        </MemoryRouter>
-      );
-
-      await waitFor(() => {
-        expect(screen.getByTestId('checkbox-appointment-sms-consent')).toBeInTheDocument();
-      });
-
-      const checkbox = screen.getByTestId('checkbox-appointment-sms-consent');
-      expect(checkbox).not.toBeChecked();
-
-      fireEvent.click(checkbox);
-      expect(checkbox).toBeChecked();
-
-      fireEvent.click(checkbox);
-      expect(checkbox).not.toBeChecked();
-    });
-
-    it('submits booking request with smsConsent: true when patient opts in', async () => {
-      const createdWithConsent = {
+    it('submits booking request without smsConsent payload and displays pending confirmation without claiming email was sent', async () => {
+      const createdAppointment = {
         id: 805,
         appointmentDate: futureDateStr,
         preferredTime: '14:00',
@@ -380,7 +357,7 @@ describe('PatientAppointmentsPage', () => {
         createdAt: '2026-10-04T09:00:00'
       };
 
-      patientPortalApi.createAppointmentRequest.mockResolvedValueOnce(createdWithConsent);
+      patientPortalApi.createAppointmentRequest.mockResolvedValueOnce(createdAppointment);
 
       render(
         <MemoryRouter initialEntries={['/patient/appointments']}>
@@ -396,11 +373,7 @@ describe('PatientAppointmentsPage', () => {
       fireEvent.change(screen.getByTestId('input-preferred-time'), { target: { value: '14:00' } });
       fireEvent.change(screen.getByTestId('input-appointment-reason'), { target: { value: 'Tooth sensitivity consultation' } });
 
-      const checkbox = screen.getByTestId('checkbox-appointment-sms-consent');
-      fireEvent.click(checkbox);
-      expect(checkbox).toBeChecked();
-
-      patientPortalApi.getPatientAppointments.mockResolvedValueOnce([createdWithConsent]);
+      patientPortalApi.getPatientAppointments.mockResolvedValueOnce([createdAppointment]);
 
       fireEvent.click(screen.getByTestId('submit-appointment-request-btn'));
 
@@ -408,24 +381,21 @@ describe('PatientAppointmentsPage', () => {
         expect(screen.getByTestId('appointment-success-banner')).toBeInTheDocument();
       });
 
-      // Verify payload contains smsConsent: true
+      // Verify payload does NOT contain smsConsent
       expect(patientPortalApi.createAppointmentRequest).toHaveBeenCalledWith({
         appointmentDate: futureDateStr,
         preferredTime: '14:00',
         reason: 'Tooth sensitivity consultation',
-        notes: null,
-        smsConsent: true
+        notes: null
       });
 
-      // Verify Honest Success State: status remains Pending confirmation, never 'SMS sent' or 'Appointment confirmed'
+      // Verify Honest Success State: status remains Pending confirmation, never claiming email or SMS sent
       expect(screen.getByText(/appointment request submitted/i)).toBeInTheDocument();
       expect(screen.getByText(/pending clinic confirmation/i)).toBeInTheDocument();
+      expect(screen.queryByText(/email sent/i)).not.toBeInTheDocument();
       expect(screen.queryByText(/sms sent/i)).not.toBeInTheDocument();
+      expect(screen.queryByText(/receipt sent/i)).not.toBeInTheDocument();
       expect(screen.queryByText(/appointment confirmed/i)).not.toBeInTheDocument();
-
-      // Form and consent checkbox reset
-      expect(screen.getByTestId('checkbox-appointment-sms-consent')).not.toBeChecked();
-      expect(screen.getByTestId('input-appointment-reason')).toHaveValue('');
     });
   });
 

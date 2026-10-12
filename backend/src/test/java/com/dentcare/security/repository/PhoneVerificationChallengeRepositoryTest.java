@@ -322,4 +322,83 @@ class PhoneVerificationChallengeRepositoryTest {
         assertThat(saved.getId()).isNotNull();
         // Fully isolated database persistence with zero network side effects
     }
+
+    @Test
+    @DisplayName("17. findByUserIdAndStatusInForUpdate locks outstanding challenges with strict user isolation")
+    void testFindByUserIdAndStatusInForUpdate() {
+        User otherUser = new User(
+                "other.user@dentcare.test",
+                "$2a$10$hashedPasswordOther",
+                "Bob",
+                "Other",
+                "+94770000002",
+                Role.PATIENT
+        );
+        userRepository.saveAndFlush(otherUser);
+
+        PhoneVerificationChallenge cCreated = createChallenge(testUser, SYNTHETIC_PHONE_1, PhoneVerificationDeliveryMode.TEST);
+        cCreated.setStatus(PhoneVerificationChallengeStatus.CREATED);
+
+        PhoneVerificationChallenge cSubmitted = createChallenge(testUser, SYNTHETIC_PHONE_1, PhoneVerificationDeliveryMode.TEST);
+        cSubmitted.setStatus(PhoneVerificationChallengeStatus.SUBMITTED);
+
+        PhoneVerificationChallenge cUncertain = createChallenge(testUser, SYNTHETIC_PHONE_1, PhoneVerificationDeliveryMode.TEST);
+        cUncertain.setStatus(PhoneVerificationChallengeStatus.DELIVERY_UNCERTAIN);
+
+        PhoneVerificationChallenge cVerified = createChallenge(testUser, SYNTHETIC_PHONE_1, PhoneVerificationDeliveryMode.TEST);
+        cVerified.setStatus(PhoneVerificationChallengeStatus.VERIFIED);
+
+        PhoneVerificationChallenge cExpired = createChallenge(testUser, SYNTHETIC_PHONE_1, PhoneVerificationDeliveryMode.TEST);
+        cExpired.setStatus(PhoneVerificationChallengeStatus.EXPIRED);
+
+        // Challenge for another user
+        PhoneVerificationChallenge cOther = createChallenge(otherUser, "+94770000002", PhoneVerificationDeliveryMode.TEST);
+        cOther.setStatus(PhoneVerificationChallengeStatus.CREATED);
+
+        challengeRepository.saveAndFlush(cCreated);
+        challengeRepository.saveAndFlush(cSubmitted);
+        challengeRepository.saveAndFlush(cUncertain);
+        challengeRepository.saveAndFlush(cVerified);
+        challengeRepository.saveAndFlush(cExpired);
+        challengeRepository.saveAndFlush(cOther);
+        entityManager.clear();
+
+        List<PhoneVerificationChallenge> lockedOutstanding = challengeRepository.findByUserIdAndStatusInForUpdate(
+                testUser.getId(),
+                PhoneVerificationChallengeRepository.OUTSTANDING_STATUSES
+        );
+
+        // Must find only the 3 outstanding challenges belonging strictly to testUser
+        assertThat(lockedOutstanding).hasSize(3);
+        assertThat(lockedOutstanding)
+                .extracting(PhoneVerificationChallenge::getStatus)
+                .containsExactlyInAnyOrder(
+                        PhoneVerificationChallengeStatus.CREATED,
+                        PhoneVerificationChallengeStatus.SUBMITTED,
+                        PhoneVerificationChallengeStatus.DELIVERY_UNCERTAIN
+                );
+
+        // Verify ID ascending order
+        for (int i = 0; i < lockedOutstanding.size() - 1; i++) {
+            assertThat(lockedOutstanding.get(i).getId()).isLessThan(lockedOutstanding.get(i + 1).getId());
+        }
+
+        // Apply supersession and verify persistence
+        for (PhoneVerificationChallenge ch : lockedOutstanding) {
+            ch.setStatus(PhoneVerificationChallengeStatus.SUPERSEDED);
+        }
+        challengeRepository.saveAllAndFlush(lockedOutstanding);
+        entityManager.clear();
+
+        // Verify reloaded state
+        PhoneVerificationChallenge reloadedCreated = challengeRepository.findById(cCreated.getId()).orElseThrow();
+        assertThat(reloadedCreated.getStatus()).isEqualTo(PhoneVerificationChallengeStatus.SUPERSEDED);
+
+        PhoneVerificationChallenge reloadedVerified = challengeRepository.findById(cVerified.getId()).orElseThrow();
+        assertThat(reloadedVerified.getStatus()).isEqualTo(PhoneVerificationChallengeStatus.VERIFIED);
+
+        PhoneVerificationChallenge reloadedOther = challengeRepository.findById(cOther.getId()).orElseThrow();
+        assertThat(reloadedOther.getStatus()).isEqualTo(PhoneVerificationChallengeStatus.CREATED);
+    }
 }
+

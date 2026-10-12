@@ -31,7 +31,7 @@ public class PhoneNormalizationService {
     public static final int NATIONAL_MOBILE_SUBSCRIBER_LENGTH = 9; // "7" + 8 digits = 9 digits
 
     private static final Pattern PERMITTED_RAW_CHARS = Pattern.compile("^[0-9+()\\-\\s]+$");
-    private static final Pattern CANONICAL_SRI_LANKA_MOBILE_PATTERN = Pattern.compile("^\\+947[0-2,4-8]\\d{7}$");
+    private static final Pattern CANONICAL_SRI_LANKA_MOBILE_PATTERN = Pattern.compile("^\\+947[0-9]{8}$");
 
     /**
      * Normalizes a Sri Lankan mobile number into its canonical E.164 representation (+947XXXXXXXX).
@@ -117,9 +117,9 @@ public class PhoneNormalizationService {
 
         String canonicalE164 = SRI_LANKA_COUNTRY_CODE + nationalDigits;
 
-        // Verify known Sri Lankan mobile operator ranges (70, 71, 72, 74, 75, 76, 77, 78)
+        // Validate Sri Lankan mobile numbering structure (+947XXXXXXXX)
         if (!CANONICAL_SRI_LANKA_MOBILE_PATTERN.matcher(canonicalE164).matches()) {
-            throw new IllegalArgumentException("Invalid Sri Lankan mobile operator prefix");
+            throw new IllegalArgumentException("Invalid Sri Lankan mobile number structure");
         }
 
         return canonicalE164;

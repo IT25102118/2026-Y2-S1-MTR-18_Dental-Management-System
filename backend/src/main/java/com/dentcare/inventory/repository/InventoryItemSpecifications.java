@@ -5,7 +5,8 @@ import com.dentcare.inventory.entity.InventoryItem;
 import org.springframework.data.jpa.domain.Specification;
 
 /**
- * Reusable JPA Specifications for filtering {@link InventoryItem} catalog records.
+ * Reusable JPA Specifications for filtering {@link InventoryItem} catalog
+ * records.
  */
 public final class InventoryItemSpecifications {
 
@@ -21,8 +22,7 @@ public final class InventoryItemSpecifications {
             return cb.or(
                     cb.like(cb.lower(root.get("name")), pattern),
                     cb.like(cb.lower(root.get("itemCode")), pattern),
-                    cb.like(cb.lower(root.get("category")), pattern)
-            );
+                    cb.like(cb.lower(root.get("category")), pattern));
         };
     }
 
@@ -30,8 +30,7 @@ public final class InventoryItemSpecifications {
         if (category == null || category.trim().isEmpty()) {
             return null;
         }
-        return (root, query, cb) ->
-                cb.equal(cb.lower(root.get("category")), category.trim().toLowerCase());
+        return (root, query, cb) -> cb.equal(cb.lower(root.get("category")), category.trim().toLowerCase());
     }
 
     public static Specification<InventoryItem> hasActiveStatus(Boolean active) {
@@ -41,17 +40,16 @@ public final class InventoryItemSpecifications {
         return (root, query, cb) -> cb.equal(root.get("active"), active);
     }
 
+    // Design pattern(Strategy)
     public static Specification<InventoryItem> hasStockStatus(StockStatusFilter stockStatus) {
         if (stockStatus == null || stockStatus == StockStatusFilter.ALL) {
             return null;
         }
         return switch (stockStatus) {
-            case IN_STOCK -> (root, query, cb) ->
-                    cb.greaterThan(root.get("currentQuantity"), 0);
-            case LOW_STOCK -> (root, query, cb) ->
-                    cb.lessThanOrEqualTo(root.get("currentQuantity"), root.get("reorderLevel"));
-            case OUT_OF_STOCK -> (root, query, cb) ->
-                    cb.equal(root.get("currentQuantity"), 0);
+            case IN_STOCK -> (root, query, cb) -> cb.greaterThan(root.get("currentQuantity"), 0);
+            case LOW_STOCK ->
+                (root, query, cb) -> cb.lessThanOrEqualTo(root.get("currentQuantity"), root.get("reorderLevel"));
+            case OUT_OF_STOCK -> (root, query, cb) -> cb.equal(root.get("currentQuantity"), 0);
             default -> null;
         };
     }
@@ -60,13 +58,11 @@ public final class InventoryItemSpecifications {
             String search,
             String category,
             Boolean active,
-            StockStatusFilter stockStatus
-    ) {
+            StockStatusFilter stockStatus) {
         return Specification.allOf(
                 hasSearchText(search),
                 hasCategory(category),
                 hasActiveStatus(active),
-                hasStockStatus(stockStatus)
-        );
+                hasStockStatus(stockStatus));
     }
 }

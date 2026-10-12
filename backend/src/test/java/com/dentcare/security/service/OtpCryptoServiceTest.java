@@ -4,10 +4,12 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
+import java.lang.reflect.Constructor;
 import java.nio.charset.StandardCharsets;
 import java.security.SecureRandom;
 import java.util.Arrays;
-import java.util.Random;
+import java.util.List;
+import java.util.Locale;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
@@ -45,8 +47,8 @@ class OtpCryptoServiceTest {
     @Test
     @DisplayName("2. Leading-zero codes are properly formatted with 6 digits")
     void testLeadingZeroCodesSupported() {
-        // Mock random returning small values to verify leading zeros
-        Random controlledRandom = new Random() {
+        // Controlled SecureRandom returning small values to verify leading zeros
+        SecureRandom controlledRandom = new SecureRandom() {
             private int call = 0;
             @Override
             public int nextInt(int bound) {
@@ -267,4 +269,80 @@ class OtpCryptoServiceTest {
         );
         assertThat(valid).isTrue();
     }
+
+    @Test
+    @DisplayName("17. No constructor accepts java.util.Random; strictly SecureRandom")
+    void testNoJavaUtilRandomConstructorAccepted() {
+        Constructor<?>[] constructors = OtpCryptoService.class.getDeclaredConstructors();
+        for (Constructor<?> constructor : constructors) {
+            Class<?>[] parameterTypes = constructor.getParameterTypes();
+            for (Class<?> paramType : parameterTypes) {
+                // Must not be java.util.Random
+                assertThat(paramType)
+                        .withFailMessage("Constructor must not accept java.util.Random directly")
+                        .isNotEqualTo(java.util.Random.class);
+            }
+        }
+
+        // Verify the testing constructor explicitly requires SecureRandom
+        assertThatThrownBy(() -> new OtpCryptoService(null))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessageContaining("SecureRandom");
+    }
+
+    @Test
+    @DisplayName("18. Generated OTP produces exactly six ASCII digits across varied JVM default locales")
+    void testOtpFormattingIsLocaleIndependent() {
+        List<Locale> testLocales = List.of(
+                Locale.ROOT,
+                Locale.US,
+                Locale.GERMANY,
+                Locale.FRENCH,
+                Locale.JAPAN,
+                Locale.forLanguageTag("ar-EG"), // Arabic - Egypt (traditional Eastern Arabic numerals)
+                Locale.forLanguageTag("fa-IR"), // Persian - Iran (Extended Arabic-Indic numerals)
+                Locale.forLanguageTag("th-TH"), // Thai
+                Locale.forLanguageTag("ne-NP"), // Nepali (Devanagari numerals)
+                Locale.forLanguageTag("bn-BD"), // Bengali (Bengali numerals)
+                Locale.forLanguageTag("hi-IN")  // Hindi (Devanagari numerals)
+        );
+
+        Locale originalLocale = Locale.getDefault();
+        try {
+            for (Locale locale : testLocales) {
+                Locale.setDefault(locale);
+
+                // 1. Production generator outputs ASCII digits under the current default locale
+                for (int i = 0; i < 20; i++) {
+                    String otp = cryptoService.generateSixDigitOtp();
+                    assertThat(otp)
+                            .withFailMessage("OTP '%s' in locale '%s' failed to match ^[0-9]{6}$", otp, locale)
+                            .isNotNull()
+                            .hasSize(6)
+                            .matches("^[0-9]{6}$");
+                }
+
+                // 2. Leading zero codes maintain ASCII digits under the current default locale
+                SecureRandom zeroRandom = new SecureRandom() {
+                    private int count = 0;
+                    @Override
+                    public int nextInt(int bound) {
+                        return switch (count++) {
+                            case 0 -> 0;
+                            case 1 -> 5;
+                            case 2 -> 99;
+                            default -> 12345;
+                        };
+                    }
+                };
+                OtpCryptoService localeService = new OtpCryptoService(zeroRandom);
+                assertThat(localeService.generateSixDigitOtp()).isEqualTo("000000");
+                assertThat(localeService.generateSixDigitOtp()).isEqualTo("000005");
+                assertThat(localeService.generateSixDigitOtp()).isEqualTo("000099");
+            }
+        } finally {
+            Locale.setDefault(originalLocale);
+        }
+    }
 }
+

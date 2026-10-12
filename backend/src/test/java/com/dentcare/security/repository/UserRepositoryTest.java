@@ -299,4 +299,22 @@ class UserRepositoryTest {
         assertThat(saved.isPhoneVerified()).isFalse();
         assertThat(saved.getPhoneVerifiedAt()).isNull();
     }
+
+    @Test
+    @DisplayName("Pessimistic write lock query (findByIdForUpdate) retrieves managed user")
+    void testFindByIdForUpdate() {
+        User user = new User(
+                "lock.patient@dentcare.com",
+                "$2a$10$hashedPasswordLock",
+                "Lock",
+                "Patient",
+                "0771112233",
+                Role.PATIENT
+        );
+        User saved = userRepository.saveAndFlush(user);
+
+        Optional<User> lockedUserOpt = userRepository.findByIdForUpdate(saved.getId());
+        assertThat(lockedUserOpt).isPresent();
+        assertThat(lockedUserOpt.get().getEmail()).isEqualTo("lock.patient@dentcare.com");
+    }
 }

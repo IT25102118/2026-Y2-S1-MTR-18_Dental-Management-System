@@ -33,3 +33,33 @@ CREATE TABLE IF NOT EXISTS sms_outbox_notifications (
 
 CREATE INDEX IF NOT EXISTS idx_sms_outbox_polling ON sms_outbox_notifications (status, next_retry_at, locked_at);
 CREATE INDEX IF NOT EXISTS idx_sms_outbox_appointment ON sms_outbox_notifications (appointment_id);
+
+CREATE TABLE IF NOT EXISTS appointment_email_outbox (
+    id BIGINT AUTO_INCREMENT PRIMARY KEY,
+    appointment_id BIGINT NOT NULL,
+    idempotency_key VARCHAR(128) NOT NULL,
+    recipient_email VARCHAR(150) NOT NULL,
+    email_subject VARCHAR(255) NOT NULL,
+    email_body TEXT NOT NULL,
+    status VARCHAR(30) NOT NULL DEFAULT 'PENDING',
+    attempt_count INT NOT NULL DEFAULT 0,
+    next_retry_at TIMESTAMP NULL,
+    sent_at TIMESTAMP NULL,
+    last_error VARCHAR(500) NULL,
+    locked_at TIMESTAMP NULL,
+    locked_by VARCHAR(128) NULL,
+    lease_until TIMESTAMP NULL,
+    max_attempts INT NOT NULL DEFAULT 3,
+    created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    CONSTRAINT uk_appointment_email_idempotency_key UNIQUE (idempotency_key),
+    CONSTRAINT fk_appointment_email_appointment FOREIGN KEY (appointment_id) REFERENCES appointments (id) ON DELETE RESTRICT,
+    CONSTRAINT chk_appointment_email_status CHECK (status IN ('PENDING', 'PROCESSING', 'SENT', 'FAILED', 'DELIVERY_UNCERTAIN')),
+    CONSTRAINT chk_appointment_email_attempt_count CHECK (attempt_count >= 0),
+    CONSTRAINT chk_appointment_email_max_attempts CHECK (max_attempts >= 1)
+);
+
+CREATE INDEX IF NOT EXISTS idx_appointment_email_polling ON appointment_email_outbox (status, next_retry_at);
+CREATE INDEX IF NOT EXISTS idx_appointment_email_appointment ON appointment_email_outbox (appointment_id);
+CREATE INDEX IF NOT EXISTS idx_appointment_email_lease ON appointment_email_outbox (status, lease_until);
+

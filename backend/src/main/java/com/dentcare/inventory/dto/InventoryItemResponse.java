@@ -21,6 +21,7 @@ public record InventoryItemResponse(
         LocalDateTime createdAt,
         LocalDateTime updatedAt) {
     // fromEntity() method
+    // Design Patterns(Factory)
     public static InventoryItemResponse fromEntity(InventoryItem item) {
         // Check whether the item is null
         if (item == null) {
@@ -41,6 +42,7 @@ public record InventoryItemResponse(
                 item.isActive(),
                 item.getDefaultSupplierReference(),
                 // Low-stock calculation
+                // Handles Pre-processing Logic
                 currentQty <= reorderLvl,
                 item.getCreatedAt(),
                 item.getUpdatedAt());

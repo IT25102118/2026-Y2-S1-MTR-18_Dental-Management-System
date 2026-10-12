@@ -10,7 +10,7 @@ import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.security.SecureRandom;
 import java.util.HexFormat;
-import java.util.Random;
+import java.util.Locale;
 import java.util.regex.Pattern;
 
 /**
@@ -20,6 +20,8 @@ import java.util.regex.Pattern;
  * 3. Constant-time MAC verification via MessageDigest.isEqual.
  *
  * Security Invariants:
+ * - Uses SecureRandom exclusively; java.util.Random is strictly prohibited.
+ * - Formats OTP with Locale.ROOT ensuring six ASCII digits ('0'-'9') under all JVM locales.
  * - Plaintext OTP codes and secret keys are never logged or stored.
  * - Exception messages never contain submitted OTP codes or secret key material.
  * - MAC verification executes in constant time to prevent timing side-channel attacks.
@@ -37,7 +39,7 @@ public class OtpCryptoService {
     private static final Pattern SIX_DIGIT_PATTERN = Pattern.compile("^\\d{6}$");
     private static final Pattern HEX_PATTERN = Pattern.compile("^[0-9a-fA-F]{64}$");
 
-    private final Random random;
+    private final SecureRandom secureRandom;
 
     /**
      * Default constructor utilizing a thread-safe SecureRandom instance.
@@ -47,26 +49,28 @@ public class OtpCryptoService {
     }
 
     /**
-     * Package-private or test constructor enabling deterministic RNG injection for testing.
+     * Package-private testing constructor enabling controlled SecureRandom injection for testing.
+     * Typed exclusively as SecureRandom to enforce cryptographic randomness across all call sites.
      *
-     * @param random random instance (must not be null)
+     * @param secureRandom SecureRandom instance (must not be null)
      */
-    public OtpCryptoService(Random random) {
-        if (random == null) {
-            throw new IllegalArgumentException("Random instance cannot be null");
+    OtpCryptoService(SecureRandom secureRandom) {
+        if (secureRandom == null) {
+            throw new IllegalArgumentException("SecureRandom instance cannot be null");
         }
-        this.random = random;
+        this.secureRandom = secureRandom;
     }
 
     /**
      * Generates a cryptographically secure 6-digit numeric OTP code in the range 000000 to 999999.
+     * Uses Locale.ROOT to guarantee standard ASCII digits ('0'-'9') independent of the JVM default locale.
      * Leading zeros are fully preserved.
      *
      * @return exactly six ASCII numeric digits
      */
     public String generateSixDigitOtp() {
-        int code = random.nextInt(1_000_000);
-        return String.format("%06d", code);
+        int code = secureRandom.nextInt(1_000_000);
+        return String.format(Locale.ROOT, "%06d", code);
     }
 
     /**
@@ -209,7 +213,7 @@ public class OtpCryptoService {
             throw new IllegalArgumentException("Phone snapshot cannot be null or blank");
         }
         if (otp == null || !SIX_DIGIT_PATTERN.matcher(otp).matches()) {
-            // Note: Exception message explicitly omits candidate value to prevent secret logging
+            // Exception message explicitly omits candidate value to prevent secret leakage in logs
             throw new IllegalArgumentException("OTP code must be exactly six ASCII numeric digits");
         }
     }

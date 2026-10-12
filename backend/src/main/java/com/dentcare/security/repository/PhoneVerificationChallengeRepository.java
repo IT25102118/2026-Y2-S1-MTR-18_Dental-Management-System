@@ -2,10 +2,15 @@ package com.dentcare.security.repository;
 
 import com.dentcare.security.entity.PhoneVerificationChallenge;
 import com.dentcare.security.entity.PhoneVerificationChallengeStatus;
+import jakarta.persistence.LockModeType;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Lock;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import java.time.LocalDateTime;
+import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 
@@ -17,6 +22,16 @@ import java.util.Optional;
  */
 @Repository
 public interface PhoneVerificationChallengeRepository extends JpaRepository<PhoneVerificationChallenge, Long> {
+
+    /**
+     * Outstanding challenge statuses eligible for supersession upon phone change.
+     * Non-terminal statuses: CREATED, SUBMITTED, DELIVERY_UNCERTAIN.
+     */
+    List<PhoneVerificationChallengeStatus> OUTSTANDING_STATUSES = List.of(
+            PhoneVerificationChallengeStatus.CREATED,
+            PhoneVerificationChallengeStatus.SUBMITTED,
+            PhoneVerificationChallengeStatus.DELIVERY_UNCERTAIN
+    );
 
     /**
      * Finds a challenge by its identifier and associated user identifier.
@@ -75,4 +90,34 @@ public interface PhoneVerificationChallengeRepository extends JpaRepository<Phon
      * @return count of challenges created after the cutoff
      */
     long countByPhoneSnapshotAndCreatedAtAfter(String phoneSnapshot, LocalDateTime cutoff);
+
+    /**
+     * Retrieves outstanding challenges for a user acquiring a pessimistic write lock.
+     * Enforces the CHALLENGE ROWS SECOND locking stage after the User lock is held.
+     * Challenges are ordered by ID ascending to guarantee consistent lock acquisition order.
+     *
+     * @param userId user identifier
+     * @param statuses collection of outstanding statuses
+     * @return list of locked outstanding challenges
+     */
+    @Lock(LockModeType.PESSIMISTIC_WRITE)
+    @Query("SELECT c FROM PhoneVerificationChallenge c " +
+           "WHERE c.user.id = :userId AND c.status IN :statuses " +
+           "ORDER BY c.id ASC")
+    List<PhoneVerificationChallenge> findByUserIdAndStatusInForUpdate(
+            @Param("userId") Long userId,
+            @Param("statuses") Collection<PhoneVerificationChallengeStatus> statuses
+    );
+
+    /**
+     * Non-locking lookup of challenges for a user by status collection.
+     *
+     * @param userId user identifier
+     * @param statuses collection of statuses
+     * @return list of challenges matching the specified statuses
+     */
+    List<PhoneVerificationChallenge> findByUserIdAndStatusIn(
+            Long userId,
+            Collection<PhoneVerificationChallengeStatus> statuses
+    );
 }

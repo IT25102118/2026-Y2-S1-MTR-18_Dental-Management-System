@@ -75,6 +75,7 @@ async function request(endpoint, options = {}) {
 
   let response;
   try {
+    // The Network Call
     response = await fetch(endpoint, config);
   } catch (err) {
     throw new InventoryApiError(
@@ -120,9 +121,8 @@ async function request(endpoint, options = {}) {
   return data;
 }
 
-/**
- * Fetch paginated inventory items with optional search and filters.
- */
+// Fetch paginated inventory items with optional search and filters.
+
 export async function getItems({
   search,
   category,
@@ -164,22 +164,20 @@ export async function getItems({
   }
 
   const queryString = params.toString();
+  // GET (Fetch Items from backend)
   const url = queryString ? `/api/inventory/items?${queryString}` : '/api/inventory/items';
   const data = await request(url, { method: 'GET' });
   return normalizePage(data);
 }
 
-/**
- * Fetch single inventory item by ID.
- */
+// Fetch single inventory item by ID.
+
 export async function getItemById(id) {
+  //GET By ID (Fetch single item from backend)
   return request(`/api/inventory/items/${id}`, { method: 'GET' });
 }
 
-/**
- * Create a new inventory catalog item.
- * Strictly sends only CreateInventoryItemRequest fields.
- */
+//Create a new inventory catalog item.
 export async function createItem(payload) {
   const body = {
     itemCode: payload.itemCode?.trim(),
@@ -189,16 +187,15 @@ export async function createItem(payload) {
     reorderLevel: Number(payload.reorderLevel),
     defaultSupplierReference: payload.defaultSupplierReference?.trim() || null
   };
+  // POST (Send new item to backend)
   return request('/api/inventory/items', {
     method: 'POST',
     body
   });
 }
 
-/**
- * Update an existing inventory catalog item.
- * Strictly sends only UpdateInventoryItemRequest fields (itemCode and quantity cannot be updated).
- */
+//Update an existing inventory catalog item.
+
 export async function updateItem(id, payload) {
   const body = {
     name: payload.name?.trim(),
@@ -207,18 +204,16 @@ export async function updateItem(id, payload) {
     reorderLevel: Number(payload.reorderLevel),
     defaultSupplierReference: payload.defaultSupplierReference?.trim() || null
   };
+  // PUT (Update item)
   return request(`/api/inventory/items/${id}`, {
     method: 'PUT',
     body
   });
 }
 
-/**
- * Toggle active status of an inventory item.
- * Sends { active: boolean } via PATCH /api/inventory/items/{id}/status.
- */
 export async function updateItemStatus(id, active) {
   return request(`/api/inventory/items/${id}/status`, {
+    // PATCH (Update status in backend)
     method: 'PATCH',
     body: { active: Boolean(active) }
   });
