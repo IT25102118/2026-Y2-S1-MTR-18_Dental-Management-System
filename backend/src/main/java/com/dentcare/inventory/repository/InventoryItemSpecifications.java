@@ -1,4 +1,5 @@
 // Stratagy
+// select different stock-filtering conditions depending on the user's selection.
 package com.dentcare.inventory.repository;
 
 import com.dentcare.inventory.dto.StockStatusFilter;
