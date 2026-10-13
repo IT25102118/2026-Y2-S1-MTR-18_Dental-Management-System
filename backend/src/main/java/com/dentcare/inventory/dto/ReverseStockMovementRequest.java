@@ -1,3 +1,4 @@
+// Stock Quentaty => 0
 package com.dentcare.inventory.dto;
 
 import jakarta.validation.constraints.NotBlank;
