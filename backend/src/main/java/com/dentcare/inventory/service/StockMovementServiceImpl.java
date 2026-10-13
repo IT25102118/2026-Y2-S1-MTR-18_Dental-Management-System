@@ -1,3 +1,4 @@
+// Quantity >= 0
 package com.dentcare.inventory.service;
 
 import com.dentcare.inventory.dto.RecordStockMovementRequest;
