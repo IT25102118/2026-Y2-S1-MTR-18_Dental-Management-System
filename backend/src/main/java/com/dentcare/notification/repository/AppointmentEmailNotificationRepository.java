@@ -2,7 +2,9 @@ package com.dentcare.notification.repository;
 
 import com.dentcare.notification.entity.AppointmentEmailNotification;
 import com.dentcare.notification.entity.EmailNotificationStatus;
+import jakarta.persistence.LockModeType;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Lock;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
@@ -93,5 +95,15 @@ public interface AppointmentEmailNotificationRepository extends JpaRepository<Ap
             @Param("activationCutoff") LocalDateTime activationCutoff,
             @Param("batchSize") int batchSize
     );
+
+    /**
+     * Acquires a pessimistic write lock on a specific notification row for outcome finalization.
+     *
+     * @param id the notification ID
+     * @return optional containing the locked notification if present
+     */
+    @Lock(LockModeType.PESSIMISTIC_WRITE)
+    @Query("SELECT n FROM AppointmentEmailNotification n WHERE n.id = :id")
+    Optional<AppointmentEmailNotification> findByIdForUpdate(@Param("id") Long id);
 }
 

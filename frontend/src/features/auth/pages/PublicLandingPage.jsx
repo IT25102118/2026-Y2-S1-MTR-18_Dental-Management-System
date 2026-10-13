@@ -451,330 +451,28 @@ function CompassIcon({ className = 'icon-compass' }) {
 function IllustrativeClinicMap() {
   return (
     <div className="clinic-map-frame" data-testid="clinic-map-frame">
-      <div className="clinic-map-disclaimer-badge" data-testid="clinic-map-demo-badge">
-        {clinicContactConfig.mapDisclaimerBadge}
-      </div>
+      {clinicContactConfig.mapDisclaimerBadge ? (
+        <div className="clinic-map-disclaimer-badge" data-testid="clinic-map-demo-badge">
+          {clinicContactConfig.mapDisclaimerBadge}
+        </div>
+      ) : null}
 
       <div
         className="clinic-map-visual-wrap"
-        role="img"
+        role="region"
         aria-label={clinicContactConfig.mapAriaLabel}
         data-testid="clinic-map-visual"
       >
-        <svg
-          className="clinic-map-svg"
-          viewBox="0 0 800 500"
-          fill="none"
-          xmlns="http://www.w3.org/2000/svg"
-          preserveAspectRatio="xMidYMid slice"
-          aria-hidden="true"
-        >
-          <defs>
-            <linearGradient id="mapWaterGrad" x1="0%" y1="0%" x2="100%" y2="0%">
-              <stop offset="0%" stopColor="#bae6fd" stopOpacity="0.55" />
-              <stop offset="70%" stopColor="#e0f2fe" stopOpacity="0.45" />
-              <stop offset="100%" stopColor="#f0f9ff" stopOpacity="0.1" />
-            </linearGradient>
-
-            <linearGradient id="tealPinGrad" x1="0%" y1="0%" x2="100%" y2="100%">
-              <stop offset="0%" stopColor="#0f766e" />
-              <stop offset="100%" stopColor="#0d9488" />
-            </linearGradient>
-
-            <filter id="mapCardShadow" x="-20%" y="-20%" width="140%" height="150%">
-              <feDropShadow dx="0" dy="6" stdDeviation="8" floodColor="#0f172a" floodOpacity="0.12" />
-            </filter>
-
-            <filter id="pinShadow" x="-30%" y="-30%" width="160%" height="180%">
-              <feDropShadow dx="0" dy="4" stdDeviation="4" floodColor="#0f172a" floodOpacity="0.25" />
-            </filter>
-          </defs>
-
-          {/* 1. Base Ground */}
-          <rect width="800" height="500" fill="#f8fafc" />
-
-          {/* 2. Coastal / Waterfront Curve (West Edge) */}
-          <path
-            d="M 0,0 L 110,0 C 95,80 135,160 100,240 C 65,320 120,410 90,500 L 0,500 Z"
-            fill="url(#mapWaterGrad)"
-          />
-          <path
-            d="M 110,0 C 95,80 135,160 100,240 C 65,320 120,410 90,500"
-            stroke="#7dd3fc"
-            strokeWidth="2.5"
-            strokeOpacity="0.6"
-            fill="none"
-          />
-          <path
-            d="M 20,80 C 45,90 65,80 85,95"
-            stroke="#38bdf8"
-            strokeWidth="1.5"
-            strokeDasharray="6 4"
-            fill="none"
-            opacity="0.5"
-          />
-          <path
-            d="M 15,220 C 40,230 65,220 80,235"
-            stroke="#38bdf8"
-            strokeWidth="1.5"
-            strokeDasharray="6 4"
-            fill="none"
-            opacity="0.5"
-          />
-          <text
-            x="48"
-            y="280"
-            transform="rotate(-90 48,280)"
-            fill="#0284c7"
-            fontSize="10"
-            fontWeight="700"
-            letterSpacing="2.5"
-            opacity="0.65"
-          >
-            WATERFRONT PROMENADE
-          </text>
-
-          {/* 3. Subtle Green Park Areas */}
-          <path
-            d="M 520,40 Q 640,30 730,70 Q 755,140 700,190 Q 610,210 530,170 Q 495,110 520,40 Z"
-            fill="#dcfce7"
-            stroke="#bbf7d0"
-            strokeWidth="1.5"
-          />
-          <circle cx="560" cy="80" r="14" fill="#86efac" opacity="0.65" />
-          <circle cx="610" cy="110" r="18" fill="#86efac" opacity="0.75" />
-          <circle cx="670" cy="130" r="15" fill="#86efac" opacity="0.65" />
-          <circle cx="580" cy="145" r="12" fill="#86efac" opacity="0.6" />
-          <circle cx="640" cy="80" r="13" fill="#86efac" opacity="0.5" />
-          <text
-            x="620"
-            y="170"
-            fill="#15803d"
-            fontSize="10"
-            fontWeight="700"
-            letterSpacing="1"
-            textAnchor="middle"
-            opacity="0.85"
-          >
-            CENTRAL GREEN PARK
-          </text>
-
-          <path
-            d="M 150,370 Q 230,350 270,410 Q 240,480 160,490 Q 120,460 150,370 Z"
-            fill="#dcfce7"
-            stroke="#bbf7d0"
-            strokeWidth="1.5"
-          />
-          <circle cx="190" cy="420" r="13" fill="#86efac" opacity="0.6" />
-          <circle cx="230" cy="435" r="11" fill="#86efac" opacity="0.6" />
-          <text
-            x="200"
-            y="462"
-            fill="#15803d"
-            fontSize="9.5"
-            fontWeight="700"
-            letterSpacing="0.8"
-            textAnchor="middle"
-            opacity="0.85"
-          >
-            ESPLANADE GROUNDS
-          </text>
-
-          {/* 4. Urban City Blocks / Building Footprints */}
-          <rect x="175" y="55" width="105" height="75" rx="6" fill="#f1f5f9" stroke="#e2e8f0" strokeWidth="1" />
-          <rect x="185" y="65" width="40" height="25" rx="3" fill="#e2e8f0" opacity="0.7" />
-          <rect x="233" y="65" width="37" height="55" rx="3" fill="#e2e8f0" opacity="0.7" />
-
-          <rect x="315" y="55" width="150" height="75" rx="6" fill="#f1f5f9" stroke="#e2e8f0" strokeWidth="1" />
-          <rect x="325" y="65" width="60" height="55" rx="3" fill="#e2e8f0" opacity="0.7" />
-          <rect x="395" y="65" width="60" height="24" rx="3" fill="#e2e8f0" opacity="0.7" />
-
-          <rect x="175" y="170" width="105" height="70" rx="6" fill="#f1f5f9" stroke="#e2e8f0" strokeWidth="1" />
-          <rect x="185" y="180" width="85" height="50" rx="3" fill="#e2e8f0" opacity="0.7" />
-
-          <rect x="175" y="275" width="105" height="65" rx="6" fill="#f1f5f9" stroke="#e2e8f0" strokeWidth="1" />
-          <rect x="185" y="285" width="85" height="45" rx="3" fill="#e2e8f0" opacity="0.7" />
-
-          <rect x="315" y="170" width="150" height="70" rx="6" fill="#f1f5f9" stroke="#e2e8f0" strokeWidth="1" />
-          <rect x="325" y="180" width="60" height="50" rx="3" fill="#e2e8f0" opacity="0.7" />
-          <rect x="395" y="180" width="60" height="50" rx="3" fill="#e2e8f0" opacity="0.7" />
-
-          <rect x="315" y="275" width="150" height="65" rx="6" fill="#f1f5f9" stroke="#e2e8f0" strokeWidth="1" />
-          <rect x="325" y="285" width="65" height="45" rx="3" fill="#e2e8f0" opacity="0.7" />
-          <rect x="400" y="285" width="55" height="45" rx="3" fill="#e2e8f0" opacity="0.7" />
-
-          <rect x="500" y="240" width="125" height="95" rx="6" fill="#f1f5f9" stroke="#e2e8f0" strokeWidth="1" />
-          <rect x="510" y="250" width="50" height="75" rx="3" fill="#e2e8f0" opacity="0.7" />
-          <rect x="570" y="250" width="45" height="35" rx="3" fill="#e2e8f0" opacity="0.7" />
-
-          <rect x="655" y="240" width="120" height="95" rx="6" fill="#f1f5f9" stroke="#e2e8f0" strokeWidth="1" />
-          <rect x="665" y="250" width="100" height="75" rx="3" fill="#e2e8f0" opacity="0.7" />
-
-          <rect x="315" y="375" width="150" height="85" rx="6" fill="#f1f5f9" stroke="#e2e8f0" strokeWidth="1" />
-          <rect x="325" y="385" width="130" height="65" rx="3" fill="#e2e8f0" opacity="0.7" />
-
-          <rect x="500" y="375" width="125" height="85" rx="6" fill="#f1f5f9" stroke="#e2e8f0" strokeWidth="1" />
-          <rect x="510" y="385" width="105" height="65" rx="3" fill="#e2e8f0" opacity="0.7" />
-
-          <rect x="655" y="375" width="120" height="85" rx="6" fill="#f1f5f9" stroke="#e2e8f0" strokeWidth="1" />
-          <rect x="665" y="385" width="100" height="65" rx="3" fill="#e2e8f0" opacity="0.7" />
-
-          {/* 5. Road Casing (Base Layer) */}
-          <path d="M 145,0 L 145,500" stroke="#cbd5e1" strokeWidth="22" strokeLinecap="square" />
-          <path d="M 480,0 L 480,500" stroke="#cbd5e1" strokeWidth="22" strokeLinecap="square" />
-          <path d="M 295,0 L 295,500" stroke="#cbd5e1" strokeWidth="14" strokeLinecap="square" />
-          <path d="M 640,210 L 640,500" stroke="#cbd5e1" strokeWidth="14" strokeLinecap="square" />
-          <path d="M 100,145 L 800,145" stroke="#cbd5e1" strokeWidth="20" strokeLinecap="square" />
-          <path d="M 90,255 L 800,255" stroke="#cbd5e1" strokeWidth="22" strokeLinecap="square" />
-          <path d="M 90,355 L 800,355" stroke="#cbd5e1" strokeWidth="18" strokeLinecap="square" />
-          <path d="M 145,145 Q 220,200 295,255" stroke="#cbd5e1" strokeWidth="14" strokeLinecap="round" />
-
-          {/* 6. Road Surface (White Layer) */}
-          <path d="M 145,0 L 145,500" stroke="#ffffff" strokeWidth="18" strokeLinecap="square" />
-          <path d="M 480,0 L 480,500" stroke="#ffffff" strokeWidth="18" strokeLinecap="square" />
-          <path d="M 295,0 L 295,500" stroke="#ffffff" strokeWidth="10" strokeLinecap="square" />
-          <path d="M 640,210 L 640,500" stroke="#ffffff" strokeWidth="10" strokeLinecap="square" />
-          <path d="M 100,145 L 800,145" stroke="#ffffff" strokeWidth="16" strokeLinecap="square" />
-          <path d="M 90,255 L 800,255" stroke="#ffffff" strokeWidth="18" strokeLinecap="square" />
-          <path d="M 90,355 L 800,355" stroke="#ffffff" strokeWidth="14" strokeLinecap="square" />
-          <path d="M 145,145 Q 220,200 295,255" stroke="#ffffff" strokeWidth="10" strokeLinecap="round" />
-
-          {/* Road Center Dashes */}
-          <path d="M 145,0 L 145,500" stroke="#e2e8f0" strokeWidth="1.5" strokeDasharray="5 7" />
-          <path d="M 480,0 L 480,500" stroke="#e2e8f0" strokeWidth="1.5" strokeDasharray="5 7" />
-          <path d="M 90,255 L 800,255" stroke="#e2e8f0" strokeWidth="1.5" strokeDasharray="5 7" />
-
-          {/* Central Roundabout */}
-          <circle cx="480" cy="255" r="30" fill="#cbd5e1" />
-          <circle cx="480" cy="255" r="26" fill="#ffffff" />
-          <circle cx="480" cy="255" r="14" fill="#dcfce7" stroke="#86efac" strokeWidth="1.5" />
-          <circle cx="480" cy="255" r="6" fill="#15803d" opacity="0.6" />
-
-          {/* 7. Street Labels */}
-          <text
-            x="134"
-            y="70"
-            transform="rotate(-90 134,70)"
-            fill="#64748b"
-            fontSize="8.5"
-            fontWeight="700"
-            letterSpacing="1.2"
-          >
-            GALLE RD CORRIDOR
-          </text>
-          <text
-            x="469"
-            y="70"
-            transform="rotate(-90 469,70)"
-            fill="#64748b"
-            fontSize="8.5"
-            fontWeight="700"
-            letterSpacing="1.2"
-          >
-            UNION WAY (DEMO)
-          </text>
-          <text
-            x="190"
-            y="139"
-            fill="#64748b"
-            fontSize="8.5"
-            fontWeight="700"
-            letterSpacing="1.2"
-          >
-            LOTUS BOULEVARD
-          </text>
-          <text
-            x="530"
-            y="249"
-            fill="#64748b"
-            fontSize="8.5"
-            fontWeight="700"
-            letterSpacing="1.2"
-          >
-            CLINIC WAY
-          </text>
-          <text
-            x="530"
-            y="349"
-            fill="#64748b"
-            fontSize="8.5"
-            fontWeight="700"
-            letterSpacing="1.2"
-          >
-            HARBOR VIEW WAY
-          </text>
-
-          {/* 8. DentCare Clinic Location Pin & Callout */}
-          <circle cx="390" cy="255" r="30" fill="rgba(15, 118, 110, 0.12)" className="clinic-pin-pulse" />
-          <circle cx="390" cy="255" r="16" fill="rgba(15, 118, 110, 0.22)" />
-          <ellipse cx="390" cy="265" rx="14" ry="5" fill="#0f172a" opacity="0.22" />
-
-          <path
-            d="M 390,260 C 378,245 370,236 370,225 C 370,213.9 378.9,205 390,205 C 401.1,205 410,213.9 410,225 C 410,236 402,245 390,260 Z"
-            fill="url(#tealPinGrad)"
-            stroke="#ffffff"
-            strokeWidth="2.5"
-            filter="url(#pinShadow)"
-          />
-
-          <circle cx="390" cy="225" r="9" fill="#ffffff" />
-
-          <path
-            d="M 387,221 C 385.5,221 384.5,222 384.5,223.5 C 384.5,225 385.2,226.2 386,227.8 C 386.4,228.6 387.2,229.4 388,229.4 C 388.8,229.4 389.2,228.6 389.6,228.6 C 390,228.6 390.4,229.4 391.2,229.4 C 392,229.4 392.8,228.6 393.2,227.8 C 394,226.2 394.7,225 394.7,223.5 C 394.7,222 393.7,221 392.2,221 C 391,221 390.2,221.8 389.6,221.8 C 389,221.8 388.2,221 387,221 Z"
-            fill="#0f766e"
-          />
-
-          {/* Floating Callout Card Above Pin */}
-          <g className="clinic-pin-callout" filter="url(#mapCardShadow)">
-            <rect
-              x="275"
-              y="138"
-              width="230"
-              height="54"
-              rx="10"
-              fill="#ffffff"
-              stroke="rgba(15, 118, 110, 0.35)"
-              strokeWidth="1.5"
-            />
-            <polygon
-              points="385,192 395,192 390,199"
-              fill="#ffffff"
-              stroke="rgba(15, 118, 110, 0.35)"
-              strokeWidth="1.5"
-            />
-            <line x1="384" y1="192" x2="396" y2="192" stroke="#ffffff" strokeWidth="2.5" />
-
-            <rect x="287" y="147" width="36" height="36" rx="8" fill="#f0fdfa" stroke="#ccfbf1" strokeWidth="1" />
-            <path
-              d="M 302,159 C 300,159 298.8,160.2 298.8,162.2 C 298.8,164.2 299.7,165.7 300.7,167.7 C 301.2,168.7 302.2,169.8 303.2,169.8 C 304.2,169.8 304.7,168.7 305.2,168.7 C 305.7,168.7 306.2,169.8 307.2,169.8 C 308.2,169.8 309.2,168.7 309.7,167.7 C 310.7,165.7 311.6,164.2 311.6,162.2 C 311.6,160.2 310.4,159 308.4,159 C 306.9,159 305.8,160 305.2,160 C 304.6,160 303.5,159 302,159 Z"
-              fill="#0f766e"
-            />
-
-            <text x="333" y="159" fill="#0f172a" fontSize="13" fontWeight="800">
-              DentCare Clinic
-            </text>
-            <text x="333" y="173" fill="#0f766e" fontSize="10.5" fontWeight="700">
-              Demonstration Location
-            </text>
-            <text x="333" y="184" fill="#64748b" fontSize="9.5" fontWeight="500">
-              Colombo, Sri Lanka
-            </text>
-          </g>
-
-          {/* 9. Cartographic Elements: North Compass & Scale Bar */}
-          <g transform="translate(755, 40)">
-            <circle cx="0" cy="0" r="16" fill="#ffffff" stroke="#cbd5e1" strokeWidth="1" />
-            <polygon points="0,-11 4,5 0,2 -4,5" fill="#0f766e" />
-            <polygon points="0,2 4,5 0,11 -4,5" fill="#cbd5e1" opacity="0.6" />
-            <text x="0" y="-13" fill="#0f172a" fontSize="8.5" fontWeight="800" textAnchor="middle">N</text>
-          </g>
-
-          <g transform="translate(690, 480)">
-            <rect x="0" y="0" width="70" height="3" fill="#0f172a" />
-            <rect x="0" y="0" width="35" height="3" fill="#94a3b8" />
-            <text x="35" y="-5" fill="#475569" fontSize="8.5" fontWeight="600" textAnchor="middle">500 m</text>
-          </g>
-        </svg>
+        <iframe
+          title="DentCare Dental Clinic Location Map"
+          src="https://www.google.com/maps?q=6.9147,79.8540+(DentCare+Dental+Clinic)&z=15&output=embed"
+          width="100%"
+          height="100%"
+          style={{ border: 0, minHeight: '420px', width: '100%', display: 'block' }}
+          allowFullScreen=""
+          loading="lazy"
+          referrerPolicy="no-referrer-when-downgrade"
+        />
       </div>
 
       <div className="clinic-map-caption" data-testid="clinic-map-caption">
@@ -844,10 +542,6 @@ export default function PublicLandingPage() {
 
         <div className="public-container public-hero-grid">
           <div className="public-hero-copy">
-            <div className="public-intro-badge hero-animate-eyebrow">
-              <span className="badge-sparkle" aria-hidden="true">✦</span>
-              <span>Modern Dental Care, Connected</span>
-            </div>
             <h1 id="public-hero-title" className="hero-animate-title">
               Better dental care starts with a better experience. <span className="hero-gradient-text">A clear, secure way to access dental care.</span>
             </h1>
@@ -980,14 +674,11 @@ export default function PublicLandingPage() {
           <div className="editorial-team-header">
             <p className="editorial-team-eyebrow">CLINICAL TEAM</p>
             <h2 id="editorial-team-title" className="editorial-team-heading">
-              Meet our demo dental team
+              Meet our dental team
             </h2>
             <p className="editorial-team-lead">
-              Explore example dental professionals and the types of clinical care workflows supported by the DentCare platform.
+              Explore dental professionals and the types of clinical care workflows supported by the DentCare platform.
             </p>
-            <div className="editorial-team-disclaimer" data-testid="demo-team-disclaimer">
-              Demo team profiles · Fictional examples for the DentCare university project
-            </div>
           </div>
 
           <div className="editorial-team-grid">
@@ -1004,9 +695,8 @@ export default function PublicLandingPage() {
                 />
               </div>
               <div className="editorial-team-body">
-                <span className="editorial-demo-badge">DEMO PROFILE</span>
-                <h3 className="editorial-card-title">Dr. Maya Lawson</h3>
-                <span className="editorial-card-role">Demo Dentist</span>
+                <h3 className="editorial-card-title">Dr. Anya Sharma</h3>
+                <span className="editorial-card-role">Dentist</span>
 
                 <span className="editorial-specialty-pill pill-restorative">
                   RESTORATIVE CARE
@@ -1047,9 +737,8 @@ export default function PublicLandingPage() {
                 />
               </div>
               <div className="editorial-team-body">
-                <span className="editorial-demo-badge">DEMO PROFILE</span>
-                <h3 className="editorial-card-title">Dr. Adrian Wells</h3>
-                <span className="editorial-card-role">Demo Dentist</span>
+                <h3 className="editorial-card-title">Dr. Sarah Chen</h3>
+                <span className="editorial-card-role">Dentist</span>
 
                 <span className="editorial-specialty-pill pill-surgery">
                   ORAL SURGERY CARE
@@ -1061,7 +750,7 @@ export default function PublicLandingPage() {
                 </div>
 
                 <p className="editorial-card-desc">
-                  Demonstrates treatment workflows for dental extractions, surgical consultations, and coordinated patient care.
+                  Provides treatment workflows for dental extractions, surgical consultations, and coordinated patient care.
                 </p>
 
                 <div className="editorial-card-actions">
@@ -1090,9 +779,8 @@ export default function PublicLandingPage() {
                 />
               </div>
               <div className="editorial-team-body">
-                <span className="editorial-demo-badge">DEMO PROFILE</span>
-                <h3 className="editorial-card-title">Dr. Elena Mercer</h3>
-                <span className="editorial-card-role">Demo Dentist</span>
+                <h3 className="editorial-card-title">Dr. David Chen</h3>
+                <span className="editorial-card-role">Dentist</span>
 
                 <span className="editorial-specialty-pill pill-orthodontics">
                   PREVENTIVE &amp; ORTHODONTIC CARE
@@ -1461,9 +1149,11 @@ export default function PublicLandingPage() {
             {/* Right Column: Clinic Information Card */}
             <div className="clinic-info-card" data-testid="clinic-info-card">
               <div className="clinic-card-header">
-                <span className="clinic-demo-badge" data-testid="clinic-demo-badge">
-                  {clinicContactConfig.demoBadge}
-                </span>
+                {clinicContactConfig.demoBadge ? (
+                  <span className="clinic-demo-badge" data-testid="clinic-demo-badge">
+                    {clinicContactConfig.demoBadge}
+                  </span>
+                ) : null}
                 <h3 className="clinic-card-title">{clinicContactConfig.name}</h3>
                 <div className="clinic-card-location">
                   <MapPinIcon className="clinic-info-icon" />
@@ -1478,11 +1168,11 @@ export default function PublicLandingPage() {
                     <PhoneIcon />
                   </div>
                   <div className="clinic-info-item-content">
-                    <span className="clinic-info-label">Demo Telephone</span>
+                    <span className="clinic-info-label">Telephone</span>
                     <span className="clinic-info-val clinic-non-actionable" data-testid="clinic-phone-value">
                       {clinicContactConfig.phone}
                     </span>
-                    <span className="clinic-info-hint">Non-active demonstration line</span>
+                    <span className="clinic-info-hint">Mon–Sat 8:30 AM–6:00 PM</span>
                   </div>
                 </div>
 
@@ -1492,11 +1182,11 @@ export default function PublicLandingPage() {
                     <MailIcon />
                   </div>
                   <div className="clinic-info-item-content">
-                    <span className="clinic-info-label">Demo Email</span>
+                    <span className="clinic-info-label">Email Address</span>
                     <span className="clinic-info-val clinic-non-actionable" data-testid="clinic-email-value">
                       {clinicContactConfig.email}
                     </span>
-                    <span className="clinic-info-hint">Fictional demonstration mailbox</span>
+                    <span className="clinic-info-hint">Inquiries & appointments</span>
                   </div>
                 </div>
 
@@ -1513,7 +1203,7 @@ export default function PublicLandingPage() {
                       </span>
                     </div>
                   </div>
-                  <ul className="clinic-hours-list" aria-label="Demonstration opening hours">
+                  <ul className="clinic-hours-list" aria-label="Clinic opening hours">
                     {clinicContactConfig.hours.map((item, idx) => (
                       <li key={idx} className="clinic-hours-row">
                         <span className="clinic-hours-days">{item.days}</span>

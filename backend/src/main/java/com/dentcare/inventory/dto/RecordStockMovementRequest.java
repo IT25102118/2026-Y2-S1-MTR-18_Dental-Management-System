@@ -9,9 +9,7 @@ import jakarta.validation.constraints.Size;
 
 import java.time.LocalDate;
 
-/**
- * Request payload for recording a stock movement against an inventory item.
- */
+// Request payload for recording a stock movement against an inventory item.
 public class RecordStockMovementRequest {
 
     @NotNull(message = "Movement type is required")
@@ -31,12 +29,7 @@ public class RecordStockMovementRequest {
     @Size(max = 100, message = "Batch number must not exceed 100 characters")
     private String batchNumber;
 
-    /**
-     * Batch expiry date for stock/batch entry.
-     * Prevents users and API clients from backdating inventory batch records with past dates.
-     * Allowed: today (current local calendar date) or any future date.
-     * Rejected: yesterday or any earlier date.
-     */
+    // Validation for batch expiry date.
     @FutureOrPresent(message = "Expiry date cannot be earlier than today")
     private LocalDate expiryDate;
 
@@ -57,15 +50,16 @@ public class RecordStockMovementRequest {
     }
 
     public RecordStockMovementRequest(StockMovementType movementType, AdjustmentDirection adjustmentDirection,
-                                      Integer quantity, String reason, Long responsibleUserId,
-                                      String batchNumber, LocalDate expiryDate, Long treatmentProcedureId) {
-        this(movementType, adjustmentDirection, quantity, reason, responsibleUserId, batchNumber, expiryDate, treatmentProcedureId, null, null, null);
+            Integer quantity, String reason, Long responsibleUserId,
+            String batchNumber, LocalDate expiryDate, Long treatmentProcedureId) {
+        this(movementType, adjustmentDirection, quantity, reason, responsibleUserId, batchNumber, expiryDate,
+                treatmentProcedureId, null, null, null);
     }
 
     public RecordStockMovementRequest(StockMovementType movementType, AdjustmentDirection adjustmentDirection,
-                                      Integer quantity, String reason, Long responsibleUserId,
-                                      String batchNumber, LocalDate expiryDate, Long treatmentProcedureId,
-                                      Long batchId, LocalDate receivedDate, String supplierReference) {
+            Integer quantity, String reason, Long responsibleUserId,
+            String batchNumber, LocalDate expiryDate, Long treatmentProcedureId,
+            Long batchId, LocalDate receivedDate, String supplierReference) {
         this.movementType = movementType;
         this.adjustmentDirection = adjustmentDirection;
         this.quantity = quantity;
@@ -78,7 +72,6 @@ public class RecordStockMovementRequest {
         this.receivedDate = receivedDate;
         this.supplierReference = supplierReference;
     }
-
 
     public StockMovementType getMovementType() {
         return movementType;
@@ -168,4 +161,3 @@ public class RecordStockMovementRequest {
         this.supplierReference = supplierReference;
     }
 }
-

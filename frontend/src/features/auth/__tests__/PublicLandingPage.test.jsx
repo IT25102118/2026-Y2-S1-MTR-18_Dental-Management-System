@@ -23,25 +23,20 @@ describe('PublicLandingPage Demo Clinical Team Profiles (Prompt 93)', () => {
     );
   };
 
-  it('renders Section 1: Clinical Team heading, lead, and visible fictional-demo disclaimer', () => {
+  it('renders Section 1: Clinical Team heading and lead', () => {
     renderLandingPage();
 
     // 1. Clinical Team heading renders
     expect(screen.getByText('CLINICAL TEAM')).toBeInTheDocument();
     expect(
-      screen.getByRole('heading', { name: /Meet our demo dental team/i, level: 2 })
+      screen.getByRole('heading', { name: /Meet our dental team/i, level: 2 })
     ).toBeInTheDocument();
     expect(
-      screen.getByText(/Explore example dental professionals and the types of clinical care workflows supported by the DentCare platform\./i)
+      screen.getByText(/Explore dental professionals and the types of clinical care workflows supported by the DentCare platform\./i)
     ).toBeInTheDocument();
-
-    // 2. Visible fictional-demo disclaimer renders
-    const disclaimer = screen.getByTestId('demo-team-disclaimer');
-    expect(disclaimer).toBeInTheDocument();
-    expect(disclaimer).toHaveTextContent(/Demo team profiles · Fictional examples for the DentCare university project/i);
   });
 
-  it('renders exactly three fictional demo dentist profile cards with names, demo badge, roles, focus, and biographies', () => {
+  it('renders exactly three dentist profile cards with names, roles, focus, and biographies', () => {
     renderLandingPage();
 
     // 3. Exactly three profile cards render
@@ -52,18 +47,14 @@ describe('PublicLandingPage Demo Clinical Team Profiles (Prompt 93)', () => {
     expect(cardWells).toBeInTheDocument();
     expect(cardMercer).toBeInTheDocument();
 
-    // 4. Each card displays a fictional sample name
-    expect(screen.getByRole('heading', { name: /Dr\. Maya Lawson/i, level: 3 })).toBeInTheDocument();
-    expect(screen.getByRole('heading', { name: /Dr\. Adrian Wells/i, level: 3 })).toBeInTheDocument();
-    expect(screen.getByRole('heading', { name: /Dr\. Elena Mercer/i, level: 3 })).toBeInTheDocument();
+    // 4. Each card displays a sample name
+    expect(screen.getByRole('heading', { name: /Dr. Anya Sharma/i, level: 3 })).toBeInTheDocument();
+    expect(screen.getByRole('heading', { name: /Dr. Sarah Chen/i, level: 3 })).toBeInTheDocument();
+    expect(screen.getByRole('heading', { name: /Dr. David Chen/i, level: 3 })).toBeInTheDocument();
 
-    // 5. Each card displays "DEMO PROFILE"
-    const demoBadges = screen.getAllByText('DEMO PROFILE');
-    expect(demoBadges.length).toBe(3);
-
-    // Display role: Demo Dentist
-    const demoDentistLabels = screen.getAllByText('Demo Dentist');
-    expect(demoDentistLabels.length).toBe(3);
+    // Display role: Dentist
+    const dentistLabels = screen.getAllByText('Dentist');
+    expect(dentistLabels.length).toBe(3);
 
     // 6. Each card has clinical focus and biography
     // Card 1: Lawson
@@ -77,7 +68,7 @@ describe('PublicLandingPage Demo Clinical Team Profiles (Prompt 93)', () => {
     expect(screen.getByText('ORAL SURGERY CARE')).toBeInTheDocument();
     expect(screen.getByText('Oral Surgery & Dental Treatment')).toBeInTheDocument();
     expect(
-      screen.getByText(/Demonstrates treatment workflows for dental extractions, surgical consultations, and coordinated patient care\./i)
+      screen.getByText(/Provides treatment workflows for dental extractions, surgical consultations, and coordinated patient care\./i)
     ).toBeInTheDocument();
 
     // Card 3: Mercer
@@ -403,74 +394,59 @@ describe('PublicLandingPage Clinic Location & Contact Section (Prompt 95)', () =
       screen.getByRole('heading', { name: /Visit & Contact DentCare/i, level: 2 })
     ).toBeInTheDocument();
     expect(
-      screen.getByText(/Explore our demonstration clinic location, contact information, and appointment booking experience\./i)
+      screen.getByText(/Explore our clinic location, contact information, and appointment booking experience\./i)
     ).toBeInTheDocument();
   });
 
-  it('renders illustrative map visual with demo disclaimer badge, accessible label, and caption', () => {
+  it('renders map visual with location iframe, accessible label, and caption', () => {
     renderLandingPage();
 
-    // Map frame and disclaimer
+    // Map frame
     const mapFrame = screen.getByTestId('clinic-map-frame');
     expect(mapFrame).toBeInTheDocument();
 
-    const demoBadge = screen.getByTestId('clinic-map-demo-badge');
-    expect(demoBadge).toBeInTheDocument();
-    expect(demoBadge).toHaveTextContent('DEMO LOCATION — NOT A REAL CLINIC ADDRESS');
-
-    // Visual container has accessible role="img" and illustrative label
+    // Visual container has accessible label
     const mapVisual = screen.getByTestId('clinic-map-visual');
     expect(mapVisual).toBeInTheDocument();
-    expect(mapVisual).toHaveAttribute('role', 'img');
-    expect(mapVisual.getAttribute('aria-label')).toMatch(/Illustrative map/i);
-    expect(mapVisual.getAttribute('aria-label')).toMatch(/not a real navigation map/i);
+    expect(mapVisual.getAttribute('aria-label')).toMatch(/DentCare Dental Clinic Location Map/i);
 
     // Caption renders
     const mapCaption = screen.getByTestId('clinic-map-caption');
     expect(mapCaption).toBeInTheDocument();
-    expect(mapCaption).toHaveTextContent('Illustrative map · Colombo, Sri Lanka');
+    expect(mapCaption).toHaveTextContent(/128 Galle Road, Colombo 03/i);
 
-    // Internal map elements render (street names, clinic callout)
-    expect(screen.getByText('GALLE RD CORRIDOR')).toBeInTheDocument();
-    expect(screen.getByText('LOTUS BOULEVARD')).toBeInTheDocument();
-    expect(screen.getByText('CLINIC WAY')).toBeInTheDocument();
-    expect(screen.getByText('CENTRAL GREEN PARK')).toBeInTheDocument();
-    expect(screen.getByText('ESPLANADE GROUNDS')).toBeInTheDocument();
-    expect(screen.getByText('DentCare Clinic')).toBeInTheDocument();
-    expect(screen.getByText('Demonstration Location')).toBeInTheDocument();
+    // Embedded map iframe renders
+    const iframe = mapVisual.querySelector('iframe');
+    expect(iframe).toBeInTheDocument();
+    expect(iframe).toHaveAttribute('src', expect.stringContaining('google.com/maps'));
   });
 
-  it('renders clinic information card with demo badge, clinic name, location, and contact items', () => {
+  it('renders clinic information card with clinic name, location, and contact items', () => {
     renderLandingPage();
 
     const infoCard = screen.getByTestId('clinic-info-card');
     expect(infoCard).toBeInTheDocument();
 
-    // Demo badge
-    const clinicDemoBadge = screen.getByTestId('clinic-demo-badge');
-    expect(clinicDemoBadge).toBeInTheDocument();
-    expect(clinicDemoBadge).toHaveTextContent('DEMO LOCATION');
-
     // Clinic name & location
-    expect(screen.getByRole('heading', { name: 'DentCare Demonstration Clinic', level: 3 })).toBeInTheDocument();
-    expect(within(infoCard).getByText('Colombo, Sri Lanka')).toBeInTheDocument();
+    expect(screen.getByRole('heading', { name: 'DentCare Dental Clinic', level: 3 })).toBeInTheDocument();
+    expect(within(infoCard).getByText(/128 Galle Road, Colombo 03, Sri Lanka/i)).toBeInTheDocument();
 
-    // Phone & Email placeholders
+    // Phone & Email
     const phoneVal = screen.getByTestId('clinic-phone-value');
     expect(phoneVal).toBeInTheDocument();
-    expect(phoneVal).toHaveTextContent('+94 XX XXX XXXX');
+    expect(phoneVal).toHaveTextContent('+94 11 258 7410');
 
     const emailVal = screen.getByTestId('clinic-email-value');
     expect(emailVal).toBeInTheDocument();
-    expect(emailVal).toHaveTextContent('contact@dentcare.example');
+    expect(emailVal).toHaveTextContent('contact@dentcare.lk');
   });
 
-  it('clearly marks opening hours with sample note and day/time schedules', () => {
+  it('clearly marks opening hours with schedule note and day/time schedules', () => {
     renderLandingPage();
 
     const hoursNote = screen.getByTestId('clinic-hours-note');
     expect(hoursNote).toBeInTheDocument();
-    expect(hoursNote).toHaveTextContent('Example opening hours — for demonstration only');
+    expect(hoursNote).toHaveTextContent('Official consultation & clinic hours');
 
     expect(screen.getByText('Monday–Friday')).toBeInTheDocument();
     expect(screen.getByText('8:30 AM–6:00 PM')).toBeInTheDocument();
@@ -527,7 +503,7 @@ describe('PublicLandingPage Clinic Location & Contact Section (Prompt 95)', () =
     expect(screen.getByRole('heading', { level: 1 })).toHaveTextContent(/Better dental care starts with a better experience/i);
 
     // Clinical Team
-    expect(screen.getByRole('heading', { name: /Meet our demo dental team/i, level: 2 })).toBeInTheDocument();
+    expect(screen.getByRole('heading', { name: /Meet our dental team/i, level: 2 })).toBeInTheDocument();
 
     // Patient Experience
     expect(screen.getByRole('heading', { name: /A calm, refined approach to modern oral care/i, level: 2 })).toBeInTheDocument();

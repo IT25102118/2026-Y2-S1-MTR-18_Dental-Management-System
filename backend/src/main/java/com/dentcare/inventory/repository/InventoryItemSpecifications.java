@@ -1,3 +1,4 @@
+// Stratagy
 package com.dentcare.inventory.repository;
 
 import com.dentcare.inventory.dto.StockStatusFilter;

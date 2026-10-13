@@ -30,7 +30,8 @@ import java.util.List;
 import java.util.Optional;
 
 /**
- * Implementation of {@link StockMovementService} managing transactional stock ledger movements,
+ * Implementation of {@link StockMovementService} managing transactional stock
+ * ledger movements,
  * batch tracking allocations, and concurrency locking.
  */
 @Service
@@ -42,19 +43,18 @@ public class StockMovementServiceImpl implements StockMovementService {
     private final InventoryBatchRepository inventoryBatchRepository;
 
     public StockMovementServiceImpl(InventoryItemRepository inventoryItemRepository,
-                                    StockMovementRepository stockMovementRepository) {
+            StockMovementRepository stockMovementRepository) {
         this(inventoryItemRepository, stockMovementRepository, null);
     }
 
     @org.springframework.beans.factory.annotation.Autowired
     public StockMovementServiceImpl(InventoryItemRepository inventoryItemRepository,
-                                    StockMovementRepository stockMovementRepository,
-                                    InventoryBatchRepository inventoryBatchRepository) {
+            StockMovementRepository stockMovementRepository,
+            InventoryBatchRepository inventoryBatchRepository) {
         this.inventoryItemRepository = inventoryItemRepository;
         this.stockMovementRepository = stockMovementRepository;
         this.inventoryBatchRepository = inventoryBatchRepository;
     }
-
 
     @Override
     @Transactional
@@ -63,7 +63,8 @@ public class StockMovementServiceImpl implements StockMovementService {
         InventoryItem item = inventoryItemRepository.findByIdForUpdate(itemId)
                 .orElseThrow(() -> new InventoryItemNotFoundException(itemId));
 
-        // 2. Backward compatibility: ensure legacy unbatched balance exists if item pre-dates S4B
+        // 2. Backward compatibility: ensure legacy unbatched balance exists if item
+        // pre-dates S4B
         ensureLegacyBatchCompatibility(item);
 
         // 3. Enforce active status invariant for ordinary operational movements
@@ -76,6 +77,7 @@ public class StockMovementServiceImpl implements StockMovementService {
         if (type == null) {
             throw new InvalidMovementException("Movement type is required");
         }
+        // Validation for quantity
         int quantity = request.getQuantity();
         if (quantity <= 0) {
             throw new InvalidMovementException("Quantity must be strictly greater than zero");
@@ -84,7 +86,8 @@ public class StockMovementServiceImpl implements StockMovementService {
         AdjustmentDirection adjustmentDirection = request.getAdjustmentDirection();
         if (type == StockMovementType.ADJUSTED) {
             if (adjustmentDirection == null) {
-                throw new InvalidMovementException("Adjustment direction (INCREASE or DECREASE) is required for ADJUSTED movements");
+                throw new InvalidMovementException(
+                        "Adjustment direction (INCREASE or DECREASE) is required for ADJUSTED movements");
             }
             if (request.getReason() == null || request.getReason().trim().isEmpty()) {
                 throw new InvalidMovementException("A detailed reason is required for ADJUSTED movements");
@@ -93,7 +96,8 @@ public class StockMovementServiceImpl implements StockMovementService {
             adjustmentDirection = null; // Direction is only populated for ADJUSTED
         }
 
-        boolean isStockOut = (type == StockMovementType.USED || type == StockMovementType.DAMAGED || type == StockMovementType.EXPIRED)
+        boolean isStockOut = (type == StockMovementType.USED || type == StockMovementType.DAMAGED
+                || type == StockMovementType.EXPIRED)
                 || (type == StockMovementType.ADJUSTED && adjustmentDirection == AdjustmentDirection.DECREASE);
 
         InventoryBatch targetBatch = null;
@@ -101,6 +105,7 @@ public class StockMovementServiceImpl implements StockMovementService {
         // 5. Apply movement-specific batch and item balance mutations
         if (inventoryBatchRepository != null) {
             if (type == StockMovementType.RECEIVED) {
+                // validation for received date and expiry date
                 if (request.getReceivedDate() != null && request.getExpiryDate() != null
                         && request.getExpiryDate().isBefore(request.getReceivedDate())) {
                     throw new InvalidMovementException("Expiry date cannot be before received date");
@@ -111,63 +116,74 @@ public class StockMovementServiceImpl implements StockMovementService {
                     InventoryBatch batch = inventoryBatchRepository.findById(request.getBatchId())
                             .orElseThrow(() -> new InventoryBatchNotFoundException(request.getBatchId()));
                     if (!batch.getInventoryItem().getId().equals(itemId)) {
-                        throw new InvalidMovementException("Batch ID " + request.getBatchId() + " does not belong to item ID " + itemId);
+                        throw new InvalidMovementException(
+                                "Batch ID " + request.getBatchId() + " does not belong to item ID " + itemId);
                     }
                     if (request.getExpiryDate() != null && !request.getExpiryDate().equals(batch.getExpiryDate())) {
-                        throw new InvalidMovementException("Conflicting expiry date for existing batch ID " + request.getBatchId());
+                        throw new InvalidMovementException(
+                                "Conflicting expiry date for existing batch ID " + request.getBatchId());
                     }
                     if (request.getBatchNumber() != null && !request.getBatchNumber().trim().isEmpty()
                             && !request.getBatchNumber().trim().equalsIgnoreCase(batch.getBatchNumber())) {
-                        throw new InvalidMovementException("Conflicting batch number for batch ID " + request.getBatchId());
+                        throw new InvalidMovementException(
+                                "Conflicting batch number for batch ID " + request.getBatchId());
                     }
                     batch.increaseQuantity(quantity);
                     targetBatch = batch;
                 } else if (request.getBatchNumber() != null && !request.getBatchNumber().trim().isEmpty()) {
                     // Receipt with batch number
                     String batchNo = request.getBatchNumber().trim();
-                    Optional<InventoryBatch> existingOpt = inventoryBatchRepository.findByInventoryItemIdAndBatchNumber(itemId, batchNo);
+                    Optional<InventoryBatch> existingOpt = inventoryBatchRepository
+                            .findByInventoryItemIdAndBatchNumber(itemId, batchNo);
                     if (existingOpt.isPresent()) {
                         InventoryBatch batch = existingOpt.get();
                         if (batch.getExpiryDate() != null) {
-                            if (request.getExpiryDate() == null || !batch.getExpiryDate().equals(request.getExpiryDate())) {
-                                throw new InvalidMovementException("Conflicting expiry date for existing batch " + batchNo);
+                            if (request.getExpiryDate() == null
+                                    || !batch.getExpiryDate().equals(request.getExpiryDate())) {
+                                throw new InvalidMovementException(
+                                        "Conflicting expiry date for existing batch " + batchNo);
                             }
                         } else {
                             if (request.getExpiryDate() != null) {
-                                throw new InvalidMovementException("Cannot assign expiry date to established batch " + batchNo + " with no expiry");
+                                throw new InvalidMovementException("Cannot assign expiry date to established batch "
+                                        + batchNo + " with no expiry");
                             }
                         }
                         if (batch.getSupplierReference() != null && request.getSupplierReference() != null
                                 && !request.getSupplierReference().trim().isEmpty()
-                                && !batch.getSupplierReference().equalsIgnoreCase(request.getSupplierReference().trim())) {
-                            throw new InvalidMovementException("Conflicting supplier reference for existing batch " + batchNo);
+                                && !batch.getSupplierReference()
+                                        .equalsIgnoreCase(request.getSupplierReference().trim())) {
+                            throw new InvalidMovementException(
+                                    "Conflicting supplier reference for existing batch " + batchNo);
                         }
                         batch.increaseQuantity(quantity);
                         targetBatch = batch;
                     } else {
-                        String suppRef = (request.getSupplierReference() != null && !request.getSupplierReference().trim().isEmpty())
-                                ? request.getSupplierReference().trim()
-                                : item.getDefaultSupplierReference();
+                        String suppRef = (request.getSupplierReference() != null
+                                && !request.getSupplierReference().trim().isEmpty())
+                                        ? request.getSupplierReference().trim()
+                                        : item.getDefaultSupplierReference();
                         InventoryBatch newBatch = new InventoryBatch(
                                 item,
                                 batchNo,
                                 request.getExpiryDate(),
                                 quantity,
                                 request.getReceivedDate(),
-                                suppRef
-                        );
+                                suppRef);
                         targetBatch = inventoryBatchRepository.saveAndFlush(newBatch);
                     }
                 } else {
                     // Unbatched receipt
-                    Optional<InventoryBatch> unbatchedOpt = inventoryBatchRepository.findByInventoryItemIdAndBatchNumberIsNull(itemId);
+                    Optional<InventoryBatch> unbatchedOpt = inventoryBatchRepository
+                            .findByInventoryItemIdAndBatchNumberIsNull(itemId);
                     if (unbatchedOpt.isPresent()) {
                         targetBatch = unbatchedOpt.get();
                         targetBatch.increaseQuantity(quantity);
                     } else {
-                        String suppRef = (request.getSupplierReference() != null && !request.getSupplierReference().trim().isEmpty())
-                                ? request.getSupplierReference().trim()
-                                : item.getDefaultSupplierReference();
+                        String suppRef = (request.getSupplierReference() != null
+                                && !request.getSupplierReference().trim().isEmpty())
+                                        ? request.getSupplierReference().trim()
+                                        : item.getDefaultSupplierReference();
                         InventoryBatch unbatched = new InventoryBatch(item, null, null, quantity, null, suppRef);
                         targetBatch = inventoryBatchRepository.saveAndFlush(unbatched);
                     }
@@ -184,12 +200,14 @@ public class StockMovementServiceImpl implements StockMovementService {
                     InventoryBatch batch = inventoryBatchRepository.findById(request.getBatchId())
                             .orElseThrow(() -> new InventoryBatchNotFoundException(request.getBatchId()));
                     if (!batch.getInventoryItem().getId().equals(itemId)) {
-                        throw new InvalidMovementException("Batch ID " + request.getBatchId() + " does not belong to item ID " + itemId);
+                        throw new InvalidMovementException(
+                                "Batch ID " + request.getBatchId() + " does not belong to item ID " + itemId);
                     }
                     if (request.getBatchNumber() != null && !request.getBatchNumber().trim().isEmpty()
                             && batch.getBatchNumber() != null
                             && !request.getBatchNumber().trim().equalsIgnoreCase(batch.getBatchNumber())) {
-                        throw new InvalidMovementException("Conflicting batch number for batch ID " + request.getBatchId());
+                        throw new InvalidMovementException(
+                                "Conflicting batch number for batch ID " + request.getBatchId());
                     }
                     if (batch.getQuantityOnHand() < quantity) {
                         throw new InsufficientStockException(itemId, quantity, batch.getQuantityOnHand());
@@ -204,7 +222,8 @@ public class StockMovementServiceImpl implements StockMovementService {
                     }
                     targetBatch = batch;
                 } else {
-                    List<InventoryBatch> positiveBatches = inventoryBatchRepository.findByInventoryItemIdAndQuantityOnHandGreaterThan(itemId, 0);
+                    List<InventoryBatch> positiveBatches = inventoryBatchRepository
+                            .findByInventoryItemIdAndQuantityOnHandGreaterThan(itemId, 0);
                     if (positiveBatches.isEmpty()) {
                         throw new InsufficientStockException(itemId, quantity, currentStock);
                     }
@@ -221,8 +240,10 @@ public class StockMovementServiceImpl implements StockMovementService {
 
                 if (type == StockMovementType.USED && targetBatch.getExpiryDate() != null) {
                     if (targetBatch.getExpiryDate().isBefore(LocalDate.now())) {
-                        String batchLabel = targetBatch.getBatchNumber() != null ? targetBatch.getBatchNumber() : "Unbatched";
-                        throw new InvalidMovementException("Cannot consume expired batch [" + batchLabel + "] with expiry date " + targetBatch.getExpiryDate());
+                        String batchLabel = targetBatch.getBatchNumber() != null ? targetBatch.getBatchNumber()
+                                : "Unbatched";
+                        throw new InvalidMovementException("Cannot consume expired batch [" + batchLabel
+                                + "] with expiry date " + targetBatch.getExpiryDate());
                     }
                 }
 
@@ -235,13 +256,15 @@ public class StockMovementServiceImpl implements StockMovementService {
                     InventoryBatch batch = inventoryBatchRepository.findById(request.getBatchId())
                             .orElseThrow(() -> new InventoryBatchNotFoundException(request.getBatchId()));
                     if (!batch.getInventoryItem().getId().equals(itemId)) {
-                        throw new InvalidMovementException("Batch ID " + request.getBatchId() + " does not belong to item ID " + itemId);
+                        throw new InvalidMovementException(
+                                "Batch ID " + request.getBatchId() + " does not belong to item ID " + itemId);
                     }
                     batch.increaseQuantity(quantity);
                     targetBatch = batch;
                 } else if (request.getBatchNumber() != null && !request.getBatchNumber().trim().isEmpty()) {
                     String batchNo = request.getBatchNumber().trim();
-                    Optional<InventoryBatch> opt = inventoryBatchRepository.findByInventoryItemIdAndBatchNumber(itemId, batchNo);
+                    Optional<InventoryBatch> opt = inventoryBatchRepository.findByInventoryItemIdAndBatchNumber(itemId,
+                            batchNo);
                     if (opt.isPresent()) {
                         targetBatch = opt.get();
                         targetBatch.increaseQuantity(quantity);
@@ -252,17 +275,18 @@ public class StockMovementServiceImpl implements StockMovementService {
                                 request.getExpiryDate(),
                                 quantity,
                                 request.getReceivedDate(),
-                                request.getSupplierReference()
-                        );
+                                request.getSupplierReference());
                         targetBatch = inventoryBatchRepository.saveAndFlush(newBatch);
                     }
                 } else {
-                    Optional<InventoryBatch> unbatchedOpt = inventoryBatchRepository.findByInventoryItemIdAndBatchNumberIsNull(itemId);
+                    Optional<InventoryBatch> unbatchedOpt = inventoryBatchRepository
+                            .findByInventoryItemIdAndBatchNumberIsNull(itemId);
                     if (unbatchedOpt.isPresent()) {
                         targetBatch = unbatchedOpt.get();
                         targetBatch.increaseQuantity(quantity);
                     } else {
-                        InventoryBatch unbatched = new InventoryBatch(item, null, null, quantity, null, item.getDefaultSupplierReference());
+                        InventoryBatch unbatched = new InventoryBatch(item, null, null, quantity, null,
+                                item.getDefaultSupplierReference());
                         targetBatch = inventoryBatchRepository.saveAndFlush(unbatched);
                     }
                 }
@@ -274,7 +298,8 @@ public class StockMovementServiceImpl implements StockMovementService {
             if (isStockOut && quantity > currentStock) {
                 throw new InsufficientStockException(itemId, quantity, currentStock);
             }
-            if (type == StockMovementType.RECEIVED || (type == StockMovementType.ADJUSTED && adjustmentDirection == AdjustmentDirection.INCREASE)) {
+            if (type == StockMovementType.RECEIVED
+                    || (type == StockMovementType.ADJUSTED && adjustmentDirection == AdjustmentDirection.INCREASE)) {
                 item.increaseQuantity(quantity);
             } else {
                 item.decreaseQuantity(quantity);
@@ -287,7 +312,9 @@ public class StockMovementServiceImpl implements StockMovementService {
                 : null;
 
         String snapshotBatchNumber = targetBatch != null ? targetBatch.getBatchNumber()
-                : ((request.getBatchNumber() != null && !request.getBatchNumber().trim().isEmpty()) ? request.getBatchNumber().trim() : null);
+                : ((request.getBatchNumber() != null && !request.getBatchNumber().trim().isEmpty())
+                        ? request.getBatchNumber().trim()
+                        : null);
         LocalDate snapshotExpiryDate = targetBatch != null ? targetBatch.getExpiryDate() : request.getExpiryDate();
 
         StockMovement movement = new StockMovement(
@@ -302,8 +329,7 @@ public class StockMovementServiceImpl implements StockMovementService {
                 null,
                 request.getTreatmentProcedureId(),
                 snapshotBatchNumber,
-                snapshotExpiryDate
-        );
+                snapshotExpiryDate);
 
         StockMovement savedMovement = stockMovementRepository.save(movement);
         if (targetBatch != null) {
@@ -320,11 +346,13 @@ public class StockMovementServiceImpl implements StockMovementService {
     @Override
     @Transactional
     public StockMovementResponse reverseMovement(Long itemId, Long movementId, ReverseStockMovementRequest request) {
-        // 1. Acquire pessimistic write lock on the inventory item (corrections permitted on inactive items)
+        // 1. Acquire pessimistic write lock on the inventory item (corrections
+        // permitted on inactive items)
         InventoryItem item = inventoryItemRepository.findByIdForUpdate(itemId)
                 .orElseThrow(() -> new InventoryItemNotFoundException(itemId));
 
-        // 2. Backward compatibility: ensure legacy unbatched balance exists if item pre-dates S4B
+        // 2. Backward compatibility: ensure legacy unbatched balance exists if item
+        // pre-dates S4B
         ensureLegacyBatchCompatibility(item);
 
         // 3. Retrieve original stock movement
@@ -358,7 +386,8 @@ public class StockMovementServiceImpl implements StockMovementService {
                 : AdjustmentDirection.INCREASE;
         int quantity = original.getQuantity();
 
-        // 9. Resolve target batch: use original batch if linked, otherwise unbatched balance
+        // 9. Resolve target batch: use original batch if linked, otherwise unbatched
+        // balance
         InventoryBatch targetBatch = null;
         if (inventoryBatchRepository != null) {
             if (original.getInventoryBatch() != null) {
@@ -366,7 +395,8 @@ public class StockMovementServiceImpl implements StockMovementService {
             } else {
                 targetBatch = inventoryBatchRepository.findByInventoryItemIdAndBatchNumberIsNull(itemId)
                         .orElseGet(() -> {
-                            InventoryBatch unbatched = new InventoryBatch(item, null, null, 0, null, item.getDefaultSupplierReference());
+                            InventoryBatch unbatched = new InventoryBatch(item, null, null, 0, null,
+                                    item.getDefaultSupplierReference());
                             return inventoryBatchRepository.saveAndFlush(unbatched);
                         });
             }
@@ -416,8 +446,7 @@ public class StockMovementServiceImpl implements StockMovementService {
                 original.getId(),
                 original.getTreatmentProcedureId(),
                 snapshotBatchNumber,
-                snapshotExpiryDate
-        );
+                snapshotExpiryDate);
 
         StockMovement savedMovement;
         try {
@@ -440,7 +469,8 @@ public class StockMovementServiceImpl implements StockMovementService {
     }
 
     @Override
-    public Page<StockMovementResponse> getItemMovementHistory(Long itemId, StockMovementType movementType, Pageable pageable) {
+    public Page<StockMovementResponse> getItemMovementHistory(Long itemId, StockMovementType movementType,
+            Pageable pageable) {
         if (!inventoryItemRepository.existsById(itemId)) {
             throw new InventoryItemNotFoundException(itemId);
         }
@@ -456,8 +486,10 @@ public class StockMovementServiceImpl implements StockMovementService {
     }
 
     /**
-     * Ensures an unbatched balance exists for an item that has no batch records but has positive quantity.
-     * Guarantees backward compatibility for pre-S4B items without fabricating historical data.
+     * Ensures an unbatched balance exists for an item that has no batch records but
+     * has positive quantity.
+     * Guarantees backward compatibility for pre-S4B items without fabricating
+     * historical data.
      */
     private InventoryBatch ensureLegacyBatchCompatibility(InventoryItem item) {
         if (inventoryBatchRepository == null) {
@@ -472,8 +504,7 @@ public class StockMovementServiceImpl implements StockMovementService {
                         null,
                         item.getCurrentQuantity(),
                         null,
-                        item.getDefaultSupplierReference()
-                );
+                        item.getDefaultSupplierReference());
                 return inventoryBatchRepository.saveAndFlush(legacyBatch);
             }
             return null;
@@ -482,7 +513,8 @@ public class StockMovementServiceImpl implements StockMovementService {
     }
 
     /**
-     * Validates that the sum of batch quantities strictly matches the item's current quantity.
+     * Validates that the sum of batch quantities strictly matches the item's
+     * current quantity.
      */
     private void validateItemBatchInvariant(Long itemId, int itemQuantity) {
         if (inventoryBatchRepository == null) {
@@ -495,7 +527,8 @@ public class StockMovementServiceImpl implements StockMovementService {
         int batchSum = batches.stream().mapToInt(b -> b.getQuantityOnHand() != null ? b.getQuantityOnHand() : 0).sum();
         if (batchSum != itemQuantity) {
             throw new IllegalStateException("Inventory data integrity inconsistency for item ID " + itemId +
-                    ": item currentQuantity (" + itemQuantity + ") does not match sum of batch quantities (" + batchSum + ")");
+                    ": item currentQuantity (" + itemQuantity + ") does not match sum of batch quantities (" + batchSum
+                    + ")");
         }
     }
 }
