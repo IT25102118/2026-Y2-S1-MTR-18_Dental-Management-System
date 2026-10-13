@@ -1,4 +1,3 @@
-
 // Uesd recive and valid information from the frontend
 //  when creating a new item 
 package com.dentcare.inventory.dto;

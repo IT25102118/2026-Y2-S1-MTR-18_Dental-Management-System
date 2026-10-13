@@ -1,3 +1,4 @@
+// CRUD
 package com.dentcare.inventory.controller;
 
 import com.dentcare.inventory.dto.CreateInventoryItemRequest;
